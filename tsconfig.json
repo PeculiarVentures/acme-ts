@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2015",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@peculiar/acme-client": ["./packages/client/src"],
+      "@peculiar/acme-core": ["./packages/core/src"],
+      "@peculiar/acme-data": ["./packages/data/src"],
+      "@peculiar/acme-protocol": ["./packages/protocol/src"],
+      "@peculiar/acme-server": ["./packages/server/src"]
+    },
+    "strict": true,
+  }
+}

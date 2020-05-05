@@ -1,0 +1,30 @@
+{
+  "name": "@peculiar/acme-data",
+  "version": "0.0.0",
+  "description": "",
+  "keywords": [],
+  "author": "microshine <microshine@mail.ru>",
+  "license": "MIT",
+  "main": "build/index.js",
+  "module": "build/index.es.js",
+  "types": "build/types/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PeculiarVentures/ts-acme.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1",
+    "clear": "rimraf build/*",
+    "build": "npm run build:module && npm run build:types",
+    "build:module": "rollup -c",
+    "build:types": "tsc -p tsconfig.types.json",
+    "rebuild": "npm run clear && npm run build"
+  },
+  "bugs": {
+    "url": "https://github.com/PeculiarVentures/ts-acme/issues"
+  },
+  "homepage": "https://github.com/PeculiarVentures/ts-acme#readme"
+}

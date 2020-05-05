@@ -1,0 +1,26 @@
+{
+  "name": "root",
+  "private": true,
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^4.1.1",
+    "lerna": "^3.20.2",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.7.6",
+    "ts-node": "^8.10.1",
+    "tsconfig-paths": "^3.9.0",
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "tslib": "^1.11.1",
+    "@peculiar/acme-client": "file:packages/client",
+    "@peculiar/acme-core": "file:packages/core",
+    "@peculiar/acme-data": "file:packages/data",
+    "@peculiar/acme-protocol": "file:packages/protocol",
+    "@peculiar/acme-server": "file:packages/server"
+  },
+  "scripts": {
+    "build": "lerna run build",
+    "rebuild": "lerna run rebuild",
+    "clear": "lerna run clear"
+  }
+}
