@@ -3,6 +3,7 @@
     "target": "ES2015",
     "module": "CommonJS",
     "moduleResolution": "node",
+    "importHelpers": true,
     "strict": true,
   }
 }

@@ -1,8 +1,8 @@
-import { CertificateRequest } from "@peculiar/acme-core";
+import { CertificateRequest } from '@peculiar/acme-core';
 
-function main() {
+function main () {
   const req = new CertificateRequest();
-  req;
+  req.test();
 }
 
 main();
