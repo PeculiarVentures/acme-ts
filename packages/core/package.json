@@ -8,6 +8,10 @@
   "main": "build/cjs/index.js",
   "module": "build/es2015/index.js",
   "types": "build/types/index.d.ts",
+  "files": [
+    "build",
+    "README.md"
+  ],
   "publishConfig": {
     "access": "public"
   },
