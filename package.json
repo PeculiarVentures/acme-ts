@@ -12,12 +12,12 @@
     "typescript": "^3.8.3"
   },
   "dependencies": {
-    "tslib": "^1.11.1",
     "@peculiar/acme-client": "file:packages/client",
     "@peculiar/acme-core": "file:packages/core",
     "@peculiar/acme-data": "file:packages/data",
     "@peculiar/acme-protocol": "file:packages/protocol",
-    "@peculiar/acme-server": "file:packages/server"
+    "@peculiar/acme-server": "file:packages/server",
+    "tslib": "^1.11.1"
   },
   "scripts": {
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
