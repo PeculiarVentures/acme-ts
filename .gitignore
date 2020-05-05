@@ -106,3 +106,4 @@ dist
 # Project
 build/
 .vscode/
+.DS_Store
