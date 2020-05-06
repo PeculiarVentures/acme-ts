@@ -17,6 +17,7 @@
     "@peculiar/acme-data": "file:packages/data",
     "@peculiar/acme-protocol": "file:packages/protocol",
     "@peculiar/acme-server": "file:packages/server",
+    "pvtsutils": "^1.0.10",
     "tslib": "^1.11.1"
   },
   "scripts": {
