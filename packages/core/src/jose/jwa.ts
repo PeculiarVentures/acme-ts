@@ -103,7 +103,7 @@ export class JsonWebAlgorithmConverter {
         switch (hashName) {
           case "sha-256":
             return "ES256";
-          case "sha-P84":
+          case "sha-384":
             return "ES384";
           case "sha-512":
             return "ES512";
