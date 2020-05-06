@@ -36,6 +36,31 @@ context("jose", () => {
         assert.equal(ok, true);
       });
 
+      it("ECDSA SHA384", async () => {
+        // generate keys
+        const alg = {
+          name: "ECDSA",
+          hash: "SHA-384",
+          namedCurve: "P-384",
+        } as EcKeyGenParams;
+        const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]);
+
+        const jws = new JsonWebSignature(crypto);
+        jws.setProtected({
+          jwk: await crypto.subtle.exportKey("jwk", keys.publicKey),
+          nonce: "nonce_value",
+          url: "http://test.url",
+        })
+        jws.setPayload({});
+
+        await jws.sing({...alg, hash: "SHA-384"}, keys.privateKey);
+
+        jws.parse(jws.toString(true));
+
+        const ok = await jws.verify(keys.publicKey);
+        assert.equal(ok, true);
+      });
+
       it("HMAC SHA512", async () => {
         // generate keys
         const alg = {
