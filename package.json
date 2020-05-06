@@ -2,10 +2,12 @@
   "name": "root",
   "private": true,
   "devDependencies": {
+    "@types/mocha": "^7.0.2",
     "@typescript-eslint/eslint-plugin": "^2.31.0",
     "@typescript-eslint/parser": "^2.31.0",
     "eslint": "^6.8.0",
     "lerna": "^3.20.2",
+    "mocha": "^7.1.2",
     "rimraf": "^3.0.2",
     "ts-node": "^8.10.1",
     "tsconfig-paths": "^3.9.0",
@@ -18,12 +20,27 @@
     "@peculiar/acme-protocol": "file:packages/protocol",
     "@peculiar/acme-server": "file:packages/server",
     "pvtsutils": "^1.0.10",
-    "tslib": "^1.11.1"
+    "reflect-metadata": "^0.1.13",
+    "tslib": "^1.11.1",
+    "tsyringe": "^4.2.0"
   },
   "scripts": {
+    "test": "mocha",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "build": "lerna run build",
     "rebuild": "lerna run rebuild",
     "clear": "lerna run clear"
+  },
+  "mocha": {
+    "require": [
+      "tsconfig-paths/register",
+      "ts-node/register"
+    ],
+    "extension": [
+      "ts"
+    ],
+    "spec": [
+      "test/**/*.ts"
+    ]
   }
 }

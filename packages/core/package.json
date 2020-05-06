@@ -33,5 +33,10 @@
   "bugs": {
     "url": "https://github.com/PeculiarVentures/ts-acme/issues"
   },
-  "homepage": "https://github.com/PeculiarVentures/ts-acme#readme"
+  "homepage": "https://github.com/PeculiarVentures/ts-acme#readme",
+  "dependencies": {
+    "pvtsutils": "^1.0.10",
+    "reflect-metadata": "^0.1.13",
+    "tsyringe": "^4.2.0"
+  }
 }
