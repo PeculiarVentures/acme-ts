@@ -8,17 +8,16 @@ export class PemConverter {
   public PrivateKeyTag = "PRIVATE KEY";
 
   public static decode(pem: string) {
-    const pattern = "-{5}BEGIN [A-Z0-9 ]+-{5}([a-zA-Z0-9=+\\/\\n\\r]+)-{5}END [A-Z0-9 ]+-{5}";
-    const matches = pem.match(pattern);
-    const res: ArrayBuffer[] = [];
+    const pattern = /-{5}BEGIN [A-Z0-9 ]+-{5}([a-zA-Z0-9=+/\n\r]+)-{5}END [A-Z0-9 ]+-{5}/g;
 
-    if (matches) {
-      matches.forEach(element => {
-        const base64 = element
-          .replace("\r", "")
-          .replace("\n", "");
-        res.push(Convert.FromBase64(base64));
-      });
+    const res: ArrayBuffer[] = [];
+    let matches: RegExpExecArray | null = null;
+    // eslint-disable-next-line no-cond-assign
+    while(matches = pattern.exec(pem)){
+      const base64 = matches[1]
+        .replace("\r", "")
+        .replace("\n", "");
+      res.push(Convert.FromBase64(base64));
     }
     return res;
   }
@@ -47,7 +46,7 @@ export class PemConverter {
         sliced = base64.substring(offset);
       }
       else {
-        sliced = base64.substring(offset, 64);
+        sliced = base64.substring(offset, offset + 64);
         offset += 64;
       }
       if (sliced.length != 0) {
