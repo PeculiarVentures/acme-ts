@@ -110,4 +110,41 @@ export class JsonWebSignature {
     return `${this.protected}.${this.payload}`;
   }
 
+  public toJSON() {
+    const json: any = {};
+    if (this.protected) {
+      json.protected = this.protected;
+    }
+    if (this.payload) {
+      json.payload = this.payload;
+    }
+    if (this.signature) {
+      json.signature = this.signature;
+    }
+    return json;
+  }
+
+  public parse(data: string) {
+    if (data[0] === "{") {
+      // JSON
+      const json = JSON.parse(data);
+      this.protected = json.protected || "";
+      this.payload = json.payload || "";
+      this.signature = json.signature || "";
+    } else {
+      // Compact
+      const parts = data.split(".");
+      this.protected = parts[0] || "";
+      this.payload = parts[1] || "";
+      this.signature = parts[2] || "";
+    }
+  }
+
+  public toString(compact = false) {
+    if (compact) {
+      return `${this.protected}.${this.payload}.${this.signature}`;
+    }
+    return JSON.stringify(this.toJSON());
+  }
+
 }
