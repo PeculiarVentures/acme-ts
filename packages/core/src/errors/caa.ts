@@ -1,12 +1,12 @@
 import { AcmeError } from "./acme_error";
 import { ErrorType } from "./error_type";
 
-export class BadPublicKeyError extends AcmeError {
+export class CAAError extends AcmeError {
   constructor(
     message?: string,
     status?: number,
     inner?: Error,
   ) {
-    super(ErrorType.badPublicKey, message, status, inner);
+    super(ErrorType.caa, message, status, inner);
   }
 }
