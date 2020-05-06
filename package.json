@@ -19,6 +19,7 @@
     "@peculiar/acme-data": "file:packages/data",
     "@peculiar/acme-protocol": "file:packages/protocol",
     "@peculiar/acme-server": "file:packages/server",
+    "@peculiar/webcrypto": "^1.0.29",
     "pvtsutils": "^1.0.10",
     "reflect-metadata": "^0.1.13",
     "tslib": "^1.11.1",
