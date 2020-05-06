@@ -7,18 +7,7 @@ export class PemConverter {
   public PublicKeyTag = "PUBLIC KEY";
   public PrivateKeyTag = "PRIVATE KEY";
 
-  /// <summary>
-  /// Converts PEM to byte[]
-  /// </summary>
-  /// <param name="pem">PEM string</param>
-  /// <returns></returns>
-  public static decode(pem: string) //byte[][]
-  {
-    if (!pem) {
-      throw new Error("pem is empty");
-      // throw new ArgumentNullException(nameof(pem));
-    }
-
+  public static decode(pem: string) {
     const pattern = "-{5}BEGIN [A-Z0-9 ]+-{5}([a-zA-Z0-9=+\\/\\n\\r]+)-{5}END [A-Z0-9 ]+-{5}";
     const matches = pem.match(pattern);
     const res: ArrayBuffer[] = [];
@@ -34,17 +23,11 @@ export class PemConverter {
     return res;
   }
 
-  /// <summary>
-  /// Converts byte[] to PEM
-  /// </summary>
-  /// <param name="rawData"></param>
-  /// <param name="tag"></param>
-  /// <returns></returns>
   public static encode(rawData: BufferSource, tag: string): string;
   public static encode(rawData: BufferSource[], tag: string): string;
   public static encode(rawData: BufferSource | BufferSource[], tag: string) {
     if (Array.isArray(rawData)) {
-      let raws = new Array<string>();
+      const raws = new Array<string>();
       rawData.forEach(element => {
         raws.push(this.encodeBuffer(element, tag));
       });
@@ -58,7 +41,7 @@ export class PemConverter {
     const base64 = Convert.ToBase64(rawData);
     let sliced: string;
     let offset = 0;
-    let rows = Array<string>();
+    const rows = Array<string>();
     while (offset < base64.length) {
       if (base64.length - offset < 64) {
         sliced = base64.substring(offset);
