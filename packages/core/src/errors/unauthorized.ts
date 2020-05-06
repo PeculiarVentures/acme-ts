@@ -3,11 +3,11 @@ import { ErrorType } from "./error_type";
 import { HttpStatusCode } from "../web/http_status_code";
 
 export class UnauthorizedError extends AcmeError {
-constructor(
-     message?: string,
-     status: number = HttpStatusCode.notFound,
-     inner?: Error,
-){
-  super(ErrorType.unauthorized, message, status, inner)
-}
+  public constructor(
+    message?: string,
+    status: number = HttpStatusCode.notFound,
+    inner?: Error,
+  ) {
+    super(ErrorType.unauthorized, message, status, inner);
+  }
 }

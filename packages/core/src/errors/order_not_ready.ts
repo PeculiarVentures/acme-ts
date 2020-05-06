@@ -3,11 +3,11 @@ import { ErrorType } from "./error_type";
 import { HttpStatusCode } from "../web/http_status_code";
 
 export class OrderNotReadyError extends AcmeError {
-constructor(
-     message?: string,
-     status: number = HttpStatusCode.forbidden,
-     inner?: Error,
-){
-  super(ErrorType.orderNotReady, message, status, inner)
-}
+  public constructor(
+    message?: string,
+    status: number = HttpStatusCode.forbidden,
+    inner?: Error,
+  ) {
+    super(ErrorType.orderNotReady, message, status, inner);
+  }
 }

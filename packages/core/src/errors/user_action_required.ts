@@ -3,7 +3,7 @@ import { ErrorType } from "./error_type";
 import { HttpStatusCode } from "../web/http_status_code";
 
 export class UserActionRequiredError extends AcmeError {
-  constructor(
+  public constructor(
     message?: string,
     status: number = HttpStatusCode.forbidden,
     inner?: Error,

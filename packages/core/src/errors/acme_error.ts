@@ -3,7 +3,7 @@ import { HttpStatusCode } from "../web/http_status_code";
 
 export class AcmeError extends Error {
 
-  constructor(
+  public constructor(
     public type: ErrorType,
     public message: string = "",
     public status: number = HttpStatusCode.internalServerError,
