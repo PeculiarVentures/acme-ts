@@ -28,9 +28,10 @@ export class Name {
   }
 
   public toString(splitter = ", ") {
+    // Serialization spec https://tools.ietf.org/html/rfc2253
     return this.asn
       .map(o => o
-        .map(a => `${names.filter(n => n[1] === a.type)[0]?.[0] || a.type}=${a.value}`)
+        .map(a => `${names.filter(n => n[1] === a.type)[0]?.[0] || a.type}=${/[,=+<>#;]/.test(a.value.toString()) ? `"${a.value}"` : a.value}`)
         .join(splitter))
       .join(splitter);
   }
