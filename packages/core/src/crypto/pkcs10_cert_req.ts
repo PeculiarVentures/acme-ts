@@ -4,17 +4,15 @@ import { id_ecdsaWithSHA1, id_ecdsaWithSHA256, id_ecdsaWithSHA384, id_ecdsaWithS
 import { AsnConvert } from "@peculiar/asn1-schema";
 import { AlgorithmIdentifier } from "@peculiar/asn1-x509";
 import { Name } from "./name";
-
-export interface HashedAlgorithm extends Algorithm {
-  hash: Algorithm;
-}
+import { cryptoProvider } from "./provider";
+import { HashedAlgorithm } from "./types";
 
 export class Pkcs10CertificateRequest {
 
   private csr: CertificationRequest;
 
-  public subject = "";
-  public signatureAlgorithm: HashedAlgorithm;
+  public readonly subject: string;
+  public readonly signatureAlgorithm: HashedAlgorithm;
 
   public constructor(raw: BufferSource) {
     this.csr = AsnConvert.parse(raw, CertificationRequest);
@@ -23,12 +21,24 @@ export class Pkcs10CertificateRequest {
     this.signatureAlgorithm = this.getSignatureAlgorithm();
   }
 
-  public async getPublicKey(crypto: Crypto, algorithm?: Algorithm, keyUsages?: KeyUsage[]) {
-    if (!algorithm) {
-      algorithm = this.getSignatureAlgorithm();
+  public async getPublicKey(crypto?: Crypto): Promise<CryptoKey>;
+  public async getPublicKey(algorithm: Algorithm, keyUsages: KeyUsage[], crypto?: Crypto): Promise<CryptoKey>;
+  public async getPublicKey(...args: any[]) {
+    let algorithm: Algorithm = this.getSignatureAlgorithm();
+    let keyUsages: KeyUsage[] = ["verify"];
+    let crypto = cryptoProvider.get();
+    if (args.length > 1) {
+      // alg, usages, crypto?
+      algorithm = args[0] || algorithm;
+      keyUsages = args[1] || keyUsages;
+      crypto = args[2] || crypto;
+    } else {
+      // crypto?
+      crypto = args[0] || crypto;
     }
+
     const spki = AsnConvert.serialize(this.csr.certificationRequestInfo.subjectPKInfo);
-    return crypto.subtle.importKey("spki", spki, algorithm as any, true, keyUsages || ["verify"]);
+    return crypto.subtle.importKey("spki", spki, algorithm as any, true, keyUsages);
   }
 
   public getSignatureAlgorithm(): HashedAlgorithm {
@@ -120,10 +130,10 @@ export class Pkcs10CertificateRequest {
     }
   }
 
-  public async verify(crypto: Crypto) {
+  public async verify(crypto = cryptoProvider.get()) {
     const algorithm = this.getSignatureAlgorithm();
 
-    const publicKey = await this.getPublicKey(crypto, algorithm);
+    const publicKey = await this.getPublicKey(algorithm, ["verify"], crypto);
     const signedData = AsnConvert.serialize(this.csr.certificationRequestInfo);
     const ok = await crypto.subtle.verify(algorithm as any, publicKey, this.csr.signature, signedData);
     return ok;
