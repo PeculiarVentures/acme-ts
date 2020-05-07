@@ -9,5 +9,8 @@
       "@peculiar/acme-protocol": ["./packages/protocol/src"],
       "@peculiar/acme-server": ["./packages/server/src"]
     }
-  }
+  },
+  "exclude": [
+    "packages/*/build"
+  ]
 }

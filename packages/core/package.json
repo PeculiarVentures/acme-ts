@@ -35,6 +35,11 @@
   },
   "homepage": "https://github.com/PeculiarVentures/ts-acme#readme",
   "dependencies": {
+    "@peculiar/asn1-csr": "^2.0.1",
+    "@peculiar/asn1-ecc": "^2.0.1",
+    "@peculiar/asn1-rsa": "^2.0.1",
+    "@peculiar/asn1-schema": "^2.0.1",
+    "@peculiar/asn1-x509": "^2.0.1",
     "pvtsutils": "^1.0.10",
     "reflect-metadata": "^0.1.13",
     "tsyringe": "^4.2.0"
