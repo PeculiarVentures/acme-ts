@@ -28,7 +28,7 @@ context("jose", () => {
         })
         jws.setPayload({csr: "AQAB"});
 
-        await jws.sing(alg, keys.privateKey);
+        await jws.sign(alg, keys.privateKey);
 
         jws.parse(jws.toString());
 
@@ -53,7 +53,7 @@ context("jose", () => {
         })
         jws.setPayload({});
 
-        await jws.sing({...alg, hash: "SHA-384"}, keys.privateKey);
+        await jws.sign({...alg, hash: "SHA-384"}, keys.privateKey);
 
         jws.parse(jws.toString(true));
 
@@ -77,7 +77,7 @@ context("jose", () => {
           url: "http://test.url",
         })
 
-        await jws.sing(alg, key);
+        await jws.sign(alg, key);
 
         jws.parse(jws.toString());
 
