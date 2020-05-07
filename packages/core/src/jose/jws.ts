@@ -90,7 +90,7 @@ export class JsonWebSignature {
     return ok;
   }
 
-  public async sing(algorithm: JsonWebSignatureParams, key: CryptoKey) {
+  public async sign(algorithm: JsonWebSignatureParams, key: CryptoKey) {
     // set alg to protected
     const attrs = this.getProtected();
     const jwa = JsonWebAlgorithmConverter.fromAlgorithm({ ...algorithm, ...key.algorithm });

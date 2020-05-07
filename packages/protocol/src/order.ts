@@ -121,3 +121,7 @@ export interface RevokeCertificateParams {
    */
   reason?: number;
 }
+
+export interface Finalize {
+  csr: string;
+}

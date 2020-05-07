@@ -1,3 +1,6 @@
+import { Token } from ".";
+
+
 export type AccountStatus = "valid" | "deactivated" | "revoked";
 
 /**
@@ -65,7 +68,7 @@ export interface AccountCreateParams {
    *
    * NOTE: This field is not updateable by the client
    */
-  externalAccountBinding?: object;
+  externalAccountBinding?: ExternalAccountBinding;
 
   /**
    * If this field is present
@@ -87,4 +90,16 @@ export interface AccountUpdateParams {
    * The status of the account.
    */
   status?: AccountStatus;
+}
+
+export interface ExternalAccountBinding {
+  challenge: string;
+  kid: string;
+}
+
+export interface CreateAccountProtocol {
+  contact?: string[];
+  termsOfServiceAgreed?: boolean;
+  onlyReturnExisting?: boolean;
+  externalAccountBinding?: Token;
 }
