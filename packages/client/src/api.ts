@@ -72,7 +72,7 @@ export class ApiClient extends BaseClient {
     if (params.externalAccountBinding) {
       newParam.externalAccountBinding = await this.createExternalAccountBinding(params.externalAccountBinding.challenge, params.externalAccountBinding.kid);
     }
-    const res = await this.fetch<Account>(this.getDirectory().newAccount, {
+    const res = await this.fetch<protocol.Account>(this.getDirectory().newAccount, {
       method: "POST",
       kid: this.accountKey.publicKey,
       nonce: this._nonce,
@@ -93,7 +93,7 @@ export class ApiClient extends BaseClient {
    */
   public async updateAccount(params: protocol.AccountUpdateParams) {
     const kid = this.getAccountId();
-    return await this.fetch<Account>(kid, {
+    return await this.fetch<protocol.Account>(kid, {
       method: "POST",
       kid,
       nonce: this._nonce,
@@ -174,7 +174,7 @@ export class ApiClient extends BaseClient {
    * changes account status to deactivated
    */
   public async deactivateAccount() {
-    return this.deactivate<Account>(this.getAccountId(), (resp) => resp.json());
+    return this.deactivate<protocol.Account>(this.getAccountId(), (resp) => resp.json());
   }
 
   /**

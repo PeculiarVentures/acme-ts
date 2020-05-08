@@ -3,10 +3,12 @@ import { Crypto } from "@peculiar/webcrypto";
 import { cryptoProvider } from "@peculiar/acme-core";
 import { ApiClient } from "@peculiar/acme-client";
 
-context.only("client", () => {
+context("client", () => {
 
   const crypto = new Crypto();
   cryptoProvider.set(crypto);
+
+
 
   it("create user", async () => {
     const alg: RsaHashedKeyGenParams = {

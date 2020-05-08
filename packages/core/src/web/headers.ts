@@ -31,8 +31,8 @@ export class Headers extends Map<string, string> {
   /**
    * Gets Link header
    */
-  public get links() {
-    const header = this.get("links");
+  public get link() {
+    const header = this.get("link");
     if (header) {
       return header.split(",").map(o => o.trim());
     }
