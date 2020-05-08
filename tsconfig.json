@@ -6,6 +6,7 @@
       "@peculiar/acme-client": ["./packages/client/src"],
       "@peculiar/acme-core": ["./packages/core/src"],
       "@peculiar/acme-data": ["./packages/data/src"],
+      "@peculiar/acme-data-memory": ["./packages/data-memory/src"],
       "@peculiar/acme-protocol": ["./packages/protocol/src"],
       "@peculiar/acme-server": ["./packages/server/src"]
     }

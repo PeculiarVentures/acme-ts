@@ -1,5 +1,5 @@
 {
-  "name": "@peculiar/acme-server",
+  "name": "@peculiar/acme-data-memory",
   "version": "0.0.0",
   "description": "",
   "keywords": [],
@@ -33,11 +33,5 @@
   "bugs": {
     "url": "https://github.com/PeculiarVentures/ts-acme/issues"
   },
-  "homepage": "https://github.com/PeculiarVentures/ts-acme#readme",
-  "dependencies": {
-    "@peculiar/acme-core": "^0.0.0",
-    "@peculiar/acme-protocol": "^0.0.0",
-    "@peculiar/asn1-x509": "^2.0.3",
-    "tsyringe": "^4.2.0"
-  }
+  "homepage": "https://github.com/PeculiarVentures/ts-acme#readme"
 }

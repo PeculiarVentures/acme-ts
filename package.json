@@ -18,6 +18,7 @@
     "@peculiar/acme-client": "file:packages/client",
     "@peculiar/acme-core": "file:packages/core",
     "@peculiar/acme-data": "file:packages/data",
+    "@peculiar/acme-data-memory": "file:packages/data-memory",
     "@peculiar/acme-protocol": "file:packages/protocol",
     "@peculiar/acme-server": "file:packages/server",
     "@peculiar/asn1-csr": "^2.0.3",
