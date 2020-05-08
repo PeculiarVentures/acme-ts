@@ -6,4 +6,11 @@ export class Response {
   public status = HttpStatusCode.noContent;
   public headers = new Headers();
   public content?: Content;
+
+  public json() {
+    if (this.content) {
+      return this.content.toJSON();
+    }
+    throw new Error("No content in ACME response");
+  }
 }

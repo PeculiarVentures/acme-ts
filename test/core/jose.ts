@@ -1,10 +1,11 @@
 import * as assert from "assert";
-import { JsonWebSignature } from "@peculiar/acme-core";
+import { JsonWebSignature, cryptoProvider } from "@peculiar/acme-core";
 import { Crypto } from "@peculiar/webcrypto";
 
 context("jose", () => {
 
   const crypto = new Crypto();
+  cryptoProvider.set(crypto);
 
   context("jws", () => {
 
@@ -20,7 +21,7 @@ context("jose", () => {
         } as RsaHashedKeyGenParams;
         const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]);
 
-        const jws = new JsonWebSignature(crypto);
+        const jws = new JsonWebSignature();
         jws.setProtected({
           jwk: await crypto.subtle.exportKey("jwk", keys.publicKey),
           nonce: "nonce_value",
@@ -45,7 +46,7 @@ context("jose", () => {
         } as EcKeyGenParams;
         const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]);
 
-        const jws = new JsonWebSignature(crypto);
+        const jws = new JsonWebSignature();
         jws.setProtected({
           jwk: await crypto.subtle.exportKey("jwk", keys.publicKey),
           nonce: "nonce_value",
@@ -70,7 +71,7 @@ context("jose", () => {
         } as HmacKeyGenParams;
         const key = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]);
 
-        const jws = new JsonWebSignature(crypto);
+        const jws = new JsonWebSignature();
         jws.setProtected({
           kid: "http://key.id",
           nonce: "nonce_value",

@@ -40,6 +40,13 @@ export class Headers extends Map<string, string> {
   }
 
   /**
+   * Gets Replay-Nonce header
+   */
+  public get replayNonce() {
+    return this.get("replay-nonce") || null;
+  }
+
+  /**
    * Sets header. If header already exists it replaces it
    * @param key Header name
    * @param value Header value

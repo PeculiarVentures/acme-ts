@@ -46,7 +46,7 @@ export class Content {
       if (!type) {
         throw new TypeError("Cannot get required argument 'type'");
       }
-      this.content = Convert.FromUtf8String(JSON.stringify(data));
+      this.content = BufferSourceConverter.toArrayBuffer(data);
       this.type = type;
     } else {
       this.content = Convert.FromUtf8String(JSON.stringify(data));

@@ -1,7 +1,8 @@
 import { Convert } from "pvtsutils";
 import { JsonWebAlgorithmConverter } from "./jwa";
+import { cryptoProvider } from "../crypto";
 
-export interface JsonWebSignatureProtected {
+export interface JwsProtected {
   alg?: string;
   jwk?: JsonWebKey;
   kid?: string;
@@ -12,7 +13,12 @@ export interface JsonWebSignatureProtected {
 /**
  * Sign/Verify params for JSON Web Signature
  */
-export type JsonWebSignatureParams = Algorithm | RsaPssParams | EcdsaParams;
+export type JwsParams = Algorithm | RsaPssParams | EcdsaParams;
+
+export interface JwsConstructorParams {
+  protected?: JwsProtected;
+  payload?: any;
+}
 
 /**
  * JSON Web Signature (JWS).
@@ -24,9 +30,14 @@ export class JsonWebSignature {
   public payload = "";
   public signature = "";
 
-  public constructor(
-    public crypto: Crypto
-  ) { }
+  public constructor(params: JwsConstructorParams = {}) {
+    if (params.protected) {
+      this.setProtected(params.protected);
+    }
+    if (params.payload) {
+      this.setPayload(params.payload);
+    }
+  }
 
   public isPayloadEmpty() {
     return !this.payload;
@@ -36,10 +47,10 @@ export class JsonWebSignature {
     return this.payload === "e30";
   }
 
-  public getProtected(): JsonWebSignatureProtected {
+  public getProtected(): JwsProtected {
     return this.read(this.protected);
   }
-  public setProtected(data: JsonWebSignatureProtected) {
+  public setProtected(data: JwsProtected) {
     this.protected = this.write(data);
   }
 
@@ -73,7 +84,7 @@ export class JsonWebSignature {
     return Convert.ToBase64Url(bytes);
   }
 
-  public async verify(key: CryptoKey) {
+  public async verify(key: CryptoKey, crypto = cryptoProvider.get()) {
     // get alg from protected
     const attrs = this.getProtected();
     if (!attrs.alg) {
@@ -86,11 +97,11 @@ export class JsonWebSignature {
 
     // verify
     const data = Convert.FromUtf8String(this.toStringSign());
-    const ok = await this.crypto.subtle.verify(alg as any, key, this.getSignature(), data);
+    const ok = await crypto.subtle.verify(alg as any, key, this.getSignature(), data);
     return ok;
   }
 
-  public async sign(algorithm: JsonWebSignatureParams, key: CryptoKey) {
+  public async sign(algorithm: JwsParams, key: CryptoKey, crypto = cryptoProvider.get()) {
     // set alg to protected
     const attrs = this.getProtected();
     const jwa = JsonWebAlgorithmConverter.fromAlgorithm({ ...algorithm, ...key.algorithm });
@@ -102,7 +113,7 @@ export class JsonWebSignature {
 
     // sign
     const data = Convert.FromUtf8String(this.toStringSign());
-    const signature = await this.crypto.subtle.sign(algorithm as any, key, data);
+    const signature = await crypto.subtle.sign(algorithm as any, key, data);
     this.setSignature(signature);
   }
 
