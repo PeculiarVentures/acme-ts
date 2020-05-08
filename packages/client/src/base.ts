@@ -63,6 +63,11 @@ export class BaseClient {
       throw new Error("Cannot get 'fetch' option");
     }
 
+    //Log request
+    if (this.options.debug) {
+      console.log(`REQUEST ${params.method} ${url}`);
+    }
+
     const fetch = this.options.fetch;
     let response: Response | undefined;
     if (params.method === "GET" || params.method === "HEAD") {
@@ -100,6 +105,12 @@ export class BaseClient {
       };
 
       response = await fetch(url, request);
+
+      //Log response
+      if (this.options.debug) {
+        console.log("RESPONSE", response);
+      }
+
     }
 
     // Convert to ACME response

@@ -1,9 +1,9 @@
 import { Convert } from "pvtsutils";
-import { PemConverter, AcmeError, JsonWebSignature } from "@peculiar/acme-core";
+import { JsonWebSignature, PemConverter } from "@peculiar/acme-core";
 import { CRLReasons } from "@peculiar/asn1-x509";
-import { Directory, Authorization, Account, Order, AccountCreateParams, AccountUpdateParams, OrderCreateParams, Challenge, Finalize, Token, CreateAccountProtocol } from "@peculiar/acme-protocol";
-import { RequestMethod, Response, HttpStatusCode, Headers, Content } from "packages/core/src/web";
-import { BaseClient, ClientOptions, ApiResponse, RequestParams } from "./base";
+import * as protocol from "@peculiar/acme-protocol";
+import { Response, Content, ContentType } from "packages/core/src/web";
+import { BaseClient, ClientOptions, ApiResponse, RequestParams, AcmeMethod } from "./base";
 
 /**
  * Class of work with ACME servers
@@ -12,7 +12,7 @@ export class ApiClient extends BaseClient {
 
   private _nonce = "";
   private _accountId = "";
-  private _directory?: Directory;
+  private _directory?: protocol.Directory;
 
   public constructor(
     public accountKey: CryptoKeyPair,
@@ -38,7 +38,7 @@ export class ApiClient extends BaseClient {
    * @param url ACME Server Controller List Issue URL
    */
   public async initialize() {
-    const response = await this.fetch<Directory>(this.url, {
+    const response = await this.fetch<protocol.Directory>(this.url, {
       method: "GET",
       convert: (resp) => resp.json(),
     });
@@ -63,8 +63,8 @@ export class ApiClient extends BaseClient {
    * To search for an account, you must specify the parameter onlyReturnExisting: true.
    * @param params Request parameters
    */
-  public async createAccount(params: AccountCreateParams) {
-    const newParam: CreateAccountProtocol = {
+  public async createAccount(params: protocol.AccountCreateParams) {
+    const newParam: protocol.CreateAccountProtocol = {
       contact: params.contact,
       onlyReturnExisting: params.onlyReturnExisting,
       termsOfServiceAgreed: params.termsOfServiceAgreed
@@ -91,7 +91,7 @@ export class ApiClient extends BaseClient {
    * Update account settings.
    * @param params Updateable parameters
    */
-  public async updateAccount(params: AccountUpdateParams) {
+  public async updateAccount(params: protocol.AccountUpdateParams) {
     const kid = this.getAccountId();
     return await this.fetch<Account>(kid, {
       method: "POST",
@@ -182,7 +182,7 @@ export class ApiClient extends BaseClient {
    * changes authorization status to deactivated
    */
   public async deactivateAuthorization() {
-    return this.deactivate<Authorization>(this.getAccountId(), (resp) => resp.json());
+    return this.deactivate<protocol.Authorization>(this.getAccountId(), (resp) => resp.json());
   }
 
   /**
@@ -190,8 +190,8 @@ export class ApiClient extends BaseClient {
    * Returns an existing order if the identifiers parameter matches
    * @param params
    */
-  public async newOrder(params: OrderCreateParams) {
-    return this.fetch<Order>(this.getDirectory().newOrder, {
+  public async newOrder(params: protocol.OrderCreateParams) {
+    return this.fetch<protocol.Order>(this.getDirectory().newOrder, {
       method: "POST",
       kid: this.getAccountId(),
       nonce: this._nonce,
@@ -201,54 +201,86 @@ export class ApiClient extends BaseClient {
     });
   }
 
-  // /**
-  //  * Getting data about challenge.
-  //  * The POST method starts checking on the ACME server side.
-  //  * @param url адресс сhallenge
-  //  * @param method метод вызова
-  //  */
-  // public async getChallenge(url: string, method: Method = "GET") {
-  //   const res = await this.request<Challenge>(url, method, {}); //{}
-  //   if (method === "POST") {
-  //     await this.pause(2000);
-  //   }
-  //   return res;
-  // }
+  /**
+   * Getting data about challenge.
+   * The POST method starts checking on the ACME server side.
+   * @param url адресс сhallenge
+   * @param method метод вызова
+   */
+  public async getChallenge(url: string, method: AcmeMethod = "POST-as-GET") {
+    const res = await this.fetch<protocol.Challenge>(url, {
+      method,
+      kid: this.getAccountId(),
+      nonce: this._nonce,
+      key: this.accountKey.privateKey,
+      body: method === "POST" ? {} : undefined,
+      convert: (resp) => resp.json(),
+    });
+    if (method === "POST") {
+      await this.pause(2000);
+    }
+    return res;
+  }
 
-  // /**
-  //  * Order finalize
-  //  * @param url
-  //  * @param params
-  //  */
-  // public async finalize(url: string, params: Finalize) {
-  //   return this.request<Order>(url, "POST", params);
-  // }
+  /**
+   * Order finalize
+   * @param url
+   * @param params
+   */
+  public async finalize(url: string, params: protocol.Finalize) {
+    return this.fetch<protocol.Order>(url, {
+      method: "POST",
+      kid: this.getAccountId(),
+      nonce: this._nonce,
+      key: this.accountKey.privateKey,
+      body: params,
+      convert: (resp) => resp.json(),
+    });
+  }
 
-  // /**
-  //  * Retrieving Authorization Data
-  //  * @param url адрес авторизации
-  //  * @param method метод вызова
-  //  */
-  // public async getAuthorization(url: string, method: Method = "GET") {
-  //   return this.request<Authorization>(url, method);
-  // }
+  /**
+   * Retrieving Authorization Data
+   * @param url адрес авторизации
+   * @param method метод вызова
+   */
+  public async getAuthorization(url: string) {
+    return this.fetch<protocol.Authorization>(url, {
+      method: "POST-as-GET",
+      kid: this.getAccountId(),
+      nonce: this._nonce,
+      key: this.accountKey.privateKey,
+      convert: (resp) => resp.json(),
+    });
+  }
 
-  // /**
-  //  * Obtaining a certificate of a complete order
-  //  * @param url
-  //  * @param method
-  //  */
-  // public async getCertificate(url: string, method: Method = "POST") {
-  //   const response = await this.request<string>(url, method);
-  //   const certs = PemConverter.decode(response.result);
-  //   const res: PostResult<ArrayBuffer[]> = {
-  //     link: response.link,
-  //     location: response.location,
-  //     result: certs,
-  //     status: response.status,
-  //   };
-  //   return res;
-  // }
+  /**
+   * Obtaining a certificate of a complete order
+   * @param url
+   * @param method
+   */
+  public async getCertificate(url: string) {
+    return await this.fetch<ArrayBuffer[]>(url, {
+      method: "POST-as-GET",
+      kid: this.getAccountId(),
+      nonce: this._nonce,
+      key: this.accountKey.privateKey,
+      convert: (resp) => {
+        if (!resp.content) {
+          throw new Error("Cannot get content from ACME response");
+        }
+        switch (resp.content.type) {
+          case ContentType.pemCertificateChain:
+            return PemConverter.decode(resp.content.toString());
+          case ContentType.pkixCert:
+            return [resp.content.content];
+          case ContentType.pkcs7Mime:
+            throw new Error("Not implemented");
+          default:
+            throw new Error("Not supported content type for certificate");
+        }
+      },
+    });
+  }
 
   /**
    * Getting an account id.
@@ -290,19 +322,6 @@ export class ApiClient extends BaseClient {
   public async pause(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
-
-  // /**
-  //  * Logging responses from the ACME server
-  //  * @param url
-  //  * @param res
-  //  * @param method
-  //  */
-  // private logResponse(url: string, res: any, method: string) {
-  //   if (this.debug) {
-  //     console.log(`${method} RESPONSE ${url}`);
-  //     console.log("Result", res);
-  //   }
-  // }
 
   protected async createExternalAccountBinding(challenge: string, kid: string) {
     // Create externalAccountBinding
