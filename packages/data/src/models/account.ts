@@ -5,7 +5,7 @@ export interface IAccount extends IBaseObject {
   status: AccountStatus;
   key: JsonWebKey;
   termsOfServiceAgreed: boolean;
-  externalAccountId: Key;
+  externalAccountId?: Key;
   contacts: string[];
   createdAt: Date;
 }
