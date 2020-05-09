@@ -9,5 +9,5 @@ export const diAccountRepository = "ACME.AccountRepository";
  * DI: ACME.AccountRepository
  */
 export interface IAccountRepository extends IBaseRepository<IAccount> {
-  findByPublicKey(publicKey: JsonWebKey): Promise<IAccount>;
+  findByPublicKey(publicKey: JsonWebKey): Promise<IAccount | null>;
 }

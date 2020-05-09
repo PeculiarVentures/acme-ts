@@ -5,18 +5,20 @@ export abstract class BaseRepository<T extends BaseObject> implements IBaseRepos
 {
   public constructor(protected items: T[] = []) { }
 
-  public findById(id: Key): Promise<T | null> {
-    return new Promise<T>(() => this.items.find(o => { return o.id === id; }) || null);
+  public async findById(id: Key) {
+    return this.items.find(o => { return o.id === id; }) || null;
   }
 
-  public add(item: T): Promise<T> {
+  public async add(item: T) {
     if (!this.items.includes(item)) {
       this.items.push(item);
+    } else {
+      throw new Error("Element already exists");
     }
-    return new Promise<T>(() => item);
+    return item;
   }
 
-  public update(item: T): Promise<T> {
+  public async update(item: T) {
     const updateItem = this.items.find(o => { return o.id === item.id; });
     if (updateItem) {
       const index = this.items.indexOf(updateItem);
@@ -24,14 +26,14 @@ export abstract class BaseRepository<T extends BaseObject> implements IBaseRepos
     } else {
       throw new Error("Element not found");
     }
-    return new Promise<T>(() => item);
+    return item;
   }
 
-  public remove(item: T): Promise<void> {
+  public async remove(item: T) {
     const index = this.items.indexOf(item);
     if (index > -1) {
       this.items.splice(index, 1);
     }
-    return new Promise<void>(() => { return; });
+    return ;
   }
 }
