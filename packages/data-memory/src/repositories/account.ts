@@ -1,5 +1,5 @@
-import { BaseRepository } from ".";
 import { IAccount, IAccountRepository } from "@peculiar/acme-data";
+import { BaseRepository } from "./base";
 
 export class AccountRepository extends BaseRepository<IAccount> implements IAccountRepository {
 

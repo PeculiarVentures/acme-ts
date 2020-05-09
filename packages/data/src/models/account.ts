@@ -1,11 +1,11 @@
-import { IBaseObject, Key } from "./base";
+import { IBaseObject } from "./base";
 import { AccountStatus } from "@peculiar/acme-protocol";
 
 export interface IAccount extends IBaseObject {
   status: AccountStatus;
   key: JsonWebKey;
   termsOfServiceAgreed: boolean;
-  externalAccountId?: Key;
+  externalAccountId?: number;
   contacts: string[];
   createdAt: Date;
 }

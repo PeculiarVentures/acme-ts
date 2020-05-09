@@ -3,7 +3,8 @@ import { JsonWebSignature } from "../jose";
 export type RequestMethod = "GET" | "POST" | "HEAD";
 
 export interface QueryParams {
-  [name: string]: string[];
+  [name: string]: string[] | undefined;
+  cursor?: string[];
 }
 
 export class Request {

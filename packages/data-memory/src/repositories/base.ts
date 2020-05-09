@@ -1,16 +1,18 @@
 import { IBaseRepository, Key } from "@peculiar/acme-data";
-import { BaseObject } from "..";
+import { BaseObject } from "../models";
 
 export abstract class BaseRepository<T extends BaseObject> implements IBaseRepository<T>
 {
-  public constructor(protected items: T[] = []) { }
+  private lastId = 0;
+  protected items: T[] = [];
 
   public async findById(id: Key) {
     return this.items.find(o => { return o.id === id; }) || null;
   }
 
   public async add(item: T) {
-    if (!this.items.includes(item)) {
+    if (!item.id) {
+      item.id = ++this.lastId;
       this.items.push(item);
     } else {
       throw new Error("Element already exists");
@@ -30,10 +32,13 @@ export abstract class BaseRepository<T extends BaseObject> implements IBaseRepos
   }
 
   public async remove(item: T) {
-    const index = this.items.indexOf(item);
-    if (index > -1) {
-      this.items.splice(index, 1);
+    const removeItem = this.items.find(o => { return o.id === item.id; });
+    if (removeItem) {
+      const index = this.items.indexOf(item);
+      if (index > -1) {
+        this.items.splice(index, 1);
+      }
     }
-    return ;
+    return;
   }
 }
