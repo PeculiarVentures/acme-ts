@@ -3,6 +3,39 @@ import * as data from "@peculiar/acme-data";
 import { Key, IAccount, IExternalAccount } from "@peculiar/acme-data";
 import { JsonWebSignature } from "@peculiar/acme-core";
 
+export const diConvertService = "ACME.ConvertService";
+
+/**
+ * ACME Convert service
+ *
+ * DI: ACME.ConvertService
+ */
+export interface IConvertService {
+  toAccount(account: IAccount): protocol.Account;
+}
+
+export const diDirectoryService = "ACME.DirectoryService";
+
+/**
+ * ACME Directory service
+ * DI: ACME.DirectoryService
+ */
+export interface IDirectoryService {
+  getDirectory(): Promise<protocol.Directory>;
+}
+
+export const diNonceService = "ACME.NonceService";
+
+/**
+ * ACME Nonce service
+ *
+ * DI: ACME.NonceService
+ */
+export interface INonceService {
+  create(): Promise<string>;
+  validate(nonce: string): Promise<void>;
+}
+
 export const diAccountService = "ACME.AccountService";
 
 export interface IAccountService {
@@ -37,7 +70,7 @@ export interface IAccountService {
    * Returns Account by specified JWK
    * @param key JSON web key
    */
-  findByPublicKey(key: JsonWebKey): Promise<IAccount>;
+  findByPublicKey(key: JsonWebKey): Promise<IAccount | null>;
 
   /**
    * Revokes an Account
@@ -68,5 +101,6 @@ export const diExternalAccountService = "ACME.ExternalAccountService";
 export interface IExternalAccountService {
   create(account: any): Promise<IExternalAccount>;
   getById(id: Key): Promise<IExternalAccount>;
+  getByUrl(url: string): Promise<IExternalAccount>;
   validate(accountKey: JsonWebKey, token: JsonWebSignature): Promise<IExternalAccount>;
 }

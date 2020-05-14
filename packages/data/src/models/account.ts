@@ -1,6 +1,13 @@
 import { IBaseObject } from "./base";
 import { AccountStatus } from "@peculiar/acme-protocol";
 
+export const diAccount = "ACME.Account";
+
+/**
+ * ACME Account model
+ *
+ * DI: ACME.Account
+ */
 export interface IAccount extends IBaseObject {
   status: AccountStatus;
   key: JsonWebKey;

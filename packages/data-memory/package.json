@@ -33,5 +33,9 @@
   "bugs": {
     "url": "https://github.com/PeculiarVentures/ts-acme/issues"
   },
-  "homepage": "https://github.com/PeculiarVentures/ts-acme#readme"
+  "homepage": "https://github.com/PeculiarVentures/ts-acme#readme",
+  "dependencies": {
+    "@peculiar/acme-data": "^0.0.0",
+    "tsyringe": "^4.2.0"
+  }
 }

@@ -5,8 +5,10 @@ import { ApiResponse } from "packages/client/src/base";
 import * as protocol from "@peculiar/acme-protocol";
 import { Crypto } from "@peculiar/webcrypto";
 import { cryptoProvider } from "@peculiar/acme-core";
+import { Account } from "@peculiar/acme-protocol";
 
 export function checkHeaders(res: ApiResponse<any>) {
+  console.log(res.headers.link);
   assert.equal(!!res.headers.link, true);
   assert.equal(!!res.headers.location, true);
 }
@@ -14,7 +16,17 @@ export function checkResAccount(res: any, status: number) {
   assert.equal(res.status, status);
 }
 
-export async function preparation(newAccount?: boolean) {
+export interface ClientWithoutAccountResult {
+  api: ApiClient;
+}
+export interface ClientWithAccountResult extends ClientWithoutAccountResult {
+  account: Account;
+}
+export type ClientResult = ClientWithoutAccountResult | ClientWithAccountResult;
+
+export async function createClient(newAccount: true): Promise<ClientWithAccountResult>;
+export async function createClient(newAccount?: false): Promise<ClientWithoutAccountResult>;
+export async function createClient(newAccount?: boolean): Promise<ClientResult> {
   let account: protocol.Account | undefined;
 
   const crypto = new Crypto();
@@ -28,8 +40,10 @@ export async function preparation(newAccount?: boolean) {
   };
   const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]);
 
-  const client = new ApiClient(keys, "https://acme-staging-v02.api.letsencrypt.org/directory", {
+  // const client = new ApiClient(keys, "https://acme-staging-v02.api.letsencrypt.org/directory", {
+  const client = new ApiClient(keys, "https://localhost:5003/directory", {
     fetch: fetch as any,
+    // debug: true,
   });
   await client.initialize();
 
@@ -42,7 +56,7 @@ export async function preparation(newAccount?: boolean) {
   }
 
   return {
-    client,
+    api: client,
     account,
   };
 }

@@ -4,7 +4,7 @@ import { HttpStatusCode } from "../web/http_status_code";
 
 export class AccountDoesNotExistError extends AcmeError {
   public constructor(
-    message?: string,
+    message = "Account does not exists",
     status: number = HttpStatusCode.badRequest,
     inner?: Error,
   ) {

@@ -54,7 +54,7 @@ export class JsonWebSignature {
     this.protected = this.write(data);
   }
 
-  public getPayload() {
+  public getPayload<T = any>(): T {
     return this.read(this.payload);
   }
 
@@ -84,7 +84,7 @@ export class JsonWebSignature {
     return Convert.ToBase64Url(bytes);
   }
 
-  public async verify(key: CryptoKey, crypto = cryptoProvider.get()) {
+  public async verify(key?: CryptoKey, crypto = cryptoProvider.get()) {
     // get alg from protected
     const attrs = this.getProtected();
     if (!attrs.alg) {
@@ -95,10 +95,40 @@ export class JsonWebSignature {
       throw new Error("Cannot convert JWA to WebCrypto algorithm");
     }
 
+    if (!key) {
+      const jwk = await this.getKey(crypto);
+      if (!jwk) {
+        throw new Error("Cannot get JWK key");
+      }
+      key = jwk;
+    }
+
     // verify
     const data = Convert.FromUtf8String(this.toStringSign());
     const ok = await crypto.subtle.verify(alg as any, key, this.getSignature(), data);
     return ok;
+  }
+
+  protected async getKey(crypto = cryptoProvider.get()) {
+    const attrs = this.getProtected();
+    if (!attrs.jwk) {
+      return null;
+    }
+
+    if (!attrs.alg) {
+      throw new Error("JWS.protected doesn't have required parameter 'alg'");
+    }
+    const signingAlg = JsonWebAlgorithmConverter.toAlgorithm(attrs.alg);
+    if (!signingAlg) {
+      throw new Error("Cannot convert JWA to WebCrypto algorithm");
+    }
+    const alg: any = { name: signingAlg.name };
+    if (alg.name === "ECDSA") {
+      alg.namedCurve = attrs.jwk.crv;
+    }
+
+    const key = await crypto.subtle.importKey("jwk", attrs.jwk, alg, true, ["verify"]);
+    return key;
   }
 
   public async sign(algorithm: JwsParams, key: CryptoKey, crypto = cryptoProvider.get()) {

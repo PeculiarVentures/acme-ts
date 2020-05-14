@@ -8,8 +8,6 @@ context("client", () => {
   const crypto = new Crypto();
   cryptoProvider.set(crypto);
 
-
-
   it("create user", async () => {
     const alg: RsaHashedKeyGenParams = {
       name: "RSASSA-PKCS1-v1_5",
@@ -21,14 +19,13 @@ context("client", () => {
 
     const client = new ApiClient(keys, "https://acme-staging-v02.api.letsencrypt.org/directory", {
       fetch: fetch as any,
+      debug: false,
     });
-    const dir = await client.initialize();
-    console.log(dir);
-    const account = await client.createAccount({
+    await client.initialize();
+    await client.createAccount({
       contact: ["mailto:microshine@mail.ru"],
       termsOfServiceAgreed: true,
     });
-    console.log(account);
   });
 
 }).timeout(5e3);

@@ -1,3 +1,11 @@
+
+export const diNonceRepository = "ACME.NonceRepository";
+
+/**
+ * ACME Nonce repository
+ *
+ * DI: ACME.NonceRepository
+ */
 export interface INonceRepository {
   /**
    * Creates random bytes

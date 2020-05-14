@@ -51,7 +51,7 @@ export class BaseClient {
   public constructor(options: ClientOptions = {}) {
     this.options = {
       crypto: cryptoProvider.get(),
-      debug: false,
+      debug: options.debug,
       defaultHash: "SHA-256",
       fetch: typeof fetch !== "undefined" ? fetch : undefined,
       ...options
@@ -66,6 +66,7 @@ export class BaseClient {
     //Log request
     if (this.options.debug) {
       console.log(`REQUEST ${params.method} ${url}`);
+      console.log((params as PostParams<T>).body)
     }
 
     const fetch = this.options.fetch;
@@ -91,7 +92,6 @@ export class BaseClient {
         header.jwk = await this.getCrypto().subtle.exportKey("jwk", postParams.kid);
       }
       // Create JWS
-      console.log(header);
       const jws = new JsonWebSignature({
         protected: header,
         payload: !postParams.method || postParams.method === "POST-as-GET"
@@ -126,7 +126,7 @@ export class BaseClient {
         const json = acmeResp.content.toJSON() as Error;
         throw new AcmeError(json.type, json.detail, acmeResp.status);
       } else {
-        throw new AcmeError(ErrorType.serverInternal, "Wrong Content-Type of ACME response. Must be application/problem-json. See inner exception for more details.", acmeResp.status, new globalThis.Error(acmeResp.content.toString()));
+        throw new AcmeError(ErrorType.serverInternal, "Wrong Content-Type of ACME response. Must be application/problem+json. See inner exception for more details.", acmeResp.status, new globalThis.Error(acmeResp.content.toString()));
       }
     }
 

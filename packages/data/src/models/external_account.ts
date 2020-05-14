@@ -1,5 +1,7 @@
 import { IBaseObject } from "./base";
 
+export const diExternalAccount = "ACME.ExternalAccount";
+
 export type ExternalAccountStatus =
   /**
    * External Account was created and ready for binding to ACME Account
@@ -16,6 +18,11 @@ export type ExternalAccountStatus =
   "valid" |
   "invalid";
 
+  /**
+   * ACME external account
+   *
+   * DI: ACME.ExternalAccount
+   */
 export interface IExternalAccount extends IBaseObject {
   key: string;
   expires?: Date;

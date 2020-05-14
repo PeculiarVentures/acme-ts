@@ -2,11 +2,15 @@
   "name": "root",
   "private": true,
   "devDependencies": {
+    "@types/body-parser": "^1.19.0",
+    "@types/express": "github:types/express",
     "@types/mocha": "^7.0.2",
     "@types/node-fetch": "^2.5.7",
-    "@typescript-eslint/eslint-plugin": "^2.31.0",
-    "@typescript-eslint/parser": "^2.31.0",
+    "@typescript-eslint/eslint-plugin": "^2.32.0",
+    "@typescript-eslint/parser": "^2.32.0",
+    "body-parser": "^1.19.0",
     "eslint": "^6.8.0",
+    "express": "^4.17.1",
     "lerna": "^3.20.2",
     "mocha": "^7.1.2",
     "rimraf": "^3.0.2",
@@ -49,7 +53,7 @@
       "ts"
     ],
     "spec": [
-      "test/**/*.ts"
+      "test/client/account.ts"
     ]
   }
 }
