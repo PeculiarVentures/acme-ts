@@ -15,9 +15,7 @@ export class NonceService extends BaseService implements INonceService {
   }
 
   public async create() {
-    const nonce = this.nonceRepository.create();
-
-    return nonce;
+    return await this.nonceRepository.create();
   }
 
   public async validate(nonce: string) {
