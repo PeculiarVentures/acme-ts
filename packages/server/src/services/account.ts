@@ -1,5 +1,5 @@
 import { inject, container, injectable } from "tsyringe";
-import { BaseService } from "./base";
+import { BaseService, diServerOptions, IServerOptions } from "./base";
 import { IAccountRepository, diAccountRepository, IAccount, Key, diAccount } from "@peculiar/acme-data";
 import { IExternalAccountService, diExternalAccountService, IAccountService } from "./types";
 import { AccountCreateParams } from "@peculiar/acme-protocol";
@@ -10,8 +10,9 @@ export class AccountService extends BaseService implements IAccountService {
 
   public constructor(
     @inject(diAccountRepository) protected accountRepository: IAccountRepository,
-    @inject(diExternalAccountService) protected externalAccountService: IExternalAccountService) {
-    super();
+    @inject(diExternalAccountService) protected externalAccountService: IExternalAccountService,
+    @inject(diServerOptions) options: IServerOptions) {
+    super(options);
   }
 
   public async create(key: JsonWebKey, params: AccountCreateParams) {

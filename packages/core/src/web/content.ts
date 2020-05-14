@@ -28,14 +28,14 @@ export class Content {
    *
    * @param json Initialize application/json content
    */
-  public constructor(json: object);
+  public constructor(json: object, formatted?: boolean);
   /**
    * Initialize type specified content
    * @param buffer Binary content
    * @param type Content type
    */
   public constructor(buffer: BufferSource, type: string | ContentType);
-  public constructor(data: any, type?: string | ContentType) {
+  public constructor(data: any, type?: boolean | string | ContentType) {
     if (typeof data === "string") {
       this.content = Convert.FromUtf8String(data);
       this.type = ContentType.pemCertificateChain;
@@ -47,9 +47,12 @@ export class Content {
         throw new TypeError("Cannot get required argument 'type'");
       }
       this.content = BufferSourceConverter.toArrayBuffer(data);
-      this.type = type;
+      this.type = type as string;
     } else {
-      this.content = Convert.FromUtf8String(JSON.stringify(data));
+      const json = type
+        ? JSON.stringify(data, null, "  ")
+        : JSON.stringify(data);
+      this.content = Convert.FromUtf8String(json);
       this.type = ContentType.json;
     }
   }

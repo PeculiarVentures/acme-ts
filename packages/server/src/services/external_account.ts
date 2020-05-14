@@ -1,7 +1,7 @@
 import { IExternalAccountService } from "./types";
 import { Key, IExternalAccount, IExternalAccountRepository, diExternalAccount, diExternalAccountRepository } from "@peculiar/acme-data";
 import { JsonWebSignature, cryptoProvider, MalformedError } from "@peculiar/acme-core";
-import { BaseService } from "./base";
+import { BaseService, diServerOptions, IServerOptions } from "./base";
 import { inject, container, injectable } from "tsyringe";
 import { Convert } from "pvtsutils";
 
@@ -10,9 +10,10 @@ export class ExternalAccountService extends BaseService implements IExternalAcco
 
   public constructor(
     @inject(diExternalAccountRepository)
-    protected externalAccountRepository: IExternalAccountRepository
+    protected externalAccountRepository: IExternalAccountRepository,
+    @inject(diServerOptions) options: IServerOptions,
   ) {
-    super();
+    super(options);
   }
 
   public async  create(account: any) {
@@ -59,8 +60,8 @@ export class ExternalAccountService extends BaseService implements IExternalAcco
   public async validate(accountKey: JsonWebKey, token: JsonWebSignature): Promise<IExternalAccount> {
     const header = token.getProtected();
 
-    const eabPayload = token.getPayload<JsonWebKey>();
     // TODO implement function to compare keys
+    // const eabPayload = token.getPayload<JsonWebKey>();
     // if (!eabPayload.Equals(accountKey)) {
     //   throw new MalformedError("Signed content in externalAccountBinding doesn't match to requirement"); // TODO check rfc error
     // }

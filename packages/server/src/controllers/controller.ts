@@ -1,8 +1,9 @@
-import { Request, Response, MalformedError, UnauthorizedError, IncorrectResponseError, JsonWebKey, cryptoProvider, BadNonceError, HttpStatusCode, Content, AcmeError, ErrorType, AccountDoesNotExistError } from "@peculiar/acme-core";
+import { Request, Response, MalformedError, UnauthorizedError, IncorrectResponseError, JsonWebKey, BadNonceError, HttpStatusCode, Content, AcmeError, ErrorType, AccountDoesNotExistError } from "@peculiar/acme-core";
 import { inject, injectable } from "tsyringe";
 import { diDirectoryService, IDirectoryService, diAccountService, IAccountService, INonceService, diNonceService, IConvertService, diConvertService } from "../services/types";
 import { IAccount } from "@peculiar/acme-data";
 import { AccountCreateParams } from "@peculiar/acme-protocol";
+import { BaseService, diServerOptions, IServerOptions } from "../services";
 
 export const diAcmeController = "ACME.AcmeController";
 /**
@@ -11,21 +12,16 @@ export const diAcmeController = "ACME.AcmeController";
  * DI: ACME.AcmeController
  */
 @injectable()
-export class AcmeController {
+export class AcmeController extends BaseService {
 
   public constructor(
     @inject(diDirectoryService) protected directoryService: IDirectoryService,
     @inject(diNonceService) protected nonceService: INonceService,
     @inject(diConvertService) protected convertService: IConvertService,
     @inject(diAccountService) protected accountService: IAccountService,
-  ) { }
-
-  protected getKeyIdentifier(kid: string) {
-    const res = /\/([^/?]+)\??[^/]*$/.exec(kid)?.[1];
-    if (!res) {
-      throw new MalformedError("Cannot get key identifier from the 'kid'");
-    }
-    return res;
+    @inject(diServerOptions) options: IServerOptions,
+  ) {
+    super(options)
   }
 
   protected async wrapAction(action: (response: Response) => Promise<void>, request: Request, useJwk = false) {
@@ -102,13 +98,13 @@ export class AcmeController {
     catch (e) {
       if (e instanceof AcmeError) {
         response.status = e.status;
-        response.content = new Content(e);
+        response.content = new Content(e, this.options.formattedResponse);
 
         // TODO Logger.Error(e);
       } else if (e) {
         response.status = HttpStatusCode.internalServerError;
         const error = new AcmeError(ErrorType.serverInternal, `Unexpected server error exception. ${e.message || e}`, HttpStatusCode.internalServerError, e);
-        response.content = new Content(error);
+        response.content = new Content(error, this.options.formattedResponse);
 
         // TODO Logger.Error(e);
       }
@@ -126,7 +122,7 @@ export class AcmeController {
   public async getDirectory(request: Request) {
     return this.wrapAction(async (response) => {
       const data = await this.directoryService.getDirectory();
-      response.content = new Content(data);
+      response.content = new Content(data, this.options.formattedResponse);
       response.status = 200; // Ok
     }, request);
   }
@@ -151,19 +147,19 @@ export class AcmeController {
         if (!account) {
           throw new AccountDoesNotExistError();
         }
-        response.content = new Content(this.convertService.toAccount(account));
+        response.content = new Content(this.convertService.toAccount(account), this.options.formattedResponse);
         response.status = HttpStatusCode.ok;
       }
       else {
         if (!account) {
           // Create new account
           account = await this.accountService.create(header.jwk!, params);
-          response.content = new Content(this.convertService.toAccount(account));
+          response.content = new Content(this.convertService.toAccount(account), this.options.formattedResponse);
           response.status = 201; // Created
         }
         else {
           // Existing account
-          response.content = new Content(this.convertService.toAccount(account));
+          response.content = new Content(this.convertService.toAccount(account), this.options.formattedResponse);
           response.status = 200; // Ok
         }
       }

@@ -1,4 +1,4 @@
-import { BaseService } from "./base";
+import { BaseService, diServerOptions, IServerOptions } from "./base";
 import { INonceService } from "./types";
 import { inject, injectable } from "tsyringe";
 import { INonceRepository, diNonceRepository } from "@peculiar/acme-data";
@@ -9,8 +9,9 @@ export class NonceService extends BaseService implements INonceService {
 
   public constructor(
     @inject(diNonceRepository) protected nonceRepository: INonceRepository,
+    @inject(diServerOptions) options: IServerOptions,
   ) {
-    super();
+    super(options);
   }
 
   public async create() {
