@@ -1,6 +1,10 @@
 {
   "name": "root",
   "private": true,
+  "license": "MIT",
+  "workspaces": [
+    "packages/*"
+  ],
   "devDependencies": {
     "@types/body-parser": "^1.19.0",
     "@types/express": "github:types/express",
@@ -19,12 +23,6 @@
     "typescript": "^3.8.3"
   },
   "dependencies": {
-    "@peculiar/acme-client": "file:packages/client",
-    "@peculiar/acme-core": "file:packages/core",
-    "@peculiar/acme-data": "file:packages/data",
-    "@peculiar/acme-data-memory": "file:packages/data-memory",
-    "@peculiar/acme-protocol": "file:packages/protocol",
-    "@peculiar/acme-server": "file:packages/server",
     "@peculiar/asn1-csr": "^2.0.3",
     "@peculiar/asn1-ecc": "^2.0.3",
     "@peculiar/asn1-rsa": "^2.0.3",
@@ -40,7 +38,7 @@
   "scripts": {
     "test": "mocha",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "build": "lerna run build",
+    "build": "lerna run build --since",
     "rebuild": "lerna run rebuild",
     "clear": "lerna run clear"
   },

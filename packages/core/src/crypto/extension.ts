@@ -11,6 +11,6 @@ export class Extension extends AsnData<AsnExtension>{
     super(raw, AsnExtension);
     this.type = this.asn.extnID;
     this.critical = this.asn.critical;
-    this.value = this.asn.extnValue;
+    this.value = this.asn.extnValue.buffer;
   }
 }
