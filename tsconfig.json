@@ -8,7 +8,8 @@
       "@peculiar/acme-data": ["./packages/data/src"],
       "@peculiar/acme-data-memory": ["./packages/data-memory/src"],
       "@peculiar/acme-protocol": ["./packages/protocol/src"],
-      "@peculiar/acme-server": ["./packages/server/src"]
+      "@peculiar/acme-server": ["./packages/server/src"],
+      "@peculiar/jose": ["./packages/jose/src"]
     }
   },
   "exclude": [

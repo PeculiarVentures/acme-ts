@@ -48,7 +48,7 @@ export async function createClient(newAccount?: boolean): Promise<ClientResult> 
   await client.initialize();
 
   if (newAccount) {
-    const res = await client.createAccount({
+    const res = await client.newAccount({
       contact: ["mailto:microshine@mail.ru"],
       termsOfServiceAgreed: true,
     });

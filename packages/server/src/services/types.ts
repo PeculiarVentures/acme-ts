@@ -1,7 +1,8 @@
 import * as protocol from "@peculiar/acme-protocol";
 import * as data from "@peculiar/acme-data";
 import { Key, IAccount, IExternalAccount } from "@peculiar/acme-data";
-import { JsonWebSignature } from "@peculiar/acme-core";
+import { JsonWebSignature } from "@peculiar/jose";
+import { AccountUpdateParams } from "@peculiar/acme-protocol";
 
 export const diConvertService = "ACME.ConvertService";
 
@@ -83,7 +84,7 @@ export interface IAccountService {
    * @param accountId Account identifier
    * @param contacts List of contacts
    */
-  update(accountId: Key, contacts: string[]): Promise<IAccount>;
+  update(accountId: Key, contacts: AccountUpdateParams): Promise<IAccount>;
 
   /**
    * Changes key for Account

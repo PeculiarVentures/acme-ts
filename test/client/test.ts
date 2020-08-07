@@ -22,7 +22,7 @@ context("client", () => {
       debug: false,
     });
     await client.initialize();
-    await client.createAccount({
+    await client.newAccount({
       contact: ["mailto:microshine@mail.ru"],
       termsOfServiceAgreed: true,
     });

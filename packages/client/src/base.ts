@@ -1,7 +1,8 @@
 import {
-  cryptoProvider, JsonWebSignature, JwsProtected, Response as AcmeResponse,
+  cryptoProvider, Response as AcmeResponse,
   Content, ContentType, AcmeError, ErrorType, HttpStatusCode, Headers,
 } from "@peculiar/acme-core";
+import {JsonWebSignature, JwsProtected, } from "@peculiar/jose";
 import { Error } from "@peculiar/acme-protocol";
 
 export interface ClientOptions {
@@ -97,7 +98,7 @@ export class BaseClient {
         payload: !postParams.method || postParams.method === "POST-as-GET"
           ? ""
           : postParams.body,
-      });
+      }, this.getCrypto());
       await jws.sign({ hash: postParams.hash || this.options.defaultHash, ...postParams.key.algorithm }, postParams.key, crypto);
       request.body = jws.toString();
       request.headers = {

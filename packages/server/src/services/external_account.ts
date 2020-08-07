@@ -1,9 +1,10 @@
 import { IExternalAccountService } from "./types";
 import { Key, IExternalAccount, IExternalAccountRepository, diExternalAccount, diExternalAccountRepository } from "@peculiar/acme-data";
-import { JsonWebSignature, cryptoProvider, MalformedError } from "@peculiar/acme-core";
+import { cryptoProvider, MalformedError } from "@peculiar/acme-core";
 import { BaseService, diServerOptions, IServerOptions } from "./base";
 import { inject, container, injectable } from "tsyringe";
 import { Convert } from "pvtsutils";
+import { JsonWebSignature } from "@peculiar/jose";
 
 @injectable()
 export class ExternalAccountService extends BaseService implements IExternalAccountService {

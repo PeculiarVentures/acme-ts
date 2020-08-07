@@ -2,8 +2,8 @@ import { inject, container, injectable } from "tsyringe";
 import { BaseService, diServerOptions, IServerOptions } from "./base";
 import { IAccountRepository, diAccountRepository, IAccount, Key, diAccount } from "@peculiar/acme-data";
 import { IExternalAccountService, diExternalAccountService, IAccountService } from "./types";
-import { AccountCreateParams } from "@peculiar/acme-protocol";
-import { AccountDoesNotExistError, MalformedError } from "@peculiar/acme-core";
+import { AccountCreateParams, AccountUpdateParams } from "@peculiar/acme-protocol";
+import { AccountDoesNotExistError, MalformedError, UnsupportedContactError, ArgumentNullError } from "@peculiar/acme-core";
 
 @injectable()
 export class AccountService extends BaseService implements IAccountService {
@@ -98,7 +98,6 @@ export class AccountService extends BaseService implements IAccountService {
     // Assign values
     account.status = "revoked";
 
-
     // Save changes
     account = await this.accountRepository.update(account);
 
@@ -107,20 +106,71 @@ export class AccountService extends BaseService implements IAccountService {
     // Return JSON
     return account;
   }
-  public async update(accountId: Key, contacts: string[]) {
+
+  public async update(accountId: Key, params: AccountUpdateParams) {
+    //#region Check arguments
+    if (!params) {
+      throw new MalformedError("Parameters is empty");
+    }
+    if (params.contact && !this.validateContacts(params.contact)) {
+      throw new UnsupportedContactError();
+    }
+    //#endregion
+
     // Get account
     let account = await this.getById(accountId);
 
     // Assign values
-    account.contacts = contacts;
+    this.onUpdateParams(account, params);
 
     // Save changes
     account = await this.accountRepository.update(account);
 
-    // TODO Logger.Info("Account {id} updated", account.Id);
-
     // Return JSON
     return account;
+  }
+
+  protected onUpdateParams(account: IAccount, params: AccountUpdateParams) {
+    if (params.contact) {
+      account.contacts = params.contact;
+    }
+  }
+
+  protected validateContacts(contacts: string[]) {
+    //#region Check arguments
+    if (contacts == null) {
+      throw new ArgumentNullError("contacts");
+    }
+    //#endregion
+
+    contacts.forEach(contact => {
+      try {
+        if (!this.onValidateContact(contact)) {
+          return false;
+        }
+      }
+      catch (error) {
+        //todo logger.error
+        return false;
+      }
+    });
+
+    return true;
+  }
+
+  protected onValidateContact(contact: string) {
+    return this.isMailto(contact);
+  }
+
+  protected isMailto(contact: string) {
+    try {
+      const url = new URL(contact);
+      return url.protocol == "mailto:";
+    }
+    catch (error) {
+      //todo logger.error
+      return false;
+    }
   }
 
   public async changeKey(accountId: Key, key: JsonWebKey) {

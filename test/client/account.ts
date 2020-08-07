@@ -31,7 +31,7 @@ context("Account Management", () => {
         // `termsOfServiceAgreed` in create account request
         return this.skip();
       }
-      await assert.rejects(client.api.createAccount({
+      await assert.rejects(client.api.newAccount({
         contact: ["mailto:microshine@mail.ru"],
         termsOfServiceAgreed: false,
       }), (err: AcmeError) => {
@@ -42,7 +42,7 @@ context("Account Management", () => {
     });
 
     it("Error: find not exist account", async () => {
-      await assert.rejects(client.api.createAccount({
+      await assert.rejects(client.api.newAccount({
         contact: ["mailto:microshine@mail.ru"],
         onlyReturnExisting: true,
       }), (err: AcmeError) => {
@@ -53,21 +53,21 @@ context("Account Management", () => {
     });
 
     it("Error: create account with unsupported contact", async () => {
-      await assert.rejects(client.api.createAccount({
+      await assert.rejects(client.api.newAccount({
         contact: ["mailt:microshine@mail.ru"],
         termsOfServiceAgreed: true,
       }), assertUnsupportedContact);
     });
 
     it("Error: create account with invalid contact", async () => {
-      await assert.rejects(client.api.createAccount({
+      await assert.rejects(client.api.newAccount({
         contact: ["mailto:micro shine"],
         termsOfServiceAgreed: true,
       }), assertUnsupportedContact);
     });
 
     it("create account without email", async () => {
-      const res = await client.api.createAccount({
+      const res = await client.api.newAccount({
         termsOfServiceAgreed: true,
       });
       checkHeaders(res);
@@ -75,7 +75,7 @@ context("Account Management", () => {
     });
 
     it("create account with email", async () => {
-      const res = await client.api.createAccount({
+      const res = await client.api.newAccount({
         contact: ["mailto:microshine@mail.ru"],
         termsOfServiceAgreed: true,
       });
@@ -93,7 +93,7 @@ context("Account Management", () => {
     });
 
     it("create account with the same key", async () => {
-      const res = await client.api.createAccount({
+      const res = await client.api.newAccount({
         contact: ["mailto:microshine2@mail.ru"],
         termsOfServiceAgreed: true,
       });
@@ -102,7 +102,7 @@ context("Account Management", () => {
     });
 
     it("finding an account", async () => {
-      const res = await client.api.createAccount({ onlyReturnExisting: true });
+      const res = await client.api.newAccount({ onlyReturnExisting: true });
       checkHeaders(res);
       checkResAccount(res, 200);
     });
@@ -135,7 +135,7 @@ context("Account Management", () => {
       assert.equal(!!res.headers.link, true);
       assert.equal(res.status, 200);
 
-      await assert.rejects(client.api.createAccount({
+      await assert.rejects(client.api.newAccount({
         termsOfServiceAgreed: true,
       }), (err: AcmeError) => {
         assert.equal([

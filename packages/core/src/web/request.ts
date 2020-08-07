@@ -1,4 +1,4 @@
-import { JsonWebSignature } from "../jose";
+import { JsonWebSignature } from "@peculiar/jose";
 
 export type RequestMethod = "GET" | "POST" | "HEAD";
 

@@ -1,8 +1,9 @@
-import { Request, Response, MalformedError, UnauthorizedError, IncorrectResponseError, JsonWebKey, BadNonceError, HttpStatusCode, Content, AcmeError, ErrorType, AccountDoesNotExistError } from "@peculiar/acme-core";
+import { Request, Response, MalformedError, UnauthorizedError, IncorrectResponseError, BadNonceError, HttpStatusCode, Content, AcmeError, ErrorType, AccountDoesNotExistError } from "@peculiar/acme-core";
+import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
 import { inject, injectable } from "tsyringe";
 import { diDirectoryService, IDirectoryService, diAccountService, IAccountService, INonceService, diNonceService, IConvertService, diConvertService } from "../services/types";
 import { IAccount } from "@peculiar/acme-data";
-import { AccountCreateParams } from "@peculiar/acme-protocol";
+import { AccountCreateParams, AccountUpdateParams, ChangeKey } from "@peculiar/acme-protocol";
 import { BaseService, diServerOptions, IServerOptions } from "../services";
 
 export const diAcmeController = "ACME.AcmeController";
@@ -20,8 +21,9 @@ export class AcmeController extends BaseService {
     @inject(diConvertService) protected convertService: IConvertService,
     @inject(diAccountService) protected accountService: IAccountService,
     @inject(diServerOptions) options: IServerOptions,
+    private crypto: Crypto,
   ) {
-    super(options)
+    super(options);
   }
 
   protected async wrapAction(action: (response: Response) => Promise<void>, request: Request, useJwk = false) {
@@ -68,7 +70,7 @@ export class AcmeController extends BaseService {
 
           account = await this.accountService.getById(this.getKeyIdentifier(header.kid));
 
-          const key = await new JsonWebKey(account.key).exportKey();
+          const key = await new JsonWebKey(account.key, this.crypto).exportKey();
           if (!token.verify(key)) {
             throw new UnauthorizedError("JWS signature is invalid");
           }
@@ -115,8 +117,72 @@ export class AcmeController extends BaseService {
     return response;
   }
 
-  public keyChange() {
-    // TODO Implement conflict status 409 and provide the URL of conflict account in the Location header field
+  public keyChange(request: Request) {
+    return this.wrapAction(async (response) => {
+      const reqProtected = request.body!.getProtected();
+
+      // Validate the POST request belongs to a currently active account, as described in Section 6.
+      const account = await this.getAccount(request);
+      const jws = request.body;
+      const key = new JsonWebKey(account.key, this.crypto);
+      if (!jws || jws && !jws.verify(key.getPublicKey())) {
+        throw new MalformedError();
+      }
+
+      // Check that the payload of the JWS is a well - formed JWS object(the "inner JWS").
+      const innerJWS = request.body!.getPayload<JsonWebSignature>();
+      const innerProtected = innerJWS.getProtected();
+
+      // Check that the JWS protected header of the inner JWS has a "jwk" field.
+      const jwkReq = innerProtected.jwk;
+      if (!jwkReq) {
+        throw new MalformedError("The inner JWS hasn't a 'jwk' field");
+      }
+      const jwk = new JsonWebKey(jwkReq, this.crypto);
+      // Check that the inner JWS verifies using the key in its "jwk" field.
+      if (!innerJWS.verify(jwk.getPublicKey())) {
+        throw new MalformedError("The inner JWT not verified");
+      }
+
+      // Check that the payload of the inner JWS is a well-formed keyChange object (as described above).
+      const param = innerJWS.tryGetPayload<ChangeKey>()
+      if (!param) {
+        throw new MalformedError("The payload of the inner JWS is not a well-formed keyChange object");
+      }
+
+      // Check that the "url" parameters of the inner and outer JWSs are the same.
+      if (reqProtected.url !== innerProtected.url) {
+        throw new MalformedError("The 'url' parameters of the inner and outer JWSs are not the same");
+      }
+
+      // Check that the "account" field of the keyChange object contains the URL for the account matching the old key (i.e., the "kid" field in the outer JWS).
+      if (reqProtected.kid !== param.account) {
+        throw new MalformedError("The 'account' field not contains the URL for the account matching the old key");
+      }
+
+      // Check that the "oldKey" field of the keyChange object is the same as the account key for the account in question.
+      const testAccount = await this.accountService.getByPublicKey(param.oldKey);
+      if (testAccount.id !== account.id) {
+        throw new MalformedError("The 'oldKey' is the not same as the account key");
+      }
+
+      // TODO Check that no account exists whose account key is the same as the key in the "jwk" header parameter of the inner JWS.
+      // in repository
+
+      try {
+        const updatedAccount = await this.accountService.changeKey(account.id, jwk);
+        response.content = new Content(this.convertService.toAccount(updatedAccount));
+        response.headers.location = `${this.options.baseAddress}acct/${updatedAccount.id}`;
+        response.status = 200; // Ok
+      }
+      catch (e) {
+        if (e.StatusCode === 409) {
+          const conflictAccount = await this.accountService.getByPublicKey(jwk);
+          response.headers.location = `${this.options.baseAddress}acct/${conflictAccount.id}`;
+        }
+        throw e;
+      }
+    }, request);
   }
 
   public async getDirectory(request: Request) {
@@ -137,7 +203,7 @@ export class AcmeController extends BaseService {
   }
 
   //#region Account management
-  public async createAccount(request: Request) {
+  public async newAccount(request: Request) {
     return this.wrapAction(async (response) => {
       const header = request.body!.getProtected();
       const params = request.body!.getPayload<AccountCreateParams>();
@@ -167,5 +233,64 @@ export class AcmeController extends BaseService {
       response.headers.location = `{Options.BaseAddress}/acct/{account.Id}`;
     }, request, true);
   }
+
+  protected async getAccount(request: Request) {
+    const header = request.body!.getProtected();
+
+    if (!header.kid) {
+      throw new MalformedError("Request has no kid");
+    }
+
+    const account = await this.accountService.getById(this.getIdFromLink(header.kid));
+
+    if (account.status === "deactivated") {
+      throw new UnauthorizedError("Account deactivated");
+    }
+    return account;
+  }
+
+  public getIdFromLink(url: string) {
+    const pattern = /\/(\\d+)$/g;
+    const match = pattern.exec(url);
+    if (!match) {
+      throw new MalformedError(`Cannot get Id from link ${url}`);
+    }
+
+    return +match[1];
+  }
+
+  public assertAccountStatus(account: IAccount) {
+    if (account.status === "deactivated") {
+      throw new UnauthorizedError("Account deactivated");
+    }
+  }
+
+  public postAccount(request: Request) {
+    return this.wrapAction(async (response) => {
+      const params = request.body!.getPayload<AccountUpdateParams>();
+
+      let account = await this.getAccount(request);
+      this.assertAccountStatus(account);
+
+      if (params.status) {
+        // Deactivate
+        if (params.status !== "deactivated") {
+          throw new MalformedError("Request paramter status must be 'deactivated'");
+        }
+
+        account = await this.accountService.deactivate(account.id);
+      }
+      else {
+        // Update
+        account = await this.accountService.update(account.id, params);
+      }
+
+      response.headers.location = `${this.options.baseAddress}acct/${account.id}`;
+      response.content = new Content(this.convertService.toAccount(account));
+    }, request, true);
+  }
   //#endregion
+
+
+
 }
