@@ -2,6 +2,8 @@ import { AuthorizationStatus } from "@peculiar/acme-protocol";
 import { Key, IBaseObject } from "./base";
 import { IIdentifier } from "./identifier";
 
+export const diAuthorization = "ACME.Models.Authorization";
+
 export interface IAuthorization extends IBaseObject {
   /**
    * The identifier that the account is authorized to represent.

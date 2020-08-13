@@ -7,6 +7,8 @@ export interface IOrderList {
   next?: any;
 }
 
+export const diOrderRepository = "ACME.OrderRepository";
+
 export interface IOrderRepository extends IBaseRepository<IOrder> {
   findByThumbprint(thumbprint: string): Promise<IOrder | null>;
   lastByIdentifier(accountId: Key, identifier: string): Promise<IOrder | null>;

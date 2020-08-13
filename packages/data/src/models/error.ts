@@ -6,6 +6,8 @@ export interface ISubProblem {
   detail: string;
 }
 
+export const diError = "ACME.Models.Error"
+
 export interface IError extends ISubProblem, IBaseObject {
   subproblems?: ISubProblem[];
 }

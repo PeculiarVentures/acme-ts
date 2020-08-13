@@ -1,7 +1,7 @@
 import { IBaseObject } from "./base";
 import { AccountStatus } from "@peculiar/acme-protocol";
 
-export const diAccount = "ACME.Account";
+export const diAccount = "ACME.Models.Account";
 
 /**
  * ACME Account model

@@ -1,5 +1,9 @@
 import { OrderStatus } from "@peculiar/acme-protocol";
 import { IBaseObject, Key } from "./base";
+import { IError } from "./error";
+import { ICertificate } from "./certificate";
+
+export const diOrder = "ACME.Models.Order";
 
 export interface IOrder extends IBaseObject {
   /**
@@ -28,17 +32,17 @@ export interface IOrder extends IBaseObject {
   /**
    * The requested value of the notAfter field in the certificate.
    */
-  notAfter?: Date;
+  notAfter: Date;
 
   /**
    * The error that occurred while processing the order, if any.
    */
-  errorId?: Key;
+  error?: IError;
 
   /**
-   * Enrolled certificate id
+   * Enrolled certificate
    */
-  certificateId: Key;
+  certificate?: ICertificate;
 
   accountId?: Key;
 }

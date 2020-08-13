@@ -1,6 +1,7 @@
 ﻿import { ChallengeStatus } from "@peculiar/acme-protocol";
 import { IBaseObject, Key } from "./base";
 
+export const diChallenge = "ACME.Models.Challenge";
 
 export interface IChallenge extends IBaseObject {
     /**
