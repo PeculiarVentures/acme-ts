@@ -77,14 +77,14 @@ export interface OrderCreateParams {
    *
    * NOTE: in the date format defined in RFC3339
    */
-  notBefore?: string;
+  notBefore: Date;
 
   /**
    * The requested value of the notAfter field in the certificate.
    *
    * NOTE: in the date format defined in RFC3339
    */
-  notAfter?: string;
+  notAfter: Date;
 
 }
 
@@ -114,12 +114,12 @@ export interface RevokeCertificateParams {
   /**
    * The certificate to be revoked, in the base64url-encoded version of the DER format.
    */
-  certificate?: string;
+  certificate: string;
 
   /**
    * One of the revocation reasonCodes to be used when generating OCSP responses and CRLs.
    */
-  reason?: number;
+  reason: number;
 }
 
 export interface Finalize {

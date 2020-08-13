@@ -25,7 +25,7 @@ export class JsonWebKey implements globalThis.JsonWebKey {
   public oth?: RsaOtherPrimesInfo[];
   public use?: string;
 
-  public constructor(params: globalThis.JsonWebKey = {}, private cryptoProvider: Crypto) {
+  public constructor(private cryptoProvider: Crypto, params: globalThis.JsonWebKey = {}) {
     Object.assign(this, params);
   }
 
@@ -104,9 +104,9 @@ export class JsonWebKey implements globalThis.JsonWebKey {
     }
   }
 
-  private digest(json: string, alg: string) {
+  public digest(json: string, alg: string) {
     let result = new Uint8Array;
-    crypto.subtle.digest(
+    this.cryptoProvider.subtle.digest(
       {
         name: alg,
       },
@@ -115,7 +115,7 @@ export class JsonWebKey implements globalThis.JsonWebKey {
       .then(function (hash) {
         result = new Uint8Array(hash);
       });
-    return result;
+    return pvtsutils.Convert.ToUtf8String(result);
   }
 
   public getPublicKey() {
@@ -130,7 +130,7 @@ export class JsonWebKey implements globalThis.JsonWebKey {
 
   public getEcdsaKey() {
     let result = new CryptoKey();
-    crypto.subtle.importKey(
+    this.cryptoProvider.subtle.importKey(
       "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
       {   //this is an example jwk key, other key types are Uint8Array objects
         kty: this.kty,
@@ -155,28 +155,28 @@ export class JsonWebKey implements globalThis.JsonWebKey {
 
   public getRsaKey() {
     let result = new CryptoKey();
-      crypto.subtle.importKey(
-        "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
-        {   //this is an example jwk key, other key types are Uint8Array objects
-          kty: this.kty,
-          e: this.e,
-          n: this.n,
-          alg: this.alg,
-          ext: this.ext,
+    this.cryptoProvider.subtle.importKey(
+      "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
+      {   //this is an example jwk key, other key types are Uint8Array objects
+        kty: this.kty,
+        e: this.e,
+        n: this.n,
+        alg: this.alg,
+        ext: this.ext,
 
-        },
-        {   //these are the algorithm options
-          name: "RSASSA-PKCS1-v1_5",
-          hash: { name: "SHA-256" }, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
-        },
-        false, //whether the key is extractable (i.e. can be used in exportKey)
-        ["verify"] //"verify" for public key import, "sign" for private key imports
-      )
-        .then(function (publicKey) {
-          //returns a publicKey (or privateKey if you are importing a private key)
-          result = publicKey;
-        });
-      return result;
+      },
+      {   //these are the algorithm options
+        name: "RSASSA-PKCS1-v1_5",
+        hash: { name: "SHA-256" }, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
+      },
+      false, //whether the key is extractable (i.e. can be used in exportKey)
+      ["verify"] //"verify" for public key import, "sign" for private key imports
+    )
+      .then(function (publicKey) {
+        //returns a publicKey (or privateKey if you are importing a private key)
+        result = publicKey;
+      });
+    return result;
   }
 }
 

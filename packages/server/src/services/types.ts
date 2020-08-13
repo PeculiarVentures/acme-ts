@@ -1,8 +1,7 @@
 import * as protocol from "@peculiar/acme-protocol";
 import * as data from "@peculiar/acme-data";
-import { Key, IAccount, IExternalAccount } from "@peculiar/acme-data";
 import { JsonWebSignature } from "@peculiar/jose";
-import { AccountUpdateParams } from "@peculiar/acme-protocol";
+import { QueryParams } from "@peculiar/acme-core";
 
 export const diConvertService = "ACME.ConvertService";
 
@@ -12,7 +11,8 @@ export const diConvertService = "ACME.ConvertService";
  * DI: ACME.ConvertService
  */
 export interface IConvertService {
-  toAccount(account: IAccount): protocol.Account;
+  toAccount(account: data.IAccount): protocol.Account;
+  toOrder(account: data.IOrder): protocol.Account;
 }
 
 export const diDirectoryService = "ACME.DirectoryService";
@@ -53,45 +53,45 @@ export interface IAccountService {
    *
    * @param accountId Account identifier
    */
-  deactivate(accountId: Key): Promise<IAccount>;
+  deactivate(accountId: data.Key): Promise<data.IAccount>;
 
   /**
   * Returns Account by specified Id
   * @param accountId
   */
-  getById(accountId: Key): Promise<IAccount>;
+  getById(accountId: data.Key): Promise<data.IAccount>;
 
   /**
    * Returns Account by specified JWK
    * @param key JSO Web Key
    */
-  getByPublicKey(key: JsonWebKey): Promise<IAccount>;
+  getByPublicKey(key: JsonWebKey): Promise<data.IAccount>;
 
   /**
    * Returns Account by specified JWK
    * @param key JSON web key
    */
-  findByPublicKey(key: JsonWebKey): Promise<IAccount | null>;
+  findByPublicKey(key: JsonWebKey): Promise<data.IAccount | null>;
 
   /**
    * Revokes an Account
    * @param accountId Account identifier
    */
-  revoke(accountId: Key): Promise<IAccount>;
+  revoke(accountId: data.Key): Promise<data.IAccount>;
 
   /**
    * Updates an Account
    * @param accountId Account identifier
    * @param contacts List of contacts
    */
-  update(accountId: Key, contacts: AccountUpdateParams): Promise<IAccount>;
+  update(accountId: data.Key, contacts: protocol.AccountUpdateParams): Promise<data.IAccount>;
 
   /**
    * Changes key for Account
    * @param accountId Account identifier
    * @param key A new key of Account
    */
-  changeKey(accountId: Key, key: JsonWebKey): Promise<IAccount>;
+  changeKey(accountId: data.Key, key: JsonWebKey): Promise<data.IAccount>;
 }
 
 export const diExternalAccountService = "ACME.ExternalAccountService";
@@ -100,8 +100,114 @@ export const diExternalAccountService = "ACME.ExternalAccountService";
  * DI: ACME.ExternalAccountService
  */
 export interface IExternalAccountService {
-  create(account: any): Promise<IExternalAccount>;
-  getById(id: Key): Promise<IExternalAccount>;
-  getByUrl(url: string): Promise<IExternalAccount>;
-  validate(accountKey: JsonWebKey, token: JsonWebSignature): Promise<IExternalAccount>;
+  create(account: any): Promise<data.IExternalAccount>;
+  getById(id: data.Key): Promise<data.IExternalAccount>;
+  getByUrl(url: string): Promise<data.IExternalAccount>;
+  validate(accountKey: JsonWebKey, token: JsonWebSignature): Promise<data.IExternalAccount>;
+}
+
+export const diAuthorizationService = "ACME.AuthorizationService";
+
+export interface IAuthorizationService {
+  /**
+   * Returns Authorization by specified Id
+   * @param accountId Account identifier
+   * @param authzId Authorization identifier
+   */
+  getById(accountId: data.Key, authzId: data.Key): Promise<data.IAuthorization>;
+
+  /**
+   * Returns actual Authorization by specified Id
+   * @param accountId Account identifier
+   * @param identifier Authorization identifier
+   */
+  getActual(accountId: data.Key, identifier: data.IIdentifier): Promise<data.IAuthorization>;
+
+  /**
+   * Creates new authorization
+   * @param accountId Account identifier
+   * @param identifier Authorization identifier
+   */
+  create(accountId: data.Key, identifier: data.IIdentifier): Promise<data.IAuthorization>;
+
+  /**
+   * Refreshes status an Authorization
+   * @param IAuthorization Authorization
+   */
+  refreshStatus(item: data.IAuthorization): Promise<data.IAuthorization>;
+}
+
+export const diCertificateEnrollmentService = "ACME.CertificateEnrollmentService";
+
+export interface ICertificateEnrollmentService {
+  /**
+   * Enrolls certificate
+   * @param order Order
+   * @param request PKCS10 request
+   */
+  enroll(order: data.IOrder, request: ArrayBuffer): Promise<ArrayBuffer>;
+
+  /**
+   * Revokes certificate
+   * @param order Order
+   * @param reason Revoke reason
+   */
+  revoke(order: data.IOrder, reason: protocol.RevokeReason): Promise<void>;
+}
+
+export const diOrderService = "ACME.OrderService";
+
+/**
+ * DI: ACME.OrderService
+ */
+export interface IOrderService {
+  /**
+   * Creates new Order
+   * @param accountId Account identifier
+   * @param params Params to create a new Order
+   */
+  create(accountId: data.Key, params: protocol.OrderCreateParams): Promise<data.IOrder>;
+
+  /**
+   * Returns Orders list by Account specific id
+   * @param accountId specific id
+   * @param query Query params
+   */
+  getList(accountId: data.Key, query: QueryParams): Promise<data.IOrderList>;
+
+  /**
+   * Returns Order by specified Id
+   * @param accountId Account identifier
+   * @param id Order identifier
+   */
+  getById(accountId: data.Key, id: data.Key): Promise<data.IOrder>;
+
+  /**
+   * Returns actual Order
+   * @param accountId Account identifier
+   * @param params
+   */
+  getActual(accountId: data.Key, params: protocol.OrderCreateParams): Promise<data.IOrder | null>;
+
+  /**
+   * Enrolls certificate
+   * @param accountId Account specific id
+   * @param orderId Order specific id
+   * @param params Params to finalize order
+   */
+  enrollCertificate(accountId: number, orderId: number, params: protocol.Finalize): Promise<data.IOrder>;
+
+  /**
+   * Returns chain for Certificate
+   * @param accountId Account specific id
+   * @param param Thumbprint of Certificate
+   */
+  getCertificate(accountId: data.Key, param: string | ArrayBuffer): Promise<data.ICertificate[]>;
+
+  /**
+   * Revokes Certificate
+   * @param accountId Account identifier
+   * @param params Params to revoke certificate
+   */
+  revokeCertificate(accountId: data.Key | JsonWebKey, params: protocol.RevokeCertificateParams): Promise<void>;
 }

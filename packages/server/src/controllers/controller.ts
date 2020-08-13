@@ -1,9 +1,9 @@
 import { Request, Response, MalformedError, UnauthorizedError, IncorrectResponseError, BadNonceError, HttpStatusCode, Content, AcmeError, ErrorType, AccountDoesNotExistError } from "@peculiar/acme-core";
 import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
 import { inject, injectable } from "tsyringe";
-import { diDirectoryService, IDirectoryService, diAccountService, IAccountService, INonceService, diNonceService, IConvertService, diConvertService } from "../services/types";
+import { diDirectoryService, IDirectoryService, diAccountService, IAccountService, INonceService, diNonceService, IConvertService, diConvertService, IOrderService, diOrderService } from "../services/types";
 import { IAccount } from "@peculiar/acme-data";
-import { AccountCreateParams, AccountUpdateParams, ChangeKey } from "@peculiar/acme-protocol";
+import { AccountCreateParams, AccountUpdateParams, ChangeKey, OrderCreateParams, Finalize } from "@peculiar/acme-protocol";
 import { BaseService, diServerOptions, IServerOptions } from "../services";
 
 export const diAcmeController = "ACME.AcmeController";
@@ -20,6 +20,7 @@ export class AcmeController extends BaseService {
     @inject(diNonceService) protected nonceService: INonceService,
     @inject(diConvertService) protected convertService: IConvertService,
     @inject(diAccountService) protected accountService: IAccountService,
+    @inject(diOrderService) protected orderService: IOrderService,
     @inject(diServerOptions) options: IServerOptions,
     private crypto: Crypto,
   ) {
@@ -38,13 +39,13 @@ export class AcmeController extends BaseService {
 
         // Parse JWT
         const token = request.body;
-        if (token == null) {
+        if (!token) {
           throw new MalformedError("JSON Web Token is empty");
         }
 
         const header = token.getProtected();
 
-        if (header.url == null) {
+        if (!header.url) {
           throw new UnauthorizedError("The JWS header MUST have 'url' field");
         }
 
@@ -70,7 +71,7 @@ export class AcmeController extends BaseService {
 
           account = await this.accountService.getById(this.getKeyIdentifier(header.kid));
 
-          const key = await new JsonWebKey(account.key, this.crypto).exportKey();
+          const key = await new JsonWebKey(this.crypto, account.key).exportKey();
           if (!token.verify(key)) {
             throw new UnauthorizedError("JWS signature is invalid");
           }
@@ -124,7 +125,7 @@ export class AcmeController extends BaseService {
       // Validate the POST request belongs to a currently active account, as described in Section 6.
       const account = await this.getAccount(request);
       const jws = request.body;
-      const key = new JsonWebKey(account.key, this.crypto);
+      const key = new JsonWebKey(this.crypto, account.key);
       if (!jws || jws && !jws.verify(key.getPublicKey())) {
         throw new MalformedError();
       }
@@ -138,14 +139,14 @@ export class AcmeController extends BaseService {
       if (!jwkReq) {
         throw new MalformedError("The inner JWS hasn't a 'jwk' field");
       }
-      const jwk = new JsonWebKey(jwkReq, this.crypto);
+      const jwk = new JsonWebKey(this.crypto, jwkReq);
       // Check that the inner JWS verifies using the key in its "jwk" field.
       if (!innerJWS.verify(jwk.getPublicKey())) {
         throw new MalformedError("The inner JWT not verified");
       }
 
       // Check that the payload of the inner JWS is a well-formed keyChange object (as described above).
-      const param = innerJWS.tryGetPayload<ChangeKey>()
+      const param = innerJWS.tryGetPayload<ChangeKey>();
       if (!param) {
         throw new MalformedError("The payload of the inner JWS is not a well-formed keyChange object");
       }
@@ -291,6 +292,104 @@ export class AcmeController extends BaseService {
   }
   //#endregion
 
+  //#region Order management
+  public CreateOrder(request: Request) {
+    return this.wrapAction(async (response) => {
+      // get account
+      const account = await this.getAccount(request);
 
+      // get params
+      const params = request.body!.getPayload<OrderCreateParams>();
+
+      // get order
+      let order = await this.orderService.getActual(account.id, params);
+      if (!order) {
+        // create order
+        order = await this.orderService.create(account.id, params);
+        response.status = 201; // Created
+      }
+
+      // add headers
+      response.headers.location = new URL(`order/${order.id}`, this.options.baseAddress).toString();
+
+      // convert to JSON
+      response.content = new Content(this.convertService.toOrder(order), this.options.formattedResponse);
+    }, request);
+  }
+
+  public PostOrder(request: Request, orderId: number) {
+    return this.wrapAction(async (response) => {
+      // get account
+      const account = await this.getAccount(request);
+
+      // get order
+      const order = await this.orderService.getById(account.id, orderId);
+
+      // add headers
+      response.headers.location = new URL(`order/${order.id}`, this.options.baseAddress).toString();
+
+      // convert to JSON
+      response.content = new Content(this.convertService.toOrder(order), this.options.formattedResponse);
+    }, request);
+  }
+
+  // public PostOrders(request: Request) {
+  //   return this.wrapAction(async (response) => {
+  //     // get account
+  //     const account = await this.getAccount(request);
+
+  //     // get orders
+  //     const params = request.queryParams;
+  //     const orderList = await this.orderService.getList(account.id, params);
+
+  //     // Create query link
+  //     string addingString = null;
+  //     if (params.Count > 0) {
+  //       // foreach (var item in params)
+  //       // {
+  //       //     if (item.Key != "cursor")
+  //       //     {
+  //       //         foreach (var value in item.Value)
+  //       //         {
+  //       //             addingString += $"&{item.Key}={value}";
+  //       //         }
+  //       //     }
+  //       // }
+  //     }
+
+  //     // Add links
+  //     const link = `${this.options.baseAddress}orders`;
+  //     let page = 0;
+  //     if (params.ContainsKey("cursor")) {
+  //       page = int.Parse(params["cursor"].FirstOrDefault());
+  //     }
+  //     if (page > 0) {
+  //       response.headers.link?.push(new  LinkHeader(`${link}?cursor=${page - 1}${addingString}`, new Web.Http.LinkHeaderItem("rel", "previous", true)));
+  //     }
+  //     if (orderList.nextPage) {
+  //       response.headers.link?.push(new LinkHeader(`${link}?cursor=${page + 1}${addingString}`, new Web.Http.LinkHeaderItem("rel", "next", true)));
+  //     }
+
+  //     response.content = new Content(this.convertService.toOrderList(orderList), this.options.formattedResponse);
+  //   }, request);
+  // }
+
+  /// <inheritdoc/>
+
+  public FinalizeOrder(request: Request, orderId: number) {
+    return this.wrapAction(async (response) => {
+      // get account
+      const account = await this.getAccount(request);
+
+      // enroll certificate
+      const params = request.body!.getPayload<Finalize>();
+      const order = await this.orderService.enrollCertificate(account.id, orderId, params);
+
+      // add headers
+      response.headers.location = new URL(`order/${order.id}`, this.options.baseAddress).toString();
+      response.content = new Content(this.convertService.toOrder(order), this.options.formattedResponse);
+    }, request);
+  }
+  //#endregion
 
 }
