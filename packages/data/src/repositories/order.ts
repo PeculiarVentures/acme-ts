@@ -4,7 +4,7 @@ import { QueryParams } from "@peculiar/acme-core";
 
 export interface IOrderList {
   items: IOrder[];
-  next?: any;
+  next: boolean;
 }
 
 export const diOrderRepository = "ACME.OrderRepository";
