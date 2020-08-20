@@ -9,6 +9,7 @@
       "@peculiar/acme-data-memory": ["./packages/data-memory/src"],
       "@peculiar/acme-protocol": ["./packages/protocol/src"],
       "@peculiar/acme-server": ["./packages/server/src"],
+      "@peculiar/acme-test-server": ["./packages/test-server/src"],
       "@peculiar/jose": ["./packages/jose/src"]
     }
   },

@@ -19,32 +19,6 @@ npm install -g yarn
 
 ### Initialization
 
-Git and Lerna
-```ts
-git init
-lerna init
-```
-
-Add to lerna.json
-```ts
-{
-  "npmClient": "yarn",
-  "packages": [
-    "packages/*"
-  ],
-  "version": "0.0.0",
-  "useWorkspaces": true
-}
-```
-
-Add to package.json
-```ts
-"workspaces": [
-    "packages/*"
-  ],
-```
-
-Yarn
 ```ts
 yarn
 ```

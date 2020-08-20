@@ -1,7 +1,8 @@
-import { DependencyContainer } from "tsyringe";
+import { DependencyContainer, injectable } from "tsyringe";
 import * as models from "./models";
 import * as repository from "./repositories";
 
+@injectable()
 export class Empty {
 
 }

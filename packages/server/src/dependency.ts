@@ -2,6 +2,7 @@ import { DependencyContainer } from "tsyringe";
 import * as types from "./services/types";
 import * as services from "./services";
 import { AcmeController, diAcmeController } from "./controllers";
+import { Empty } from "@peculiar/acme-data";
 
 export class DependencyInjection {
   public static register(container: DependencyContainer, options: services.IServerOptions) {
@@ -14,6 +15,8 @@ export class DependencyInjection {
       .register(types.diExternalAccountService, services.ExternalAccountService)
       .register(types.diAuthorizationService, services.AuthorizationService)
       .register(types.diChallengeService, services.ChallengeService)
+      .register(types.diOrderService, services.OrderService)
+      .register(types.diCertificateEnrollmentService, Empty)
       .register(diAcmeController, AcmeController);
   }
 }
