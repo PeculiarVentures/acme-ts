@@ -7,8 +7,8 @@ export class OrderAuthorizationRepository extends BaseRepository<IOrderAuthoriza
     return this.items.filter(o => o.orderId === orderId) || null;
   }
 
-  public async findByAuthorization(authzId: number) {
-    return this.items.filter(o => o.authorizationId === authzId) || null;
+  public async findByAuthorization(authId: number) {
+    return this.items.filter(o => o.authorizationId === authId) || null;
   }
 
 
