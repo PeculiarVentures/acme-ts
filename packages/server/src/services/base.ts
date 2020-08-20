@@ -13,6 +13,9 @@ export interface IServerOptions {
   cryptoProvider: Crypto;
   hashAlgorithm: string;
   ordersPageSize: number;
+  expireAuthorizationDays: number;
+  downloadCertificateFormat: "PemCertificateChain" | "PkixCert" | "Pkcs7Mime";
+  debugMode: boolean;
 }
 
 export class BaseService {
