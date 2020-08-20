@@ -24,3 +24,7 @@ export function orderAuthorization() {
 export function certificate() {
   return container.resolve<data.ICertificate>(data.diCertificate);
 }
+
+export function challenge() {
+  return container.resolve<data.IChallenge>(data.diChallenge);
+}

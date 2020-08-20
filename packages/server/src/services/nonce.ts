@@ -24,7 +24,7 @@ export class NonceService extends BaseService implements INonceService {
     {
         throw new BadNonceError();
     }
-    this.nonceRepository.remove(nonce);
+    await this.nonceRepository.remove(nonce);
   }
 
 }

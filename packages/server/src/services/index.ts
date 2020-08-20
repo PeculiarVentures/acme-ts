@@ -1,4 +1,6 @@
 export * from "./account";
+export * from "./authorization";
+export * from "./challenge";
 export * from "./base";
 export * from "./convert";
 export * from "./directory";

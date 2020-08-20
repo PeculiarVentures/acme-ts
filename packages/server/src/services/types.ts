@@ -11,8 +11,12 @@ export const diConvertService = "ACME.ConvertService";
  * DI: ACME.ConvertService
  */
 export interface IConvertService {
-  toAccount(account: data.IAccount): protocol.Account;
-  toOrder(account: data.IOrder): protocol.Account;
+  toAccount(account: data.IAccount): Promise<protocol.Account>;
+  toOrder(order: data.IOrder): Promise<protocol.Order>;
+  toOrderList(order: data.IOrder[]): Promise<protocol.OrderList>;
+  toAuthorization(auth: data.IAuthorization): Promise<protocol.Authorization>;
+  toChallenge(challenge: data.IChallenge): Promise<protocol.Challenge>;
+  toError(error: data.IError): Promise<protocol.Error>;
 }
 
 export const diDirectoryService = "ACME.DirectoryService";
@@ -112,16 +116,16 @@ export interface IAuthorizationService {
   /**
    * Returns Authorization by specified Id
    * @param accountId Account identifier
-   * @param authzId Authorization identifier
+   * @param authId Authorization identifier
    */
-  getById(accountId: data.Key, authzId: data.Key): Promise<data.IAuthorization>;
+  getById(accountId: data.Key, authId: data.Key): Promise<data.IAuthorization>;
 
   /**
    * Returns actual Authorization by specified Id
    * @param accountId Account identifier
    * @param identifier Authorization identifier
    */
-  getActual(accountId: data.Key, identifier: data.IIdentifier): Promise<data.IAuthorization>;
+  getActual(accountId: data.Key, identifier: data.IIdentifier): Promise<data.IAuthorization | null>;
 
   /**
    * Creates new authorization
@@ -210,4 +214,33 @@ export interface IOrderService {
    * @param params Params to revoke certificate
    */
   revokeCertificate(accountId: data.Key | JsonWebKey, params: protocol.RevokeCertificateParams): Promise<void>;
+}
+
+export const diChallengeService = "ACME.ChallengeService";
+
+export interface IChallengeService {
+  /**
+   * Returns Challenge by identifier
+   * @param id Identifier
+   */
+  getById(id: data.Key): Promise<data.IChallenge>;
+
+  /**
+   * Validates a challenge
+   * @param challenge Challenge
+   */
+  validate(challenge: data.IChallenge): Promise<void>;
+
+  /**
+   * Creates new Challenge
+   * @param authId The identifier of Authorization
+   * @param type THe type of Challenge
+   */
+  create(authId: data.Key, type: string): Promise<data.IChallenge>;
+
+  /**
+   * Returns array of Challenge
+   * @param id The identifier of Authorization
+   */
+  getByAuthorization(id: data.Key): Promise<data.IChallenge[]>;
 }

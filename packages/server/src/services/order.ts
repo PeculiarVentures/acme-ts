@@ -53,11 +53,9 @@ export class OrderService extends BaseService implements types.IOrderService {
   }
 
   public async create(accountId: number, params: protocol.OrderCreateParams) {
-    //#region Check arguments;
     if (!params) {
       throw new core.ArgumentNullError();
     }
-    //#endregion
 
     // create order
     let order = container.resolve<data.IOrder>(data.diOrder);
@@ -119,22 +117,22 @@ export class OrderService extends BaseService implements types.IOrderService {
     }
     for (const identifier of params.identifiers) {
       // get actual or create new authorization
-      let authz = await this.authorizationService.getActual(order.accountId, identifier);
-      if (!authz) {
-        authz = ModelFabric.authorization();
-        authz.accountId = order.accountId;
-        authz.identifier = identifier;
+      let auth = await this.authorizationService.getActual(order.accountId, identifier);
+      if (!auth) {
+        auth = ModelFabric.authorization();
+        auth.accountId = order.accountId;
+        auth.identifier = identifier;
       }
 
       // create order authorization
-      const orderAuthz = ModelFabric.orderAuthorization();
-      orderAuthz.orderId = order.id;
-      orderAuthz.authorizationId = authz.id;
-      await this.orderAuthorizationRepository.add(orderAuthz);
+      const orderAuth = ModelFabric.orderAuthorization();
+      orderAuth.orderId = order.id;
+      orderAuth.authorizationId = auth.id;
+      await this.orderAuthorizationRepository.add(orderAuth);
 
       // check expires
-      if (authz.expires) {
-        listDate.push(authz.expires);
+      if (auth.expires) {
+        listDate.push(auth.expires);
       }
     }
     // set min expiration date from authorizations
@@ -166,11 +164,9 @@ export class OrderService extends BaseService implements types.IOrderService {
   }
 
   public async getActual(accountId: number, params: protocol.OrderCreateParams) {
-    //#region Check arguments
     if (!params) {
       throw new core.ArgumentNullError();
     }
-    //#endregion
 
     const order = await this.onGetActualCheckBefore(params, accountId);
 
@@ -189,7 +185,7 @@ export class OrderService extends BaseService implements types.IOrderService {
         const authorizations = await Promise.all(orderAuthorization.map(o => this.authorizationService.getById(accountId, o.authorizationId)));
 
         if (order.status === "pending") {
-          // Check Authz statuses
+          // Check Auth statuses
           if (!authorizations.find(o => o.status === "pending"
             || o.status === "valid")) {
             order.status = "invalid";
@@ -218,11 +214,9 @@ export class OrderService extends BaseService implements types.IOrderService {
   }
 
   public async enrollCertificate(accountId: number, orderId: number, params: protocol.Finalize) {
-    //#region Check arguments;
     if (!params) {
       throw new core.ArgumentNullError();
     }
-    //#endregion
 
     const order = await this.getById(accountId, orderId);
 
@@ -322,7 +316,7 @@ export class OrderService extends BaseService implements types.IOrderService {
       const order = await this.getByCertificate(key, x509);
 
       // revoke
-      await this.revCertificate(order, params.reason);
+      await this._revokeCertificate(order, params.reason);
     } else {
       // var x509 = new X509Certificate2(Base64Url.Decode(params.certificate));
       throw new core.MalformedError(`Not implemented method`);
@@ -338,7 +332,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     }
   }
 
-  private async revCertificate(order: data.IOrder, reason: protocol.RevokeReason): Promise<void> {
+  private async _revokeCertificate(order: data.IOrder, reason: protocol.RevokeReason): Promise<void> {
     // revoke
     await this.certificateEnrollmentService.revoke(order, reason);
 
