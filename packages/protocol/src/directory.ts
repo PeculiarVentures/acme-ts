@@ -50,7 +50,7 @@ export interface Directory {
   /**
    * New authorization
    */
-  newAuthz: string;
+  newAuth: string;
 
   /**
    * Revoke certificate

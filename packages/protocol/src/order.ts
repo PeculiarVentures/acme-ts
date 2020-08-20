@@ -1,4 +1,5 @@
 import { Identifier } from "./identifier";
+import { Error } from "./error";
 
 export type OrderStatus = "pending" | "ready" | "processing" | "valid" | "invalid";
 
