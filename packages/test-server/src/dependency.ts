@@ -2,7 +2,7 @@ import { container } from "tsyringe";
 import { DependencyInjection as diServer} from "@peculiar/acme-server";
 import { DependencyInjection as diData } from "@peculiar/acme-data-memory";
 import { Crypto } from "@peculiar/webcrypto";
-import { diDirectoryController, DirectoryController } from "./controllers";
+import { diControllers, Controllers } from "./controllers";
 import { PORT } from "./config/constants";
 
 diServer.register(container, {
@@ -17,4 +17,4 @@ diServer.register(container, {
 
 diData.register(container)
 
-container.register(diDirectoryController, DirectoryController);
+container.register(diControllers, Controllers);
