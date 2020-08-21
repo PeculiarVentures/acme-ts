@@ -199,7 +199,7 @@ export interface IOrderService {
    * @param orderId Order specific id
    * @param params Params to finalize order
    */
-  enrollCertificate(accountId: number, orderId: number, params: protocol.Finalize): Promise<data.IOrder>;
+  enrollCertificate(accountId: data.Key, orderId: data.Key, params: protocol.Finalize): Promise<data.IOrder>;
 
   /**
    * Returns chain for Certificate

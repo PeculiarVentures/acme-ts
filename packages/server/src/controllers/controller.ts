@@ -302,7 +302,7 @@ export class AcmeController extends BaseService {
   //#endregion
 
   //#region Order management
-  public CreateOrder(request: core.Request) {
+  public createOrder(request: core.Request) {
     return this.wrapAction(async (response) => {
       const token = this.getToken(request);
       // get account
@@ -327,7 +327,7 @@ export class AcmeController extends BaseService {
     }, request);
   }
 
-  public PostOrder(request: core.Request, orderId: number) {
+  public postOrder(request: core.Request, orderId: Key) {
     return this.wrapAction(async (response) => {
       // get account
       const account = await this.getAccount(request);
@@ -343,7 +343,7 @@ export class AcmeController extends BaseService {
     }, request);
   }
 
-  public PostOrders(request: core.Request) {
+  public postOrders(request: core.Request) {
     return this.wrapAction(async (response) => {
       // get account
       const account = await this.getAccount(request);
@@ -384,7 +384,7 @@ export class AcmeController extends BaseService {
     }, request);
   }
 
-  public FinalizeOrder(request: core.Request, orderId: number) {
+  public finalizeOrder(request: core.Request, orderId: Key) {
     return this.wrapAction(async (response) => {
       const token = this.getToken(request);
 

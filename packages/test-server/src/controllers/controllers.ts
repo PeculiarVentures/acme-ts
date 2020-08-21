@@ -3,6 +3,7 @@ import { inject, injectable } from "tsyringe";
 import { diAcmeController, AcmeController } from "@peculiar/acme-server";
 import { Request as AcmeRequest, Response as AcmeResponse, ContentType, MalformedError } from "@peculiar/acme-core";
 import { ParamsDictionary } from "express-serve-static-core";
+import { Key } from "@peculiar/acme-data";
 
 export const diControllers = "ACME.Express.Controllers";
 
@@ -24,46 +25,68 @@ export class Controllers {
   }
 
   //#region Account
-  public newAccount(req: Request<ParamsDictionary>, res: Response): Promise<void> {
-    throw new Error("Method not implemented.");
+  public async newAccount(req: Request<ParamsDictionary>, res: Response): Promise<void> {
+    const request = this.getAcmeRequest(req);
+    const result = await this.acmeController.newAccount(request);
+    this.createHttpResponseMessage(result, res);
   }
-  public postAccount(req: Request<ParamsDictionary>, res: Response): Promise<void> {
-    throw new Error("Method not implemented.");
+  public async postAccount(req: Request<ParamsDictionary>, res: Response): Promise<void> {
+    const request = this.getAcmeRequest(req);
+    const result = await this.acmeController.postAccount(request);
+    this.createHttpResponseMessage(result, res);
   }
-  public keyChange(req: Request<ParamsDictionary>, res: Response): Promise<void> {
-    throw new Error("Method not implemented.");
+  public async keyChange(req: Request<ParamsDictionary>, res: Response): Promise<void> {
+    const request = this.getAcmeRequest(req);
+    const result = await this.acmeController.keyChange(request);
+    this.createHttpResponseMessage(result, res);
   }
   //#endregion
 
   //#region Order
-  public CreateOrder(req: Request<ParamsDictionary>, res: Response): Promise<void> {
-    throw new Error("Method not implemented.");
+  public async createOrder(req: Request<ParamsDictionary>, res: Response): Promise<void> {
+    const request = this.getAcmeRequest(req);
+    const result = await this.acmeController.createOrder(request);
+    this.createHttpResponseMessage(result, res);
   }
-  public PostOrder(req: Request<ParamsDictionary>, res: Response, orderId: number): Promise<void> {
-    throw new Error("Method not implemented.");
+  public async postOrder(req: Request<ParamsDictionary>, res: Response, orderId: Key): Promise<void> {
+    const request = this.getAcmeRequest(req);
+    const result = await this.acmeController.postOrder(request, orderId);
+    this.createHttpResponseMessage(result, res);
   }
-  public PostOrders(req: Request<ParamsDictionary>, res: Response): Promise<void> {
-    throw new Error("Method not implemented.");
+  public async postOrders(req: Request<ParamsDictionary>, res: Response): Promise<void> {
+    const request = this.getAcmeRequest(req);
+    const result = await this.acmeController.postOrders(request);
+    this.createHttpResponseMessage(result, res);
   }
-  public FinalizeOrder(req: Request<ParamsDictionary>, res: Response, orderId: number): Promise<void> {
-    throw new Error("Method not implemented.");
+  public async finalizeOrder(req: Request<ParamsDictionary>, res: Response, orderId: Key): Promise<void> {
+    const request = this.getAcmeRequest(req);
+    const result = await this.acmeController.finalizeOrder(request, orderId);
+    this.createHttpResponseMessage(result, res);
   }
   //#endregion
 
-  public postChallenge(req: Request<ParamsDictionary>, res: Response, challengeId: import("../../../data/src").Key): Promise<void> {
-    throw new Error("Method not implemented.");
+  public async postChallenge(req: Request<ParamsDictionary>, res: Response, challengeId: Key): Promise<void> {
+    const request = this.getAcmeRequest(req);
+    const result = await this.acmeController.postChallenge(request, challengeId);
+    this.createHttpResponseMessage(result, res);
   }
 
-  public postAuthorization(req: Request<ParamsDictionary>, res: Response, authId: import("../../../data/src").Key): Promise<void> {
-    throw new Error("Method not implemented.");
+  public async postAuthorization(req: Request<ParamsDictionary>, res: Response, authId: Key): Promise<void> {
+    const request = this.getAcmeRequest(req);
+    const result = await this.acmeController.postAuthorization(request, authId);
+    this.createHttpResponseMessage(result, res);
   }
 
   //#region Certificate
-  public getCertificate(req: Request<ParamsDictionary>, res: Response, thumbprint: string): Promise<void> {
-    throw new Error("Method not implemented.");
+  public async getCertificate(req: Request<ParamsDictionary>, res: Response, thumbprint: string): Promise<void> {
+    const request = this.getAcmeRequest(req);
+    const result = await this.acmeController.getCertificate(request, thumbprint);
+    this.createHttpResponseMessage(result, res);
   }
-  public revokeCertificate(req: Request<ParamsDictionary>, res: Response): Promise<void> {
-    throw new Error("Method not implemented.");
+  public async revokeCertificate(req: Request<ParamsDictionary>, res: Response): Promise<void> {
+    const request = this.getAcmeRequest(req);
+    const result = await this.acmeController.revokeCertificate(request);
+    this.createHttpResponseMessage(result, res);
   }
   //#endregion
 
@@ -72,7 +95,6 @@ export class Controllers {
     const link = response.headers.link;
     const location = response.headers.location;
     const replayNonce = response.headers.replayNonce;
-    const contentType = response.headers.contentType;
 
     if (link) {
       res.setHeader("Link", link);
@@ -83,9 +105,6 @@ export class Controllers {
     if (replayNonce) {
       res.setHeader("Replay-Nonce", replayNonce);
     }
-    // if (contentType) {
-    //   res.setHeader("Content-Type", contentType);
-    // }
 
     if (response.content) {
       switch (response.content.type) {

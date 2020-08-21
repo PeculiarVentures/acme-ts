@@ -52,7 +52,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     return this.options.cryptoProvider.subtle.digest(alg, obj);
   }
 
-  public async create(accountId: number, params: protocol.OrderCreateParams) {
+  public async create(accountId: data.Key, params: protocol.OrderCreateParams) {
     if (!params) {
       throw new core.ArgumentNullError();
     }
@@ -85,7 +85,7 @@ export class OrderService extends BaseService implements types.IOrderService {
    * @param params Params to create
    * @param accountId Account identifier
    */
-  protected onCreateParams(order: data.IOrder, params: protocol.OrderCreateParams, accountId: number) {
+  protected onCreateParams(order: data.IOrder, params: protocol.OrderCreateParams, accountId: data.Key) {
     order.accountId = accountId;
     order.notAfter = params.notAfter;
     order.notBefore = params.notBefore;
@@ -139,11 +139,11 @@ export class OrderService extends BaseService implements types.IOrderService {
     order.expires = listDate.sort()[0];
   }
 
-  public async getList(accountId: number, query: core.QueryParams) {
+  public async getList(accountId: data.Key, query: core.QueryParams) {
     return this.orderRepository.getList(accountId, query, this.options.ordersPageSize);
   }
 
-  public async getById(accountId: number, id: number) {
+  public async getById(accountId: data.Key, id: data.Key) {
     const order = await this.orderRepository.findById(id);
     if (!order) {
       throw new core.ArgumentNullError();
@@ -157,13 +157,13 @@ export class OrderService extends BaseService implements types.IOrderService {
     return order;
   }
 
-  public async lastByIdentifiers(accountId: number, identifiers: data.IIdentifier[]): Promise<data.IOrder | null> {
+  public async lastByIdentifiers(accountId: data.Key, identifiers: data.IIdentifier[]): Promise<data.IOrder | null> {
     const identifier = await this.computerIdentifier(identifiers);
     const order = await this.orderRepository.lastByIdentifier(accountId, identifier);
     return order;
   }
 
-  public async getActual(accountId: number, params: protocol.OrderCreateParams) {
+  public async getActual(accountId: data.Key, params: protocol.OrderCreateParams) {
     if (!params) {
       throw new core.ArgumentNullError();
     }
@@ -213,7 +213,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     }
   }
 
-  public async enrollCertificate(accountId: number, orderId: number, params: protocol.Finalize) {
+  public async enrollCertificate(accountId: data.Key, orderId: data.Key, params: protocol.Finalize) {
     if (!params) {
       throw new core.ArgumentNullError();
     }
@@ -384,7 +384,7 @@ export class OrderService extends BaseService implements types.IOrderService {
    * @param params Params to get Order
    * @param accountId
    */
-  protected async onGetActualCheckBefore(params: protocol.OrderCreateParams, accountId: number): Promise<data.IOrder | null> {
+  protected async onGetActualCheckBefore(params: protocol.OrderCreateParams, accountId: data.Key): Promise<data.IOrder | null> {
     // Gets order from repository
     return await this.lastByIdentifiers(accountId, params.identifiers);
   }

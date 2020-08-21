@@ -1,4 +1,4 @@
-import { IBaseObject } from "./base";
+import { IBaseObject, Key } from "./base";
 import { AccountStatus } from "@peculiar/acme-protocol";
 
 export const diAccount = "ACME.Models.Account";
@@ -12,7 +12,7 @@ export interface IAccount extends IBaseObject {
   status: AccountStatus;
   key: JsonWebKey;
   termsOfServiceAgreed: boolean;
-  externalAccountId?: number;
+  externalAccountId?: Key;
   contacts: string[];
   createdAt: Date;
 }
