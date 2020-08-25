@@ -20,7 +20,7 @@
     "rimraf": "^3.0.2",
     "ts-node": "^8.10.1",
     "tsconfig-paths": "^3.9.0",
-    "typescript": "^3.8.3"
+    "typescript": "^4.0.2"
   },
   "dependencies": {
     "@peculiar/asn1-csr": "^2.0.3",
@@ -51,7 +51,7 @@
       "ts"
     ],
     "spec": [
-      "test/client/account.ts"
+      "test/**"
     ]
   }
 }
