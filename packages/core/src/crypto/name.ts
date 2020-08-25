@@ -1,4 +1,4 @@
-import { AttributeTypeAndValue, AttributeValue, Name as AsnName, RelativeDistinguishedName } from "@peculiar/asn1-x509";
+import { AttributeTypeAndValue, Name as AsnName, RelativeDistinguishedName } from "@peculiar/asn1-x509";
 import { AsnConvert } from "@peculiar/asn1-schema";
 import { BufferSourceConverter, Convert } from "pvtsutils";
 
