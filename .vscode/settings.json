@@ -17,5 +17,6 @@
     "**/build": true
   },
   "npm.packageManager": "yarn",
-  "eslint.packageManager": "yarn"
+  "eslint.packageManager": "yarn",
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
