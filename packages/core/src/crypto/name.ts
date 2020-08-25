@@ -10,7 +10,7 @@ const names: [string, string][] = [
   ["OU", "2.5.4.11"], // organizationalUnitName
   ["C", "2.5.4.6"], // countryName
   ["DC", "0.9.2342.19200300.100.1.25"], // domainComponent
-  ["E", "1.2.840.113549.1.9.1"], // Email
+  ["E", "1.2.840.113549.1.9.1"], // emailAddress
   ["G", "2.5.4.42"],
   ["I", "2.5.4.43"],
   ["SN", "2.5.4.4"],
@@ -246,6 +246,13 @@ export class Name {
     }
 
     return asn;
+  }
+
+  /**
+   * Returns Name in DER encoded format
+   */
+  public toArrayBuffer() {
+    return AsnConvert.serialize(this.asn);
   }
 
 }

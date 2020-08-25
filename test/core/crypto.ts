@@ -3,12 +3,14 @@ import { Pkcs10CertificateRequest, X509Certificate, cryptoProvider, Name, JsonNa
 import { Convert } from "pvtsutils";
 import { Crypto } from "@peculiar/webcrypto";
 import { AttributeTypeAndValue, AttributeValue, Name as AsnName, RelativeDistinguishedName } from "@peculiar/asn1-x509";
+import { X509CertificateGenerator } from "packages/core/src/crypto/x509_cert_generator";
 
-context("crypto", () => {
+context.only("crypto", () => {
 
-  cryptoProvider.set(new Crypto());
+  const crypto = new Crypto();
+  cryptoProvider.set(crypto);
 
-  context.only("Name", () => {
+  context("Name", () => {
 
     function assertName(name: AsnName, text: string) {
       const value = new Name(name).toString();
@@ -108,9 +110,6 @@ context("crypto", () => {
 
       const name2 = new Name(json);
       assert.strictEqual(name2.toString(), text);
-
-      console.log(name.toString());
-      console.log(name.toJSON());
     });
 
   });
@@ -149,6 +148,32 @@ context("crypto", () => {
       const ok = await cert.verify(new Date(2020, 5, 7));
       assert.strictEqual(ok, true);
     });
+  });
+
+  context("X509 certificate generator", () => {
+
+    it("generate self-signed certificate", async () => {
+      const alg: RsaHashedKeyGenParams = {
+        name: "RSASSA-PKCS1-v1_5",
+        hash: "SHA-256",
+        publicExponent: new Uint8Array([1, 0, 1]),
+        modulusLength: 2048,
+      };
+      const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as CryptoKeyPair;
+      const cert = await X509CertificateGenerator.create({
+        serialNumber: "01",
+        subject: "CN=Test",
+        issuer: "CN=Test",
+        notBefore: new Date("2020/01/01"),
+        notAfter: new Date("2020/01/02"),
+        signingAlgorithm: alg,
+        publicKey: keys.publicKey,
+        signingKey: keys.privateKey,
+      });
+      const ok = await cert.verify(new Date("2020/01/01 12:00"));
+      assert.strictEqual(ok, true);
+    });
+
   });
 
 });
