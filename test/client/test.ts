@@ -15,7 +15,7 @@ context("client", () => {
       publicExponent: new Uint8Array([1, 0, 1]),
       modulusLength: 2048,
     };
-    const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]);
+    const keys = (await crypto.subtle.generateKey(alg, false, ["sign", "verify"])) as CryptoKeyPair;
 
     const client = new ApiClient(keys, "https://acme-staging-v02.api.letsencrypt.org/directory", {
       fetch: fetch as any,

@@ -9,11 +9,11 @@ import { Account } from "@peculiar/acme-protocol";
 
 export function checkHeaders(res: ApiResponse<any>) {
   console.log(res.headers.link);
-  assert.equal(!!res.headers.link, true);
-  assert.equal(!!res.headers.location, true);
+  assert.strictEqual(!!res.headers.link, true);
+  assert.strictEqual(!!res.headers.location, true);
 }
 export function checkResAccount(res: any, status: number) {
-  assert.equal(res.status, status);
+  assert.strictEqual(res.status, status);
 }
 
 export interface ClientWithoutAccountResult {
@@ -38,7 +38,7 @@ export async function createClient(newAccount?: boolean): Promise<ClientResult> 
     publicExponent: new Uint8Array([1, 0, 1]),
     modulusLength: 2048,
   };
-  const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]);
+  const keys = (await crypto.subtle.generateKey(alg, false, ["sign", "verify"])) as CryptoKeyPair;
 
   // const client = new ApiClient(keys, "https://acme-staging-v02.api.letsencrypt.org/directory", {
   const client = new ApiClient(keys, "https://localhost:5003/directory", {
