@@ -119,9 +119,7 @@ export class OrderService extends BaseService implements types.IOrderService {
       // get actual or create new authorization
       let auth = await this.authorizationService.getActual(order.accountId, identifier);
       if (!auth) {
-        auth = ModelFabric.authorization();
-        auth.accountId = order.accountId;
-        auth.identifier = identifier;
+        auth = await this.authorizationService.create(order.accountId, identifier);
       }
 
       // create order authorization
@@ -154,7 +152,40 @@ export class OrderService extends BaseService implements types.IOrderService {
       throw new core.MalformedError("Access denied");
     }
 
+    await this.refreshStatus(order);
     return order;
+  }
+
+  private async refreshStatus(order: data.IOrder) {
+    if (order.status !== "invalid") {
+      // Checks expires
+      if (order.expires && order.expires < new Date()) {
+        order.status = "invalid";
+      }
+      else {
+
+        // RefreshStatus authorizations
+        // async () => {
+        //   return Promise.all(list.map(item => anAsyncFunction(item)))
+        // }
+        const orderAuthorization = await this.orderAuthorizationRepository.findByOrder(order.id);
+        const authorizations = await Promise.all(orderAuthorization.map(o => this.authorizationService.getById(order.accountId!, o.authorizationId)));
+
+        if (order.status === "pending") {
+          // Check Auth statuses
+          if (!authorizations.find(o => o.status === "pending"
+            || o.status === "valid")) {
+            order.status = "invalid";
+          }
+          else if (authorizations.find(o => o.status === "valid")) {
+            order.status = "ready";
+          }
+        }
+      }
+
+      // Update repository
+     await this.orderRepository.update(order);
+    }
   }
 
   public async lastByIdentifiers(accountId: data.Key, identifiers: data.IIdentifier[]): Promise<data.IOrder | null> {

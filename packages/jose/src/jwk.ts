@@ -68,7 +68,7 @@ export class JsonWebKey implements globalThis.JsonWebKey {
    * Gets thumbprint of JWK
    * @param alg Default SHA256
    */
-  public getThumbprint(alg: Algorithms = Algorithms.SHA256) {
+  public async getThumbprint(alg: Algorithms = Algorithms.SHA256) {
 
     const listKeys: { [key: string]: string } = {};
     if (this.crv) {
@@ -96,26 +96,22 @@ export class JsonWebKey implements globalThis.JsonWebKey {
 
     switch (alg) {
       case Algorithms.SHA256:
-        return this.digest(json, "SHA-256");
+        return pvtsutils.Convert.ToHex(await this.digest(json, "SHA-256"));
       case Algorithms.SHA1:
-        return this.digest(json, "SHA-1");
+        return pvtsutils.Convert.ToHex(await this.digest(json, "SHA-1"));
       default:
         throw new Error(`Unsupported algorithm: ${alg}`);
     }
   }
 
-  public digest(json: string, alg: string) {
-    let result = new Uint8Array;
-    this.cryptoProvider.subtle.digest(
+  public async digest(json: string, alg: string) {
+    const hash = await this.cryptoProvider.subtle.digest(
       {
         name: alg,
       },
       pvtsutils.BufferSourceConverter.toUint8Array(pvtsutils.Convert.FromUtf8String(json))
     )
-      .then(function (hash) {
-        result = new Uint8Array(hash);
-      });
-    return pvtsutils.Convert.ToUtf8String(result);
+    return hash;
   }
 
   public getPublicKey() {

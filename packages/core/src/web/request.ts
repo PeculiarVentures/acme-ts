@@ -12,5 +12,5 @@ export class Request {
   public method: RequestMethod = "GET";
   public path = "";
   public queryParams: QueryParams = {};
-  public body?: JsonWebSignature;
+  public body?: object;
 }

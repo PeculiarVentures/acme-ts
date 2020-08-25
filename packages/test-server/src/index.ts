@@ -5,7 +5,7 @@ import { routers } from "./routes";
 
 const app = express();
 
-app.use(express.json());
+app.use(express.json({ type: "application/jose+json" }));
 
 app.use('/acme', routers);
 

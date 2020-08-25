@@ -58,11 +58,11 @@ export class ConvertService extends BaseService implements IConvertService {
       }),
       authorizations: authzs.map(o => `${this.options.baseAddress}authz/${o.id}`),
       status: data.status,
-      notBefore: data.notBefore.toUTCString(),
-      notAfter: data.notAfter.toUTCString(),
+      notBefore: data.notBefore?.toUTCString(),
+      notAfter: data.notAfter?.toUTCString(),
       expires: data.expires?.toUTCString(),
       error: data.error ? await this.toError(data.error) : undefined,
-      finalize: `{Options.BaseAddress}finalize/${data.id}`,
+      finalize: `${this.options.baseAddress}finalize/${data.id}`,
       certificate: data.certificate && data.certificate.rawData ? `${this.options.baseAddress}cert/${data.certificate.thumbprint}` : undefined,
     };
     return order;

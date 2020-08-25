@@ -7,7 +7,7 @@ export abstract class BaseRepository<T extends BaseObject> implements IBaseRepos
   protected items: T[] = [];
 
   public async findById(id: Key) {
-    return this.items.find(o => { return o.id === id; }) || null;
+    return this.items.find(o => { return o.id == id; }) || null;
   }
 
   public async add(item: T) {
@@ -21,7 +21,7 @@ export abstract class BaseRepository<T extends BaseObject> implements IBaseRepos
   }
 
   public async update(item: T) {
-    const updateItem = this.items.find(o => { return o.id === item.id; });
+    const updateItem = this.items.find(o => { return o.id == item.id; });
     if (updateItem) {
       const index = this.items.indexOf(updateItem);
       this.items[index] = item;
@@ -32,7 +32,7 @@ export abstract class BaseRepository<T extends BaseObject> implements IBaseRepos
   }
 
   public async remove(item: T) {
-    const removeItem = this.items.find(o => { return o.id === item.id; });
+    const removeItem = this.items.find(o => { return o.id == item.id; });
     if (removeItem) {
       const index = this.items.indexOf(item);
       if (index > -1) {

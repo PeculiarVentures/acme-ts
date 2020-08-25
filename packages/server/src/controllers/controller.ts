@@ -5,6 +5,7 @@ import { inject, injectable } from "tsyringe";
 import { IAccount, Key } from "@peculiar/acme-data";
 import { AccountCreateParams, AccountUpdateParams, ChangeKey, OrderCreateParams, Finalize, RevokeCertificateParams } from "@peculiar/acme-protocol";
 import { BaseService, diServerOptions, IServerOptions } from "../services";
+import { response } from "express";
 
 export const diAcmeController = "ACME.AcmeController";
 /**
@@ -34,7 +35,7 @@ export class AcmeController extends BaseService {
     try {
       // TODO Logger.Info("Request {method} {path} {token}", request.Method, request.Path, request.Token);
 
-      if (request.method == "POST") {
+      if (request.method === "POST") {
         //#region Check JWS
         let account: IAccount | null = null;
 
@@ -51,7 +52,7 @@ export class AcmeController extends BaseService {
           if (!header.jwk) {
             throw new core.IncorrectResponseError("JWS MUST contain 'jwk' field");
           }
-          if (token.verify()) {
+          if (!(await token.verify())) {
             throw new core.UnauthorizedError("JWS signature is invalid");
           }
 
@@ -97,6 +98,9 @@ export class AcmeController extends BaseService {
       await action(response);
     }
     catch (e) {
+      //todo delete
+      console.error(e);
+
       if (e instanceof core.AcmeError) {
         response.status = e.status;
         response.content = new core.Content(e, this.options.formattedResponse);
@@ -118,10 +122,12 @@ export class AcmeController extends BaseService {
 
   private getToken(request: core.Request) {
     const token = request.body;
-    if (!token) {
+    if (!token || !Object.keys(token).length) {
       throw new core.MalformedError("JSON Web Token is empty");
     }
-    return token;
+    const jws = new JsonWebSignature({}, this.options.cryptoProvider);
+    jws.fromJSON(token);
+    return jws;
   }
 
   public keyChange(request: core.Request) {
@@ -168,7 +174,7 @@ export class AcmeController extends BaseService {
       }
 
       // Check that the "oldKey" field of the keyChange object is the same as the account key for the account in question.
-      const testAccount = await this.accountService.getByPublicKey(param.oldKey);
+      const testAccount = await this.accountService.getByPublicKey(new JsonWebKey(this.options.cryptoProvider, param.oldKey));
       if (testAccount.id !== account.id) {
         throw new core.MalformedError("The 'oldKey' is the not same as the account key");
       }
@@ -178,7 +184,7 @@ export class AcmeController extends BaseService {
 
       try {
         const updatedAccount = await this.accountService.changeKey(account.id, jwk);
-        response.content = new core.Content(this.convertService.toAccount(updatedAccount));
+        response.content = new core.Content(await this.convertService.toAccount(updatedAccount));
         response.headers.location = `${this.options.baseAddress}acct/${updatedAccount.id}`;
         response.status = 200; // Ok
       }
@@ -221,24 +227,23 @@ export class AcmeController extends BaseService {
         if (!account) {
           throw new core.AccountDoesNotExistError();
         }
-        response.content = new core.Content(this.convertService.toAccount(account), this.options.formattedResponse);
+        response.content = new core.Content(await this.convertService.toAccount(account), this.options.formattedResponse);
         response.status = core.HttpStatusCode.ok;
       }
       else {
         if (!account) {
           // Create new account
-          account = await this.accountService.create(header.jwk!, params);
-          response.content = new core.Content(this.convertService.toAccount(account), this.options.formattedResponse);
+          account = await this.accountService.create( new JsonWebKey(this.options.cryptoProvider, header.jwk!), params);
+          response.content = new core.Content(await this.convertService.toAccount(account), this.options.formattedResponse);
           response.status = 201; // Created
         }
         else {
           // Existing account
-          response.content = new core.Content(this.convertService.toAccount(account), this.options.formattedResponse);
-          response.status = 200; // Ok
+          response.content = new core.Content(await this.convertService.toAccount(account), this.options.formattedResponse);
         }
       }
 
-      response.headers.location = `{Options.BaseAddress}/acct/{account.Id}`;
+      response.headers.location = `${this.options.baseAddress}/acct/${account.id}`;
     }, request, true);
   }
 
@@ -259,7 +264,7 @@ export class AcmeController extends BaseService {
   }
 
   public getIdFromLink(url: string) {
-    const pattern = /\/(\\d+)$/g;
+    const pattern = /\/(\d+)$/g;
     const match = pattern.exec(url);
     if (!match) {
       throw new core.MalformedError(`Cannot get Id from link ${url}`);
@@ -296,7 +301,7 @@ export class AcmeController extends BaseService {
       }
 
       response.headers.location = `${this.options.baseAddress}acct/${account.id}`;
-      response.content = new core.Content(this.convertService.toAccount(account));
+      response.content = new core.Content( await this.convertService.toAccount(account));
     }, request, true);
   }
   //#endregion
@@ -323,7 +328,7 @@ export class AcmeController extends BaseService {
       response.headers.location = new URL(`order/${order.id}`, this.options.baseAddress).toString();
 
       // convert to JSON
-      response.content = new core.Content(this.convertService.toOrder(order), this.options.formattedResponse);
+      response.content = new core.Content(await this.convertService.toOrder(order), this.options.formattedResponse);
     }, request);
   }
 
@@ -339,7 +344,7 @@ export class AcmeController extends BaseService {
       response.headers.location = new URL(`order/${order.id}`, this.options.baseAddress).toString();
 
       // convert to JSON
-      response.content = new core.Content(this.convertService.toOrder(order), this.options.formattedResponse);
+      response.content = new core.Content(await this.convertService.toOrder(order), this.options.formattedResponse);
     }, request);
   }
 
@@ -380,7 +385,7 @@ export class AcmeController extends BaseService {
         response.headers.link?.push(`<${link}?cursor=${page + 1}${addingString}>; rel="next";`);
       }
 
-      response.content = new core.Content(this.convertService.toOrderList(orderList.items), this.options.formattedResponse);
+      response.content = new core.Content(await this.convertService.toOrderList(orderList.items), this.options.formattedResponse);
     }, request);
   }
 
@@ -397,7 +402,7 @@ export class AcmeController extends BaseService {
 
       // add headers
       response.headers.location = new URL(`order/${order.id}`, this.options.baseAddress).toString();
-      response.content = new core.Content(this.convertService.toOrder(order), this.options.formattedResponse);
+      response.content = new core.Content(await this.convertService.toOrder(order), this.options.formattedResponse);
     }, request);
   }
   //#endregion
@@ -414,7 +419,7 @@ export class AcmeController extends BaseService {
       if (token.isPayloadEmptyObject()) {
         await this.challengeService.validate(challenge);
       }
-      response.content = new core.Content(this.convertService.toChallenge(challenge));
+      response.content = new core.Content(await this.convertService.toChallenge(challenge));
     }, request);
   }
   //#endregion
@@ -426,7 +431,7 @@ export class AcmeController extends BaseService {
 
       const auth = await this.authorizationService.getById(account.id, authId);
 
-      response.content = new core.Content(this.convertService.toAuthorization(auth));
+      response.content = new core.Content(await this.convertService.toAuthorization(auth));
     }, request);
   }
   //#endregion
@@ -463,7 +468,7 @@ export class AcmeController extends BaseService {
   }
 
   public async revokeCertificate(request: core.Request) {
-    return this.wrapAction(async () => {
+    return this.wrapAction(async (response) => {
       const token = this.getToken(request);
       const header = token.getProtected();
       const params = token.getPayload<RevokeCertificateParams>();
@@ -476,6 +481,7 @@ export class AcmeController extends BaseService {
       } else {
         throw new core.MalformedError("");
       }
+      response.status = 204;
     }, request);
   }
   //#endregion

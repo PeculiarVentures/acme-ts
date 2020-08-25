@@ -105,7 +105,7 @@ export class ChallengeService extends BaseService implements IChallengeService {
     }
     const url = `$http://${auth.identifier.value}/.well-known/acme-challenge/${challenge.token}`;
 
-    if (this.options.debugMode) {
+    if (!this.options.debugMode) {
       const response = await fetch(url);
       if (response.status === 200) {
 
@@ -113,7 +113,7 @@ export class ChallengeService extends BaseService implements IChallengeService {
 
         //Accounts.GetById(challenge.Authorization.AccountId
         const account = await this.accountService.getById(auth.accountId);
-        const thumbprint = new JsonWebKey(this.options.cryptoProvider, account.key).getThumbprint();
+        const thumbprint = await new JsonWebKey(this.options.cryptoProvider, account.key).getThumbprint();
         const controlValue = `${challenge.token}.${thumbprint}`;
 
         if (controlValue !== text) {

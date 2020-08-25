@@ -1,5 +1,6 @@
 import { Convert } from "pvtsutils";
 import { JsonWebAlgorithmConverter } from "./jwa";
+import { JsonWebKey } from "./jwk";
 
 export interface JwsProtected {
   alg?: string;
@@ -38,6 +39,10 @@ export class JsonWebSignature {
     }
   }
 
+  public fromJSON(data: any) {
+    Object.assign(this, data);
+  }
+
   public isPayloadEmpty() {
     return !this.payload;
   }
@@ -47,7 +52,9 @@ export class JsonWebSignature {
   }
 
   public getProtected(): JwsProtected {
-    return this.read(this.protected);
+    const result = this.read(this.protected);
+    result.jwk = new JsonWebKey(this.cryptoProvider, result.jwk);
+    return result;
   }
   public setProtected(data: JwsProtected) {
     this.protected = this.write(data);
@@ -68,133 +75,133 @@ export class JsonWebSignature {
   }
 
   public setPayload(data: any) {
-  this.payload = this.write(data);
-}
+    this.payload = this.write(data);
+  }
 
   public getSignature() {
-  return Convert.FromBase64Url(this.signature);
-}
+    return Convert.FromBase64Url(this.signature);
+  }
 
   public setSignature(data: BufferSource) {
-  this.signature = Convert.ToBase64Url(data);
-}
+    this.signature = Convert.ToBase64Url(data);
+  }
 
   private read(data: string) {
-  const bytes = Convert.FromBase64Url(data);
-  const json = Convert.ToUtf8String(bytes);
-  return json === ""
-    ? ""
-    : JSON.parse(json);
-}
+    const bytes = Convert.FromBase64Url(data);
+    const json = Convert.ToUtf8String(bytes);
+    return json === ""
+      ? ""
+      : JSON.parse(json);
+  }
 
   private write(data: any) {
-  const json = JSON.stringify(data);
-  const bytes = Convert.FromUtf8String(json);
-  return Convert.ToBase64Url(bytes);
-}
+    const json = JSON.stringify(data);
+    const bytes = Convert.FromUtf8String(json);
+    return Convert.ToBase64Url(bytes);
+  }
 
   public async verify(key?: CryptoKey, crypto = this.cryptoProvider) {
-  // get alg from protected
-  const attrs = this.getProtected();
-  if (!attrs.alg) {
-    throw new Error("JWS.protected doesn't have required parameter 'alg'");
-  }
-  const alg = JsonWebAlgorithmConverter.toAlgorithm(attrs.alg);
-  if (!alg) {
-    throw new Error("Cannot convert JWA to WebCrypto algorithm");
-  }
-
-  if (!key) {
-    const jwk = await this.getKey(crypto);
-    if (!jwk) {
-      throw new Error("Cannot get JWK key");
+    // get alg from protected
+    const attrs = this.getProtected();
+    if (!attrs.alg) {
+      throw new Error("JWS.protected doesn't have required parameter 'alg'");
     }
-    key = jwk;
-  }
+    const alg = JsonWebAlgorithmConverter.toAlgorithm(attrs.alg);
+    if (!alg) {
+      throw new Error("Cannot convert JWA to WebCrypto algorithm");
+    }
 
-  // verify
-  const data = Convert.FromUtf8String(this.toStringSign());
-  const ok = await crypto.subtle.verify(alg as any, key, this.getSignature(), data);
-  return ok;
-}
+    if (!key) {
+      const jwk = await this.getKey(crypto);
+      if (!jwk) {
+        throw new Error("Cannot get JWK key");
+      }
+      key = jwk;
+    }
+
+    // verify
+    const data = Convert.FromUtf8String(this.toStringSign());
+    const ok = await crypto.subtle.verify(alg as any, key, this.getSignature(), data);
+    return ok;
+  }
 
   protected async getKey(crypto = this.cryptoProvider) {
-  const attrs = this.getProtected();
-  if (!attrs.jwk) {
-    return null;
-  }
+    const attrs = this.getProtected();
+    if (!attrs.jwk) {
+      return null;
+    }
 
-  if (!attrs.alg) {
-    throw new Error("JWS.protected doesn't have required parameter 'alg'");
-  }
-  const signingAlg = JsonWebAlgorithmConverter.toAlgorithm(attrs.alg);
-  if (!signingAlg) {
-    throw new Error("Cannot convert JWA to WebCrypto algorithm");
-  }
-  const alg: any = { name: signingAlg.name };
-  if (alg.name === "ECDSA") {
-    alg.namedCurve = attrs.jwk.crv;
-  }
+    if (!attrs.alg) {
+      throw new Error("JWS.protected doesn't have required parameter 'alg'");
+    }
+    const signingAlg = JsonWebAlgorithmConverter.toAlgorithm(attrs.alg);
+    if (!signingAlg) {
+      throw new Error("Cannot convert JWA to WebCrypto algorithm");
+    }
+    const alg: any = { ...signingAlg};
+    if (alg.name === "ECDSA") {
+      alg.namedCurve = attrs.jwk.crv;
+    }
 
-  const key = await crypto.subtle.importKey("jwk", attrs.jwk, alg, true, ["verify"]);
-  return key;
-}
+    const key = await crypto.subtle.importKey("jwk", attrs.jwk, alg, true, ["verify"]);
+    return key;
+  }
 
   public async sign(algorithm: JwsParams, key: CryptoKey, crypto = this.cryptoProvider) {
-  // set alg to protected
-  const attrs = this.getProtected();
-  const jwa = JsonWebAlgorithmConverter.fromAlgorithm({ ...algorithm, ...key.algorithm });
-  if (!jwa) {
-    throw new Error("Cannot convert WebCrypto algorithm to JWA");
-  }
-  attrs.alg = jwa;
-  this.setProtected(attrs);
+    // set alg to protected
+    const attrs = this.getProtected();
+    const jwa = JsonWebAlgorithmConverter.fromAlgorithm({ ...algorithm, ...key.algorithm });
+    if (!jwa) {
+      throw new Error("Cannot convert WebCrypto algorithm to JWA");
+    }
+    attrs.alg = jwa;
+    this.setProtected(attrs);
 
-  // sign
-  const data = Convert.FromUtf8String(this.toStringSign());
-  const signature = await crypto.subtle.sign(algorithm as any, key, data);
-  this.setSignature(signature);
-}
+    // sign
+    const data = Convert.FromUtf8String(this.toStringSign());
+    const signature = await crypto.subtle.sign(algorithm as any, key, data);
+    this.setSignature(signature);
+  }
 
   private toStringSign() {
-  return `${this.protected}.${this.payload}`;
-}
+    return `${this.protected}.${this.payload}`;
+  }
 
   public toJSON() {
-  const json: any = {};
-  if (this.protected) {
-    json.protected = this.protected;
+    const json: any = {};
+    if (this.protected) {
+      json.protected = this.protected;
+    }
+    if (this.payload) {
+      json.payload = this.payload;
+    }
+    if (this.signature) {
+      json.signature = this.signature;
+    }
+    return json;
   }
-  if (this.payload) {
-    json.payload = this.payload;
-  }
-  if (this.signature) {
-    json.signature = this.signature;
-  }
-  return json;
-}
 
   public parse(data: string) {
-  if (data[0] === "{") {
-    // JSON
-    const json = JSON.parse(data);
-    this.protected = json.protected || "";
-    this.payload = json.payload || "";
-    this.signature = json.signature || "";
-  } else {
-    // Compact
-    const parts = data.split(".");
-    this.protected = parts[0] || "";
-    this.payload = parts[1] || "";
-    this.signature = parts[2] || "";
+    if (data[0] === "{") {
+      // JSON
+      const json = JSON.parse(data);
+      this.protected = json.protected || "";
+      this.payload = json.payload || "";
+      this.signature = json.signature || "";
+    } else {
+      // Compact
+      const parts = data.split(".");
+      this.protected = parts[0] || "";
+      this.payload = parts[1] || "";
+      this.signature = parts[2] || "";
+    }
   }
-}
 
   public toString(compact = false) {
-  if (compact) {
-    return `${this.protected}.${this.payload}.${this.signature}`;
+    if (compact) {
+      return `${this.protected}.${this.payload}.${this.signature}`;
+    }
+    return JSON.stringify(this.toJSON());
   }
-  return JSON.stringify(this.toJSON());
-}
 
 }

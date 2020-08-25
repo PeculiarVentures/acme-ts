@@ -6,8 +6,8 @@ export class Order extends BaseObject implements IOrder {
   public status: OrderStatus = "pending";
   public identifier = "";
   public expires?: Date;
-  public notBefore = new Date();
-  public notAfter = new Date();
+  public notBefore?: Date;
+  public notAfter?: Date;
   public error?: IError;
   public certificate?: ICertificate;
   public accountId?: Key;

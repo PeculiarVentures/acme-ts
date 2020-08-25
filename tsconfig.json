@@ -1,6 +1,8 @@
 {
   "extends": "./tsconfig.compile.json",
   "compilerOptions": {
+    "importHelpers": false,
+    "target": "ES2018",
     "baseUrl": ".",
     "paths": {
       "@peculiar/acme-client": ["./packages/client/src"],

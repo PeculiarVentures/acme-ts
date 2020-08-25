@@ -3,7 +3,7 @@ import { Headers } from "./headers";
 import { HttpStatusCode } from "./http_status_code";
 
 export class Response {
-  public status = HttpStatusCode.noContent;
+  public status = HttpStatusCode.ok;
   public headers = new Headers();
   public content?: Content;
 

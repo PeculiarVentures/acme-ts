@@ -1,12 +1,13 @@
 import { container } from "tsyringe";
-import { DependencyInjection as diServer} from "@peculiar/acme-server";
+import { DependencyInjection as diServer, diCertificateEnrollmentService} from "@peculiar/acme-server";
 import { DependencyInjection as diData } from "@peculiar/acme-data-memory";
 import { Crypto } from "@peculiar/webcrypto";
 import { diControllers, Controllers } from "./controllers";
 import { PORT } from "./config/constants";
+import { CertificateEnrollmentService } from "./services";
 
 diServer.register(container, {
-  baseAddress: `http://localhost:${PORT}/`,
+  baseAddress: `http://localhost:${PORT}/acme/`,
   cryptoProvider: new Crypto(),
   hashAlgorithm: "SHA-1",
   ordersPageSize: 2,
@@ -16,5 +17,5 @@ diServer.register(container, {
 });
 
 diData.register(container)
-
-container.register(diControllers, Controllers);
+container.register(diCertificateEnrollmentService, CertificateEnrollmentService)
+.register(diControllers, Controllers);

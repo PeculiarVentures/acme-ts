@@ -4,6 +4,7 @@ import { IAccountRepository, diAccountRepository, IAccount, Key, diAccount } fro
 import { IExternalAccountService, diExternalAccountService, IAccountService } from "./types";
 import { AccountCreateParams, AccountUpdateParams } from "@peculiar/acme-protocol";
 import { AccountDoesNotExistError, MalformedError, UnsupportedContactError, ArgumentNullError } from "@peculiar/acme-core";
+import { JsonWebKey } from "@peculiar/jose";
 
 @injectable()
 export class AccountService extends BaseService implements IAccountService {
@@ -48,6 +49,7 @@ export class AccountService extends BaseService implements IAccountService {
   }
 
   protected onCreate(account: IAccount, key: JsonWebKey, params: AccountCreateParams) {
+    account.status = "valid";
     account.key = key;
     account.contacts = params.contact || [];
     account.termsOfServiceAgreed = params.termsOfServiceAgreed || false;

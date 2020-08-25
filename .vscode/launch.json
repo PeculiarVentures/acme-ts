@@ -19,10 +19,13 @@
     },
     {
       "name": "Run current TS file",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
       "type": "node",
       "request": "launch",
       "args": [
-        "${relativeFile}"
+        "${workspaceFolder}/packages/test-server/src/index.ts"
       ],
       "runtimeArgs": [
         "--require",

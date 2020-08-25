@@ -2,7 +2,7 @@ import {
   cryptoProvider, Response as AcmeResponse,
   Content, ContentType, AcmeError, ErrorType, HttpStatusCode, Headers,
 } from "@peculiar/acme-core";
-import {JsonWebSignature, JwsProtected, } from "@peculiar/jose";
+import {JsonWebSignature, JwsProtected, JsonWebKey, } from "@peculiar/jose";
 import { Error } from "@peculiar/acme-protocol";
 
 export interface ClientOptions {
@@ -90,7 +90,8 @@ export class BaseClient {
       if (typeof postParams.kid === "string") {
         header.kid = postParams.kid;
       } else {
-        header.jwk = await this.getCrypto().subtle.exportKey("jwk", postParams.kid);
+        const jwk = await this.getCrypto().subtle.exportKey("jwk", postParams.kid);
+        header.jwk = new JsonWebKey(crypto, jwk);
       }
       // Create JWS
       const jws = new JsonWebSignature({
