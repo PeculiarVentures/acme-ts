@@ -2,12 +2,18 @@ import { Convert } from "pvtsutils";
 import { JsonWebAlgorithmConverter } from "./jwa";
 import { JsonWebKey } from "./jwk";
 
-export interface JwsProtected {
+export interface JwsProtectedBase {
   alg?: string;
-  jwk?: JsonWebKey;
   kid?: string;
   nonce?: string;
   url?: string;
+}
+export interface JwsProtectedSetter extends JwsProtectedBase {
+  jwk?: globalThis.JsonWebKey;
+}
+
+export interface JwsProtectedGetter extends JwsProtectedBase {
+  jwk?: JsonWebKey;
 }
 
 /**
@@ -16,7 +22,7 @@ export interface JwsProtected {
 export type JwsParams = Algorithm | RsaPssParams | EcdsaParams;
 
 export interface JwsConstructorParams {
-  protected?: JwsProtected;
+  protected?: JwsProtectedSetter;
   payload?: any;
 }
 
@@ -51,12 +57,12 @@ export class JsonWebSignature {
     return this.payload === "e30";
   }
 
-  public getProtected(): JwsProtected {
-    const result = this.read(this.protected);
+  public getProtected() {
+    const result = this.read(this.protected) as JwsProtectedGetter;
     result.jwk = new JsonWebKey(this.cryptoProvider, result.jwk);
     return result;
   }
-  public setProtected(data: JwsProtected) {
+  public setProtected(data: JwsProtectedSetter) {
     this.protected = this.write(data);
   }
 
@@ -138,7 +144,7 @@ export class JsonWebSignature {
     if (!signingAlg) {
       throw new Error("Cannot convert JWA to WebCrypto algorithm");
     }
-    const alg: any = { ...signingAlg};
+    const alg: any = { ...signingAlg };
     if (alg.name === "ECDSA") {
       alg.namedCurve = attrs.jwk.crv;
     }

@@ -2,7 +2,7 @@ import {
   cryptoProvider, Response as AcmeResponse,
   Content, ContentType, AcmeError, ErrorType, HttpStatusCode, Headers,
 } from "@peculiar/acme-core";
-import {JsonWebSignature, JwsProtected, JsonWebKey, } from "@peculiar/jose";
+import {JsonWebSignature, JwsProtectedSetter, JsonWebKey, } from "@peculiar/jose";
 import { Error } from "@peculiar/acme-protocol";
 
 export interface ClientOptions {
@@ -83,7 +83,7 @@ export class BaseClient {
         method: "POST",
       };
       // Fill header
-      const header: JwsProtected = {
+      const header: JwsProtectedSetter = {
         url,
         nonce: postParams.nonce,
       };
