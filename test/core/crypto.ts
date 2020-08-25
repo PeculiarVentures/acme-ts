@@ -1,25 +1,133 @@
 import * as assert from "assert";
-import { Pkcs10CertificateRequest, X509Certificate, cryptoProvider } from "@peculiar/acme-core";
+import { Pkcs10CertificateRequest, X509Certificate, cryptoProvider, Name, JsonName } from "@peculiar/acme-core";
 import { Convert } from "pvtsutils";
 import { Crypto } from "@peculiar/webcrypto";
+import { AttributeTypeAndValue, AttributeValue, Name as AsnName, RelativeDistinguishedName } from "@peculiar/asn1-x509";
 
 context("crypto", () => {
 
   cryptoProvider.set(new Crypto());
+
+  context.only("Name", () => {
+
+    function assertName(name: AsnName, text: string) {
+      const value = new Name(name).toString();
+      assert.strictEqual(value, text);
+
+      const name2 = new Name(text);
+      assert.strictEqual(name2.toString(), text);
+    }
+
+    it("Simple list of RDNs (joined by comma)", () => {
+      const name = new AsnName([
+        new RelativeDistinguishedName([new AttributeTypeAndValue({ type: "2.5.4.3", value: new AttributeValue({ printableString: "Common Name" }) })]),
+        new RelativeDistinguishedName([new AttributeTypeAndValue({ type: "2.5.4.6", value: new AttributeValue({ printableString: "RU" }) })])
+      ]);
+
+      assertName(name, "CN=Common Name, C=RU");
+    });
+
+    it("Simple list of DNs (joined by +)", () => {
+      const name = new AsnName([
+        new RelativeDistinguishedName([
+          new AttributeTypeAndValue({ type: "2.5.4.3", value: new AttributeValue({ printableString: "Common Name" }) }),
+          new AttributeTypeAndValue({ type: "2.5.4.6", value: new AttributeValue({ printableString: "RU" }) })]),
+      ]);
+
+      assertName(name, "CN=Common Name+C=RU");
+    });
+
+    it("Hexadecimal representation", () => {
+      const name = new AsnName([
+        new RelativeDistinguishedName([new AttributeTypeAndValue({ type: "1.2.3.4.5", value: new AttributeValue({ anyValue: new Uint8Array([0x04, 0x02, 0x48, 0x69]).buffer }) })]),
+      ]);
+
+      assertName(name, "1.2.3.4.5=#04024869");
+    });
+
+    context("Escaped chars", () => {
+
+      it("# character at the beginning", () => {
+        const name = new AsnName([
+          new RelativeDistinguishedName([new AttributeTypeAndValue({ type: "1.2.3.4.5", value: new AttributeValue({ printableString: "#tag" }) })]),
+        ]);
+
+        assertName(name, "1.2.3.4.5=\\#tag");
+      });
+
+      it("space character at the beginning", () => {
+        const name = new AsnName([
+          new RelativeDistinguishedName([new AttributeTypeAndValue({ type: "1.2.3.4.5", value: new AttributeValue({ printableString: " tag" }) })]),
+        ]);
+
+        assertName(name, "1.2.3.4.5=\\ tag");
+      });
+
+      it("space character at the end", () => {
+        const name = new AsnName([
+          new RelativeDistinguishedName([new AttributeTypeAndValue({ type: "1.2.3.4.5", value: new AttributeValue({ printableString: "tag " }) })]),
+        ]);
+
+        assertName(name, "1.2.3.4.5=tag\\ ");
+      });
+
+      it("special characters", () => {
+        const name = new AsnName([
+          new RelativeDistinguishedName([new AttributeTypeAndValue({ type: "1.2.3.4.5", value: new AttributeValue({ printableString: ",+\"\\<>;" }) })]),
+        ]);
+
+        assertName(name, "1.2.3.4.5=\\,\\+\\\"\\\\\\<\\>\\;");
+      });
+
+      it("unknown characters", () => {
+        const name = new AsnName([
+          new RelativeDistinguishedName([new AttributeTypeAndValue({ type: "1.2.3.4.5", value: new AttributeValue({ printableString: "Hello\nworld" }) })]),
+        ]);
+
+        assertName(name, "1.2.3.4.5=Hello\\0Aworld");
+      });
+
+      it("parse quoted value", () => {
+        const text = "CN=\"here is a test message with \\\",\\\" character\"+CN=It includes \\< \\> \\+ escaped characters\\ ";
+        const name = new Name(text);
+        assert.strictEqual(name.toString(), "CN=here is a test message with \\\"\\,\\\" character+CN=It includes \\< \\> \\+ escaped characters\\ ");
+      });
+
+    });
+
+    it("json", () => {
+      const text = "CN=name1, CN=name2+CN=name3+E=some@email.com, 1.2.3.4.5=#04020102";
+      const name = new Name(text);
+
+      const json: JsonName = [
+        { CN: ["name1"] },
+        { CN: ["name2", "name3"], E: ["some@email.com"] },
+        { "1.2.3.4.5": ["#04020102"] },
+      ];
+      assert.deepStrictEqual(name.toJSON(), json);
+
+      const name2 = new Name(json);
+      assert.strictEqual(name2.toString(), text);
+
+      console.log(name.toString());
+      console.log(name.toJSON());
+    });
+
+  });
 
   context("Pkcs10CertificateRequest", () => {
 
     it("read", () => {
       const pem = "MIICdDCCAVwCAQAwLzEtMA8GA1UEAxMIdGVzdE5hbWUwGgYJKoZIhvcNAQkBEw10ZXN0QG1haWwubm90MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArut7tLrb1BEHXImMTWipet+3/J2isn7mBv278oP7YyOkmX/Vzxvk9nvSc/B1wh6kSo6nfaxYacNNSP3r+WQYaTeLm5TsDbUfCJYtvvTuYH0GVTM8Qm7QhMZKnyUy/D60WNcRM4pnBDSEMpKppi7HhfL37DZpQnsQfr9r8LQPWZ9t/mf+FsSeWyQOQcz+ob6cODfNQIvbzpaXXdNpKIHLPW+/e4af5/WlZ9wL5Sy7kOf4X6nErdl74s1vSji9goANSQkd5TbswtFPRNybikrrisz0HtsIq2uTGDY6t3iOEHTe5qe/ux4anjbSqKVuIQEQWQOKb4h+mHTc+EC5yknihQIDAQABoAAwDQYJKoZIhvcNAQELBQADggEBAE7TU20ui1MLtxLM0UZMytYAjC7vtXxB5Vl6bzHUzZkVFW6oTeizqDxjeBtZ1SqErpgdyvzMvFSxF6f+679kl1/Zs2V0IPa4y58he3wTT/M1xCBN/bITY2cA4ETozbtK4cGoi6jY/0j8NcxTLfiBgwhE3ap+9GzLtWEhHWCXmpsohbvAktXSh1tLh4xmgoQoePEBSPbnaOmsonyzscKiBMASDvjrFdNbtD0uY2v/wYXwtRGvV/Q/O3lLWEosE4NdnZmgId4bm7ru48WucSnxuEJAkKUjDLrN0uqY/tKfX4Zy9w8Y/o+hk3QzNBVa3ZUvzDhVAmamQflvw3lXMm/JG4U=";
       const csr = new Pkcs10CertificateRequest(Convert.FromBase64(pem));
-      assert.equal(csr.subject, "CN=testName, E=test@mail.not");
+      assert.strictEqual(csr.subject, "CN=testName+E=test@mail.not");
     });
 
     it("verify", async () => {
       const pem = "MIICRzCCAS8CAQAwAjEAMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArut7tLrb1BEHXImMTWipet+3/J2isn7mBv278oP7YyOkmX/Vzxvk9nvSc/B1wh6kSo6nfaxYacNNSP3r+WQYaTeLm5TsDbUfCJYtvvTuYH0GVTM8Qm7QhMZKnyUy/D60WNcRM4pnBDSEMpKppi7HhfL37DZpQnsQfr9r8LQPWZ9t/mf+FsSeWyQOQcz+ob6cODfNQIvbzpaXXdNpKIHLPW+/e4af5/WlZ9wL5Sy7kOf4X6nErdl74s1vSji9goANSQkd5TbswtFPRNybikrrisz0HtsIq2uTGDY6t3iOEHTe5qe/ux4anjbSqKVuIQEQWQOKb4h+mHTc+EC5yknihQIDAQABoAAwDQYJKoZIhvcNAQELBQADggEBAE7TU20ui1MLtxLM0UZMytYAjC7vtXxB5Vl6bzHUzZkVFW6oTeizqDxjeBtZ1SqErpgdyvzMvFSxF6f+679kl1/Zs2V0IPa4y58he3wTT/M1xCBN/bITY2cA4ETozbtK4cGoi6jY/0j8NcxTLfiBgwhE3ap+9GzLtWEhHWCXmpsohbvAktXSh1tLh4xmgoQoePEBSPbnaOmsonyzscKiBMASDvjrFdNbtD0uY2v/wYXwtRGvV/Q/O3lLWEosE4NdnZmgId4bm7ru48WucSnxuEJAkKUjDLrN0uqY/tKfX4Zy9w8Y/o+hk3QzNBVa3ZUvzDhVAmamQflvw3lXMm/JG4U=";
       const csr = new Pkcs10CertificateRequest(Convert.FromBase64(pem));
       const ok = await csr.verify();
-      assert.equal(ok, true);
+      assert.strictEqual(ok, true);
     });
 
   });
@@ -30,16 +138,16 @@ context("crypto", () => {
 
     it("read", () => {
       const cert = new X509Certificate(Convert.FromBase64(pem));
-      assert.equal(cert.serialNumber, "4844dcc6d4700ffab37f416356f1");
-      assert.equal(cert.subject, "C=BE, O=GlobalSign nv-sa, OU=For Demo Use Only, CN=GlobalSign Demo Root CA");
-      assert.equal(cert.issuer, "C=BE, O=GlobalSign nv-sa, OU=For Demo Use Only, CN=GlobalSign Demo Root CA");
-      assert.equal(cert.extensions.length, 3);
+      assert.strictEqual(cert.serialNumber, "4844dcc6d4700ffab37f416356f1");
+      assert.strictEqual(cert.subject, "C=BE, O=GlobalSign nv-sa, OU=For Demo Use Only, CN=GlobalSign Demo Root CA");
+      assert.strictEqual(cert.issuer, "C=BE, O=GlobalSign nv-sa, OU=For Demo Use Only, CN=GlobalSign Demo Root CA");
+      assert.strictEqual(cert.extensions.length, 3);
     });
 
     it("verify", async () => {
       const cert = new X509Certificate(Convert.FromBase64(pem));
       const ok = await cert.verify(new Date(2020, 5, 7));
-      assert.equal(ok, true);
+      assert.strictEqual(ok, true);
     });
   });
 
