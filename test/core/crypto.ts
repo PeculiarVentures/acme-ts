@@ -5,7 +5,7 @@ import { Crypto } from "@peculiar/webcrypto";
 import { AttributeTypeAndValue, AttributeValue, Name as AsnName, RelativeDistinguishedName } from "@peculiar/asn1-x509";
 import { X509CertificateGenerator } from "packages/core/src/crypto/x509_cert_generator";
 
-context.only("crypto", () => {
+context("crypto", () => {
 
   const crypto = new Crypto();
   cryptoProvider.set(crypto);
