@@ -22,6 +22,7 @@ export class X509Certificate extends AsnData<Certificate> {
   public readonly notAfter: Date;
   public readonly signatureAlgorithm: HashedAlgorithm;
   public readonly extensions: Extension[] = [];
+  public privateKey?: CryptoKey;
 
   public constructor(raw: BufferSource) {
     super(raw, Certificate);
