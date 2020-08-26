@@ -99,7 +99,7 @@ context.only("crypto", () => {
 
     });
 
-    it.only("json", () => {
+    it("json", () => {
       const text = "CN=name1, CN=name2+CN=name3+E=some@email.com, 1.2.3.4.5=#04020102+DC=some.com";
       const name = new Name(text);
 
