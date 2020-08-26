@@ -178,7 +178,7 @@ context.only("crypto", () => {
       assert.strictEqual(ok, true);
     });
 
-    it.only("generate ca and user certificate", async () => {
+    it("generate ca and user certificate", async () => {
       const alg: EcdsaParams & EcKeyGenParams = {
         name: "ECDSA",
         hash: "SHA-256",
