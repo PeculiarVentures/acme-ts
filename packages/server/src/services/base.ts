@@ -1,4 +1,5 @@
-import { MalformedError } from "@peculiar/acme-core";
+import { MalformedError, ILogger, Level, Logger } from "@peculiar/acme-core";
+import { inject } from "tsyringe";
 
 export const diServerOptions = "ACME.ServerOptions";
 
@@ -15,13 +16,15 @@ export interface IServerOptions {
   ordersPageSize: number;
   expireAuthorizationDays: number;
   downloadCertificateFormat: "PemCertificateChain" | "PkixCert" | "Pkcs7Mime";
+  levelLogger: Level;
   debugMode: boolean;
 }
 
 export class BaseService {
 
   public constructor(
-    public options: IServerOptions
+    public options: IServerOptions,
+    @inject(Logger) protected logger: ILogger,
   ) {
     options.ordersPageSize = 5;
     options.hashAlgorithm = "SHA-1";

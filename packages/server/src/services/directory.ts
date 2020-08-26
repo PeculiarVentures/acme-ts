@@ -2,14 +2,15 @@ import { IDirectoryService } from "./types";
 import { Directory } from "@peculiar/acme-protocol";
 import { BaseService, IServerOptions, diServerOptions } from "./base";
 import { injectable, inject } from "tsyringe";
+import { diLogger, ILogger } from "@peculiar/acme-core";
 
 @injectable()
 export class DirectoryService extends BaseService implements IDirectoryService {
 
   public constructor(
-    @inject(diServerOptions) options: IServerOptions
-  ) {
-    super(options)
+    @inject(diLogger) logger: ILogger,
+    @inject(diServerOptions) options: IServerOptions) {
+    super(options, logger);
   }
 
   public async getDirectory() {

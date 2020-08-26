@@ -4,15 +4,16 @@ import { IAuthorizationService, diChallengeService, IChallengeService } from "./
 import { IIdentifier, IAuthorization, diAuthorizationRepository, IAuthorizationRepository, Key } from "@peculiar/acme-data";
 import * as ModelFabric from "./model_fabric";
 import { Identifier } from "@peculiar/acme-protocol";
-import { MalformedError } from "@peculiar/acme-core";
+import { MalformedError, diLogger, ILogger } from "@peculiar/acme-core";
 
 @injectable()
 export class AuthorizationService extends BaseService implements IAuthorizationService {
   public constructor(
     @inject(diChallengeService) protected challengeService: IChallengeService,
     @inject(diAuthorizationRepository) protected authorizationRepository: IAuthorizationRepository,
+    @inject(diLogger) logger: ILogger,
     @inject(diServerOptions) options: IServerOptions) {
-    super(options);
+    super(options, logger);
   }
 
   public async getById(accountId: Key, authId: Key): Promise<IAuthorization> {

@@ -1,5 +1,5 @@
 import { container } from "tsyringe";
-import { DependencyInjection as diServer, diCertificateEnrollmentService} from "@peculiar/acme-server";
+import { DependencyInjection as diServer, diCertificateEnrollmentService } from "@peculiar/acme-server";
 import { DependencyInjection as diData } from "@peculiar/acme-data-memory";
 import { Crypto } from "@peculiar/webcrypto";
 import { diControllers, Controllers } from "./controllers";
@@ -14,8 +14,10 @@ diServer.register(container, {
   expireAuthorizationDays: 10,
   downloadCertificateFormat: "PemCertificateChain",
   debugMode: true,
+  levelLogger: "info",
 });
 
-diData.register(container)
-container.register(diCertificateEnrollmentService, CertificateEnrollmentService)
-.register(diControllers, Controllers);
+diData.register(container);
+container
+  .register(diCertificateEnrollmentService, CertificateEnrollmentService)
+  .register(diControllers, Controllers);

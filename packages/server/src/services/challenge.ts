@@ -3,7 +3,7 @@ import { BaseService, IServerOptions, diServerOptions } from "./base";
 import { IChallengeService, diAccountService, IAccountService } from "./types";
 import * as data from "@peculiar/acme-data";
 import * as ModelFabric from "./model_fabric";
-import { MalformedError, UnauthorizedError, ErrorType } from "@peculiar/acme-core";
+import { MalformedError, UnauthorizedError, ErrorType, diLogger, ILogger } from "@peculiar/acme-core";
 import * as pvtsutils from "pvtsutils";
 import { JsonWebKey } from "@peculiar/jose";
 
@@ -13,8 +13,9 @@ export class ChallengeService extends BaseService implements IChallengeService {
     @inject(data.diChallengeRepository) protected challengeRepository: data.IChallengeRepository,
     @inject(data.diAuthorizationRepository) protected authorizationRepository: data.IAuthorizationRepository,
     @inject(diAccountService) protected accountService: IAccountService,
+    @inject(diLogger) logger: ILogger,
     @inject(diServerOptions) options: IServerOptions) {
-    super(options);
+    super(options, logger);
   }
 
   public async getById(id: data.Key): Promise<data.IChallenge> {

@@ -8,6 +8,7 @@ import { JsonWebKey } from "@peculiar/jose";
 import * as ModelFabric from "./model_fabric";
 import * as pvtsutils from "pvtsutils";
 import { ICertificate } from "@peculiar/acme-data";
+import { diLogger, ILogger } from "@peculiar/acme-core";
 
 export interface ICertificateEnrollParams {
   /**
@@ -40,8 +41,9 @@ export class OrderService extends BaseService implements types.IOrderService {
     @inject(types.diAuthorizationService) protected authorizationService: types.IAuthorizationService,
     @inject(data.diOrderAuthorizationRepository) protected orderAuthorizationRepository: data.IOrderAuthorizationRepository,
     @inject(types.diCertificateEnrollmentService) protected certificateEnrollmentService: types.ICertificateEnrollmentService,
+    @inject(diLogger) logger: ILogger,
     @inject(diServerOptions) options: IServerOptions) {
-    super(options);
+    super(options, logger);
   }
 
   /**

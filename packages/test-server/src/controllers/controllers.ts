@@ -91,7 +91,12 @@ export class Controllers {
   //#endregion
 
   //#region Parse Request and Response
-  protected createHttpResponseMessage(response: AcmeResponse, res: Response): Response {
+  /**
+   * Parse AcmeResponse to express response
+   * @param response Acme response
+   * @param res Express response
+   */
+  protected createHttpResponseMessage(response: AcmeResponse, res: Response): void {
     const link = response.headers.link;
     const location = response.headers.location;
     const replayNonce = response.headers.replayNonce;
@@ -127,10 +132,13 @@ export class Controllers {
     } else {
       res.status(response.status).send();
     }
-    return res;
   }
 
-  protected getAcmeRequest(req: Request<import("express-serve-static-core").ParamsDictionary>): AcmeRequest {
+  /**
+   * Parse request to AcmeRequest
+   * @param req express request
+   */
+  protected getAcmeRequest(req: Request<ParamsDictionary>): AcmeRequest {
     const result = new AcmeRequest();
 
     // parse method

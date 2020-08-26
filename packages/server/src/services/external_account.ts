@@ -1,6 +1,6 @@
 import { IExternalAccountService } from "./types";
 import { Key, IExternalAccount, IExternalAccountRepository, diExternalAccount, diExternalAccountRepository } from "@peculiar/acme-data";
-import { cryptoProvider, MalformedError } from "@peculiar/acme-core";
+import { cryptoProvider, MalformedError, diLogger, ILogger } from "@peculiar/acme-core";
 import { BaseService, diServerOptions, IServerOptions } from "./base";
 import { inject, container, injectable } from "tsyringe";
 import { Convert } from "pvtsutils";
@@ -12,9 +12,9 @@ export class ExternalAccountService extends BaseService implements IExternalAcco
   public constructor(
     @inject(diExternalAccountRepository)
     protected externalAccountRepository: IExternalAccountRepository,
-    @inject(diServerOptions) options: IServerOptions,
-  ) {
-    super(options);
+    @inject(diLogger) logger: ILogger,
+    @inject(diServerOptions) options: IServerOptions) {
+    super(options, logger);
   }
 
   public async  create(account: any) {

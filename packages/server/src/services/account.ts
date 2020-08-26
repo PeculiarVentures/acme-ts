@@ -3,7 +3,7 @@ import { BaseService, diServerOptions, IServerOptions } from "./base";
 import { IAccountRepository, diAccountRepository, IAccount, Key, diAccount } from "@peculiar/acme-data";
 import { IExternalAccountService, diExternalAccountService, IAccountService } from "./types";
 import { AccountCreateParams, AccountUpdateParams } from "@peculiar/acme-protocol";
-import { AccountDoesNotExistError, MalformedError, UnsupportedContactError, ArgumentNullError } from "@peculiar/acme-core";
+import { AccountDoesNotExistError, MalformedError, UnsupportedContactError, ArgumentNullError, Logger, diLogger, ILogger } from "@peculiar/acme-core";
 import { JsonWebKey } from "@peculiar/jose";
 
 @injectable()
@@ -12,8 +12,9 @@ export class AccountService extends BaseService implements IAccountService {
   public constructor(
     @inject(diAccountRepository) protected accountRepository: IAccountRepository,
     @inject(diExternalAccountService) protected externalAccountService: IExternalAccountService,
+    @inject(diLogger) logger: ILogger,
     @inject(diServerOptions) options: IServerOptions) {
-    super(options);
+    super(options, logger);
   }
 
   public async create(key: JsonWebKey, params: AccountCreateParams) {
@@ -43,7 +44,7 @@ export class AccountService extends BaseService implements IAccountService {
     // Adds account
     account = await this.accountRepository.add(account);
 
-    // TODO Logger.Info("Account {id} created", account.Id);
+    this.logger.info(`Account ${account.id} created`);
 
     return account;
   }
@@ -65,7 +66,7 @@ export class AccountService extends BaseService implements IAccountService {
     // Save changes
     account = await this.accountRepository.update(account);
 
-    // TODO Logger.Info("Account {id} deactivated", account.Id);
+    this.logger.info(`Account ${account.id} deactivated`);
 
     // Return JSON
     return account;

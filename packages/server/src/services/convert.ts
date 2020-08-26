@@ -3,7 +3,7 @@ import { BaseService, diServerOptions, IServerOptions } from "./base";
 import { IConvertService } from "./types";
 import * as data from "@peculiar/acme-data";
 import { injectable, inject } from "tsyringe";
-import { MalformedError } from "@peculiar/acme-core";
+import { MalformedError, diLogger, ILogger } from "@peculiar/acme-core";
 
 @injectable()
 export class ConvertService extends BaseService implements IConvertService {
@@ -13,9 +13,9 @@ export class ConvertService extends BaseService implements IConvertService {
     @inject(data.diOrderAuthorizationRepository) public orderAuthorizationRepository: data.IOrderAuthorizationRepository,
     @inject(data.diAuthorizationRepository) public authorizationRepository: data.IAuthorizationRepository,
     @inject(data.diChallengeRepository) public challengeRepository: data.IChallengeRepository,
-    @inject(diServerOptions) options: IServerOptions,
-  ) {
-    super(options);
+    @inject(diLogger) logger: ILogger,
+    @inject(diServerOptions) options: IServerOptions) {
+    super(options, logger);
   }
 
   public async toAccount(data: data.IAccount): Promise<protocol.Account> {

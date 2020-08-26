@@ -1,6 +1,6 @@
 import { Convert } from "pvtsutils";
 import { PemConverter, Response, Content, ContentType } from "@peculiar/acme-core";
-import { JsonWebSignature } from "@peculiar/jose";
+import { JsonWebSignature, JsonWebKey } from "@peculiar/jose";
 import { CRLReasons } from "@peculiar/asn1-x509";
 import * as protocol from "@peculiar/acme-protocol";
 import { BaseClient, ClientOptions, ApiResponse, RequestParams, AcmeMethod } from "./base";
@@ -129,14 +129,15 @@ export class ApiClient extends BaseClient {
    */
   public async changeKey(key: CryptoKeyPair) {
     const kid = this.getAccountId();
+    const cryptoProvider = this.getCrypto();
     const innerToken = new JsonWebSignature({
       protected: {
         url: this.getDirectory().keyChange,
-        jwk: await this.getCrypto().subtle.exportKey("jwk", key.publicKey),
+        jwk: new JsonWebKey(cryptoProvider, await cryptoProvider.subtle.exportKey("jwk", key.publicKey)),
       },
       payload: {
         account: kid,
-        oldKey: await this.getCrypto().subtle.exportKey("jwk", this.accountKey.publicKey),
+        oldKey: new JsonWebKey(cryptoProvider, await cryptoProvider.subtle.exportKey("jwk", this.accountKey.publicKey)),
       }
     }, this.getCrypto());
     await innerToken.sign({ hash: this.options.defaultHash, ...key.privateKey.algorithm }, key.privateKey);

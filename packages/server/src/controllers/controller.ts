@@ -5,7 +5,7 @@ import { inject, injectable } from "tsyringe";
 import { IAccount, Key } from "@peculiar/acme-data";
 import { AccountCreateParams, AccountUpdateParams, ChangeKey, OrderCreateParams, Finalize, RevokeCertificateParams } from "@peculiar/acme-protocol";
 import { BaseService, diServerOptions, IServerOptions } from "../services";
-import { response } from "express";
+import { diLogger, ILogger } from "@peculiar/acme-core";
 
 export const diAcmeController = "ACME.AcmeController";
 /**
@@ -24,9 +24,9 @@ export class AcmeController extends BaseService {
     @inject(types.diAuthorizationService) protected authorizationService: types.IAuthorizationService,
     @inject(types.diChallengeService) protected challengeService: types.IChallengeService,
     @inject(types.diOrderService) protected orderService: types.IOrderService,
-    @inject(diServerOptions) options: IServerOptions,
-  ) {
-    super(options);
+    @inject(diLogger) logger: ILogger,
+    @inject(diServerOptions) options: IServerOptions) {
+    super(options, logger);
   }
 
   protected async wrapAction(action: (response: core.Response) => Promise<void>, request: core.Request, useJwk = false) {
