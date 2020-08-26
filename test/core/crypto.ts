@@ -1,5 +1,5 @@
 import * as assert from "assert";
-import { Pkcs10CertificateRequest, X509Certificate, cryptoProvider, Name, JsonName } from "@peculiar/acme-core";
+import { Pkcs10CertificateRequest, X509Certificate, cryptoProvider, Name, JsonName, BasicConstraintsExtension as BasicConstraintsExtension, ExtendedKeyUsageExtension, KeyUsagesExtension, KeyUsageFlags, SubjectKeyIdentifierExtension } from "@peculiar/acme-core";
 import { Convert } from "pvtsutils";
 import { Crypto } from "@peculiar/webcrypto";
 import { AttributeTypeAndValue, AttributeValue, Name as AsnName, RelativeDistinguishedName } from "@peculiar/asn1-x509";
@@ -173,6 +173,12 @@ context("crypto", () => {
         signingAlgorithm: alg,
         publicKey: keys.publicKey,
         signingKey: keys.privateKey,
+        extensions: [
+          new BasicConstraintsExtension(true, 2, true),
+          new ExtendedKeyUsageExtension(["1.2.3.4.5.6.7", "2.3.4.5.6.7.8"], true),
+          new KeyUsagesExtension(KeyUsageFlags.keyCertSign | KeyUsageFlags.cRLSign, true),
+          await SubjectKeyIdentifierExtension.create(keys.publicKey),
+        ]
       });
       const ok = await cert.verify({ date: new Date("2020/01/01 12:00") });
       assert.strictEqual(ok, true);
@@ -213,7 +219,7 @@ context("crypto", () => {
 
       ok = await userCert.verify({
         date: new Date("2020/01/01 12:00"),
-        publicKey: await caCert.getPublicKey()
+        publicKey: await caCert.publicKey.export()
       });
       assert.strictEqual(ok, true);
     });

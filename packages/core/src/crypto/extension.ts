@@ -5,9 +5,9 @@ import { AsnData } from "./asn_data";
 
 export class Extension extends AsnData<AsnExtension>{
 
-  public readonly type: string;
-  public readonly critical: boolean;
-  public readonly value: ArrayBuffer;
+  public type!: string;
+  public critical!: boolean;
+  public value!: ArrayBuffer;
 
   public constructor(raw: BufferSource);
   public constructor(type: string, critical: boolean, value: BufferSource);
@@ -24,9 +24,11 @@ export class Extension extends AsnData<AsnExtension>{
     }
 
     super(raw, AsnExtension);
+  }
 
-    this.type = this.asn.extnID;
-    this.critical = this.asn.critical;
-    this.value = this.asn.extnValue.buffer;
+  protected onInit(asn: AsnExtension) {
+    this.type = asn.extnID;
+    this.critical = asn.critical;
+    this.value = asn.extnValue.buffer;
   }
 }

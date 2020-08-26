@@ -4,6 +4,7 @@ export * from "./attribute";
 export * from "./extension";
 export * from "./pkcs10_cert_req";
 export * from "./provider";
+export * from "./public_key";
 export * from "./name";
 export * from "./types";
 export * from "./x509_cert";
