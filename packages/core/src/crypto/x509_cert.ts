@@ -8,6 +8,7 @@ import { cryptoProvider } from "./provider";
 import { Name } from "./name";
 import { Extension } from "./extension";
 import { AsnData } from "./asn_data";
+import { ExtensionFactory } from "./extensions";
 
 export interface X509CertificateVerifyParams {
   date?: Date;
@@ -43,7 +44,7 @@ export class X509Certificate extends AsnData<Certificate> {
     }
     this.notAfter = notAfter;
     if (tbs.extensions) {
-      this.extensions = tbs.extensions.map(o => new Extension(AsnConvert.serialize(o)));
+      this.extensions = tbs.extensions.map(o => ExtensionFactory.create(AsnConvert.serialize(o)));
     }
   }
 
