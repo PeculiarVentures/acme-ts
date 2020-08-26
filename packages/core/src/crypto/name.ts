@@ -2,20 +2,37 @@ import { AttributeTypeAndValue, Name as AsnName, RelativeDistinguishedName } fro
 import { AsnConvert } from "@peculiar/asn1-schema";
 import { BufferSourceConverter, Convert } from "pvtsutils";
 
-const names: [string, string][] = [
-  ["CN", "2.5.4.3"], // commonName
-  ["L", "2.5.4.7"],  // localityName
-  ["ST", "2.5.4.8"], // stateOrProvinceName
-  ["O", "2.5.4.10"], // organizationName
-  ["OU", "2.5.4.11"], // organizationalUnitName
-  ["C", "2.5.4.6"], // countryName
-  ["DC", "0.9.2342.19200300.100.1.25"], // domainComponent
-  ["E", "1.2.840.113549.1.9.1"], // emailAddress
-  ["G", "2.5.4.42"],
-  ["I", "2.5.4.43"],
-  ["SN", "2.5.4.4"],
-  ["T", "2.5.4.12"],
-];
+
+interface IdOrName {
+  [idOrName: string]: string;
+}
+class NameIdentifier {
+
+  private items: IdOrName = {};
+
+  public get(idOrName: string) {
+    return this.items[idOrName] || null;
+  }
+
+  public register(id: string, name: string) {
+    this.items[id] = name;
+    this.items[name] = id;
+  }
+}
+
+const names = new NameIdentifier();
+names.register("CN", "2.5.4.3"); // commonName
+names.register("L", "2.5.4.7"); // localityName
+names.register("ST", "2.5.4.8"); // stateOrProvinceName
+names.register("O", "2.5.4.10"); // organizationName
+names.register("OU", "2.5.4.11"); // organizationalUnitName
+names.register("C", "2.5.4.6"); // countryName
+names.register("DC", "0.9.2342.19200300.100.1.25"); // domainComponent
+names.register("E", "1.2.840.113549.1.9.1"); // emailAddress
+names.register("G", "2.5.4.42");
+names.register("I", "2.5.4.43");
+names.register("SN", "2.5.4.4");
+names.register("T", "2.5.4.12");
 
 export interface JsonAttributeAndValue {
   [type: string]: string[];
@@ -23,19 +40,6 @@ export interface JsonAttributeAndValue {
 export type JsonName = Array<JsonAttributeAndValue>;
 
 const special = [",", "+", "\"", "\\", "<", ">", ";", "#", " "];
-
-/**
- * Returns true if string  contains a special char
- * @param data string to be tested
- */
-function quotes(data: string) {
-  // a space or "#" character occurring at the beginning of the string
-  return /^[ #]/.test(data)
-    // a space character occurring at the end of the string
-    || /[ ]$/.test(data)
-    // one of the characters ",", "+", """, "\", "<", ">" or ";"
-    || /[,+"\\<>;]/.test(data);
-}
 
 function replaceUnknownCharacter(text: string, char: string) {
   return `\\${Convert.ToHex(Convert.FromUtf8String(char)).toUpperCase()}`;
@@ -83,7 +87,7 @@ export class Name {
   public toString() {
     return this.asn.map(rdn =>
       rdn.map(o => {
-        const type = names.filter(n => n[1] === o.type)[0]?.[0] || o.type;
+        const type = names.get(o.type) || o.type;
         const value = o.value.anyValue
           // If the AttributeValue is of a type which does not have a string
           // representation defined for it, then it is simply encoded as an
@@ -107,7 +111,7 @@ export class Name {
     for (const rdn of this.asn) {
       const jsonItem: JsonAttributeAndValue = {};
       for (const attr of rdn) {
-        const type = names.filter(n => n[1] === attr.type)[0]?.[0] || attr.type;
+        const type = names.get(attr.type) || attr.type;
         jsonItem[type] ??= [];
         jsonItem[type].push(attr.value.anyValue ? `#${Convert.ToHex(attr.value.anyValue)}` : attr.value.toString());
       }
@@ -140,10 +144,8 @@ export class Name {
         }
         type += char;
       }
-      if (!/[\d\.]+/.test(type)) {
-        type = names
-          .filter(o => o[0] === type)
-          .map(o => o[1])[0];
+      if (!/[\d.]+/.test(type)) {
+        type = names.get(type) || "";
       }
       if (!type) {
         throw new Error(`Cannot get OID for name type '${type}'`);
@@ -177,7 +179,7 @@ export class Name {
             throw new Error("Cannot parse name from string. Incorrect character after quoted attribute value");
           }
           break;
-        } else if (valueType === ValueType.simple && (char === "," || char === '+')) {
+        } else if ((valueType === ValueType.simple || valueType === ValueType.hexadecimal) && (char === "," || char === '+')) {
           break;
         }
 
@@ -201,7 +203,11 @@ export class Name {
       if (valueType === ValueType.hexadecimal) {
         attr.value.anyValue = Convert.FromHex(value);
       } else {
-        attr.value.printableString = value;
+        if (type === names.get("E") || type === names.get("DC")) {
+          attr.value.ia5String = value;
+        } else {
+          attr.value.printableString = value;
+        }
       }
       if (subAttribute) {
         asn[asn.length - 1].push(attr);
@@ -214,17 +220,15 @@ export class Name {
     return asn;
   }
 
-  fromJSON(data: JsonName): AsnName {
+  private fromJSON(data: JsonName): AsnName {
     const asn = new AsnName();
 
     for (const item of data) {
       const asnRdn = new RelativeDistinguishedName();
       for (const type in item) {
         let typeId = type;
-        if (!/[\d\.]+/.test(type)) {
-          typeId = names
-            .filter(o => o[0] === type)
-            .map(o => o[1])[0];
+        if (!/[\d.]+/.test(type)) {
+          typeId = names.get(type) || "";
         }
         if (!typeId) {
           throw new Error(`Cannot get OID for name type '${type}'`);
@@ -232,11 +236,15 @@ export class Name {
 
         const values = item[type];
         for (const value of values) {
-          const asnAttr = new AttributeTypeAndValue({ type });
+          const asnAttr = new AttributeTypeAndValue({ type: typeId });
           if (value[0] === "#") {
             asnAttr.value.anyValue = Convert.FromHex(value.slice(1));
           } else {
-            asnAttr.value.printableString = value;
+            if (typeId === names.get("E") || typeId === names.get("DC")) {
+              asnAttr.value.ia5String = value;
+            } else {
+              asnAttr.value.printableString = value;
+            }
           }
           asnRdn.push(asnAttr);
         }
