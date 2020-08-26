@@ -1,4 +1,4 @@
-import { container } from "tsyringe";
+import { container, Lifecycle } from "tsyringe";
 import { DependencyInjection as diServer, diCertificateEnrollmentService } from "@peculiar/acme-server";
 import { DependencyInjection as diData } from "@peculiar/acme-data-memory";
 import { Crypto } from "@peculiar/webcrypto";
@@ -19,5 +19,5 @@ diServer.register(container, {
 
 diData.register(container);
 container
-  .register(diCertificateEnrollmentService, CertificateEnrollmentService)
+  .register(diCertificateEnrollmentService, CertificateEnrollmentService, { lifecycle: Lifecycle.Singleton })
   .register(diControllers, Controllers);
