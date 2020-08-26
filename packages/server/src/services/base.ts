@@ -1,4 +1,4 @@
-import { MalformedError, ILogger, Level, Logger } from "@peculiar/acme-core";
+import { MalformedError, ILogger, Level, Logger, diLogger } from "@peculiar/acme-core";
 import { inject } from "tsyringe";
 
 export const diServerOptions = "ACME.ServerOptions";
@@ -23,8 +23,8 @@ export interface IServerOptions {
 export class BaseService {
 
   public constructor(
-    public options: IServerOptions,
-    @inject(Logger) protected logger: ILogger,
+    @inject(diServerOptions) public options: IServerOptions,
+    @inject(diLogger) protected logger: ILogger,
   ) {
     options.ordersPageSize = 5;
     options.hashAlgorithm = "SHA-1";

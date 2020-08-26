@@ -1,11 +1,19 @@
-import { BaseService, ICertificateEnrollmentService } from "@peculiar/acme-server";
+import { BaseService, ICertificateEnrollmentService, diServerOptions, IServerOptions } from "@peculiar/acme-server";
 import { IOrder } from "@peculiar/acme-data";
 import { RevokeReason } from "@peculiar/acme-protocol";
-import { X509Certificate, Pkcs10CertificateRequest } from "@peculiar/acme-core";
+import { X509Certificate, Pkcs10CertificateRequest, diLogger, ILogger } from "@peculiar/acme-core";
 import { X509CertificateGenerator } from "packages/core/src/crypto/x509_cert_generator";
 import { Convert } from "pvtsutils";
+import { inject, injectable } from "tsyringe";
 
+@injectable()
 export class CertificateEnrollmentService extends BaseService implements ICertificateEnrollmentService {
+
+  public constructor(
+    @inject(diLogger) logger: ILogger,
+    @inject(diServerOptions) options: IServerOptions) {
+    super(options, logger);
+  }
 
   public static signingAlgorithm: RsaHashedKeyGenParams = {
     name: "RSASSA-PKCS1-v1_5",
@@ -55,7 +63,7 @@ export class CertificateEnrollmentService extends BaseService implements ICertif
       notBefore,
       notAfter,
       signingAlgorithm: CertificateEnrollmentService.signingAlgorithm,
-      publicKey: await req.getPublicKey(),
+      publicKey: await req.getPublicKey(this.options.cryptoProvider),
       signingKey: ca.privateKey!,
     }, this.options.cryptoProvider);
     return cert.rawData;

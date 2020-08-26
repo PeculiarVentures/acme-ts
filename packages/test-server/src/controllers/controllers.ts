@@ -115,13 +115,17 @@ export class Controllers {
       switch (response.content.type) {
         case ContentType.joseJson:
         case ContentType.json:
-        case ContentType.pemCertificateChain:
-        case ContentType.pkcs7Mime:
-        case ContentType.pkixCert:
         case ContentType.problemJson:
           res.contentType(response.content.type)
             .status(response.status)
             .send(response.content);
+          break;
+        case ContentType.pemCertificateChain:
+        case ContentType.pkcs7Mime:
+        case ContentType.pkixCert:
+          res.contentType(response.content.type)
+            .status(response.status)
+            .send(Buffer.from(response.content.content));
           break;
         default:
           res.contentType(ContentType.json)
