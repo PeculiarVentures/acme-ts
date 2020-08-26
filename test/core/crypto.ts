@@ -149,7 +149,7 @@ context.only("crypto", () => {
 
     it("verify", async () => {
       const cert = new X509Certificate(Convert.FromBase64(pem));
-      const ok = await cert.verify(new Date(2020, 5, 7));
+      const ok = await cert.verify({ date: new Date(2020, 5, 7) });
       assert.strictEqual(ok, true);
     });
   });
@@ -174,7 +174,47 @@ context.only("crypto", () => {
         publicKey: keys.publicKey,
         signingKey: keys.privateKey,
       });
-      const ok = await cert.verify(new Date("2020/01/01 12:00"));
+      const ok = await cert.verify({ date: new Date("2020/01/01 12:00") });
+      assert.strictEqual(ok, true);
+    });
+
+    it.only("generate ca and user certificate", async () => {
+      const alg: EcdsaParams & EcKeyGenParams = {
+        name: "ECDSA",
+        hash: "SHA-256",
+        namedCurve: "P-256",
+      };
+      const caKeys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as CryptoKeyPair;
+      const caCert = await X509CertificateGenerator.create({
+        serialNumber: "01",
+        subject: "CN=Test CA",
+        issuer: "CN=Test CA",
+        notBefore: new Date("2020/01/01"),
+        notAfter: new Date("2020/01/03"),
+        signingAlgorithm: alg,
+        publicKey: caKeys.publicKey,
+        signingKey: caKeys.privateKey,
+      });
+
+      let ok = await caCert.verify({ date: new Date("2020/01/01 12:00") });
+      assert.strictEqual(ok, true);
+
+      const userKeys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as CryptoKeyPair;
+      const userCert = await X509CertificateGenerator.create({
+        serialNumber: "01",
+        subject: "CN=Test",
+        issuer: caCert.issuer,
+        notBefore: new Date("2020/01/01"),
+        notAfter: new Date("2020/01/02"),
+        signingAlgorithm: alg,
+        publicKey: userKeys.publicKey,
+        signingKey: caKeys.privateKey,
+      });
+
+      ok = await userCert.verify({
+        date: new Date("2020/01/01 12:00"),
+        publicKey: await caCert.getPublicKey()
+      });
       assert.strictEqual(ok, true);
     });
 

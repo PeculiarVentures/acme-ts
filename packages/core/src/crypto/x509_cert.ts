@@ -1,13 +1,18 @@
 import { AsnConvert } from "@peculiar/asn1-schema";
 import { Certificate, AlgorithmIdentifier } from "@peculiar/asn1-x509";
 import { id_sha1WithRSAEncryption, id_sha256WithRSAEncryption, id_sha384WithRSAEncryption, id_sha512WithRSAEncryption } from "@peculiar/asn1-rsa";
-import { id_ecdsaWithSHA1, id_ecdsaWithSHA256, id_ecdsaWithSHA384, id_ecdsaWithSHA512 } from "@peculiar/asn1-ecc";
+import { ECParameters, id_ecdsaWithSHA1, id_ecdsaWithSHA256, id_ecdsaWithSHA384, id_ecdsaWithSHA512, id_ecPublicKey, id_secp256r1, id_secp384r1, id_secp521r1 } from "@peculiar/asn1-ecc";
 import { Convert } from "pvtsutils";
 import { HashedAlgorithm } from "./types";
 import { cryptoProvider } from "./provider";
 import { Name } from "./name";
 import { Extension } from "./extension";
 import { AsnData } from "./asn_data";
+
+export interface X509CertificateVerifyParams {
+  date?: Date;
+  publicKey?: CryptoKey;
+}
 
 export class X509Certificate extends AsnData<Certificate> {
   public readonly serialNumber: string;
@@ -68,6 +73,33 @@ export class X509Certificate extends AsnData<Certificate> {
     } else {
       // crypto?
       crypto = args[0] || crypto;
+    }
+
+    const asnSpki = this.asn.tbsCertificate.subjectPublicKeyInfo;
+    switch (asnSpki.algorithm.algorithm) {
+      case id_ecPublicKey:
+        {
+          const eccParamsBuf = asnSpki.algorithm.parameters;
+          if (!eccParamsBuf) {
+            throw new Error("ECC key algorithm doesn't have required parameters");
+          }
+          const eccParams = AsnConvert.parse(eccParamsBuf, ECParameters);
+          switch (eccParams.namedCurve) {
+            case id_secp256r1:
+              (algorithm as any).namedCurve = "P-256";
+              break;
+            case id_secp384r1:
+              (algorithm as any).namedCurve = "P-384";
+              break;
+            case id_secp521r1:
+              (algorithm as any).namedCurve = "P-521";
+              break;
+            default:
+              throw new Error(`Unsupported ECC named curve '${eccParams.namedCurve}'`);
+          }
+        }
+        break;
+      default:
     }
 
     const spki = AsnConvert.serialize(this.asn.tbsCertificate.subjectPublicKeyInfo);
@@ -163,9 +195,11 @@ export class X509Certificate extends AsnData<Certificate> {
     }
   }
 
-  public async verify(date = new Date(), crypto = cryptoProvider.get()) {
+  public async verify(params: X509CertificateVerifyParams, crypto = cryptoProvider.get()) {
+    const date = params.date || new Date();
+    const publicKey = params.publicKey || await this.getPublicKey();
+
     const tbs = AsnConvert.serialize(this.asn.tbsCertificate);
-    const publicKey = await this.getPublicKey();
     const ok = await crypto.subtle.verify(this.signatureAlgorithm as any, publicKey, this.asn.signatureValue, tbs);
     const time = date.getTime();
     return ok && this.notBefore.getTime() < time && time < this.notAfter.getTime();
