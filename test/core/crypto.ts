@@ -4,6 +4,7 @@ import { Convert } from "pvtsutils";
 import { Crypto } from "@peculiar/webcrypto";
 import { AttributeTypeAndValue, AttributeValue, Name as AsnName, RelativeDistinguishedName } from "@peculiar/asn1-x509";
 import { X509CertificateGenerator } from "packages/core/src/crypto/x509_cert_generator";
+import { X509Certificates } from "packages/core/src/crypto/x509_certs";
 
 context("crypto", () => {
 
@@ -170,7 +171,7 @@ context("crypto", () => {
         notBefore: new Date("2020/01/01"),
         notAfter: new Date("2020/01/02"),
         signingAlgorithm: alg,
-        keyPair: keys,
+        keys: keys,
         extensions: [
           new BasicConstraintsExtension(true, 2, true),
           new ExtendedKeyUsageExtension(["1.2.3.4.5.6.7", "2.3.4.5.6.7.8"], true),
@@ -220,6 +221,40 @@ context("crypto", () => {
         publicKey: await caCert.publicKey.export()
       });
       assert.strictEqual(ok, true);
+    });
+
+  });
+
+  context("X509Certificates", () => {
+
+    const certs: X509Certificates = new X509Certificates();
+
+    before(async () => {
+      const alg: EcKeyGenParams & EcdsaParams = { name: "ECDSA", namedCurve: "P-256", hash: "SHA-256" };
+      const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as CryptoKeyPair;
+      certs.push(await X509CertificateGenerator.createSelfSigned({
+        name: "CN=Test #1",
+        notBefore: new Date("2020/01/01"),
+        notAfter: new Date("2020/02/01"),
+        keys,
+        serialNumber: "01",
+        signingAlgorithm: alg,
+      }));
+      certs.push(await X509CertificateGenerator.createSelfSigned({
+        name: "CN=Test #2",
+        notBefore: new Date("2020/01/01"),
+        notAfter: new Date("2020/02/01"),
+        keys,
+        serialNumber: "02",
+        signingAlgorithm: alg,
+      }));
+    });
+
+    it("import/export", async () => {
+      const raw = await certs.export();
+      const certs2 = new X509Certificates(raw);
+
+      assert.strictEqual(certs2.length, 2);
     });
 
   });

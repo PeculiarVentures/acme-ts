@@ -28,7 +28,7 @@ export interface X509CertificateCreateParams extends X509CertificateCreateParams
 
 export interface X509CertificateCreateSelfSignedParams extends X509CertificateCreateParamsBase{
   name: X509CertificateCreateParamsName;
-  keyPair: CryptoKeyPair;
+  keys: CryptoKeyPair;
 }
 
 export class X509CertificateGenerator {
@@ -40,8 +40,8 @@ export class X509CertificateGenerator {
       issuer: params.name,
       notBefore: params.notBefore,
       notAfter: params.notAfter,
-      publicKey: params.keyPair.publicKey,
-      signingKey: params.keyPair.privateKey,
+      publicKey: params.keys.publicKey,
+      signingKey: params.keys.privateKey,
       signingAlgorithm: params.signingAlgorithm,
       extensions: params.extensions,
     }, crypto);
