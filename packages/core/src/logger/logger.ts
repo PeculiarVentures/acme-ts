@@ -41,7 +41,7 @@ export class Logger implements ILogger {
   }
 
   protected checkLevel(lvl: Level): boolean {
-    // todo mask
+    // todo mask and undefined
     switch (this.level) {
       case "debug":
         return lvl === "error" || lvl === "warning" || lvl === "info" || lvl === "debug";
