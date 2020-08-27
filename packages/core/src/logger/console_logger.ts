@@ -14,6 +14,7 @@ export class ConsoleLogger extends Logger {
         console.error(msg, ...obj);
         break;
       case "info":
+      default:
         console.log(msg, ...obj);
         break;
     }

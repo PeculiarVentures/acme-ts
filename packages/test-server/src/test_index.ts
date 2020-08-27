@@ -2,12 +2,11 @@ import express = require("express");
 import { Express } from "express";
 import { routers } from "./routes";
 import { Level, diLogger, ILogger } from "@peculiar/acme-core";
-import { container, Lifecycle } from "tsyringe";
-import { DependencyInjection as diServer, diCertificateEnrollmentService, IServerOptions } from "@peculiar/acme-server";
+import { container } from "tsyringe";
+import { DependencyInjection as diServer, IServerOptions } from "@peculiar/acme-server";
 import { DependencyInjection as diData } from "@peculiar/acme-data-memory";
 import { Crypto } from "@peculiar/webcrypto";
 import { diControllers, Controllers } from "./controllers";
-import { CertificateEnrollmentService } from "./services";
 import * as normalizeURL from "normalize-url";
 
 export interface IAcmeExpressOptions {
@@ -90,9 +89,7 @@ export class AcmeExpress {
     diServer.register(container, serverOptions);
 
     diData.register(container);
-    container
-      .register(diCertificateEnrollmentService, CertificateEnrollmentService, { lifecycle: Lifecycle.Singleton })
-      .register(diControllers, Controllers);
+    container.register(diControllers, Controllers);
 
     app.use(express.json({ type: "application/jose+json" }));
     app.use('/acme', routers);
@@ -101,7 +98,7 @@ export class AcmeExpress {
     const logger = container.resolve<ILogger>(diLogger);
     const keys = Object.keys(serverOptions);
     logger.info("Server options:");
-    keys.forEach( key => logger.info(`${key}: ${(serverOptions as any)[key]}`));
+    keys.forEach( key => logger.info(`  ${key}: ${(serverOptions as any)[key]}`));
     //#endregion
   }
 }
