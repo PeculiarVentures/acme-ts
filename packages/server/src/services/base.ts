@@ -18,6 +18,7 @@ export interface IServerOptions {
   downloadCertificateFormat: "PemCertificateChain" | "PkixCert" | "Pkcs7Mime";
   levelLogger: Level;
   debugMode: boolean;
+  termsOfService?: string;
 }
 
 export class BaseService {
