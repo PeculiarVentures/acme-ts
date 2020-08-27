@@ -13,4 +13,8 @@ export class Request {
   public path = "";
   public queryParams: QueryParams = {};
   public body?: object;
+
+  public constructor(params: Partial<Request> = {}) {
+    Object.assign(this, params);
+  }
 }

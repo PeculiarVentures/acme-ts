@@ -7,9 +7,9 @@ export class Response {
   public headers = new Headers();
   public content?: Content;
 
-  public json() {
+  public json<T = any>() {
     if (this.content) {
-      return this.content.toJSON();
+      return this.content.toJSON<T>();
     }
     throw new Error("No content in ACME response");
   }
