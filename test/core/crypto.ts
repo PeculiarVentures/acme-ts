@@ -1,9 +1,10 @@
 import * as assert from "assert";
-import { Pkcs10CertificateRequest, X509Certificate, cryptoProvider, Name, JsonName } from "@peculiar/acme-core";
+import { Pkcs10CertificateRequest, X509Certificate, cryptoProvider, Name, JsonName, BasicConstraintsExtension as BasicConstraintsExtension, ExtendedKeyUsageExtension, KeyUsagesExtension, KeyUsageFlags, SubjectKeyIdentifierExtension } from "@peculiar/acme-core";
 import { Convert } from "pvtsutils";
 import { Crypto } from "@peculiar/webcrypto";
 import { AttributeTypeAndValue, AttributeValue, Name as AsnName, RelativeDistinguishedName } from "@peculiar/asn1-x509";
 import { X509CertificateGenerator } from "packages/core/src/crypto/x509_cert_generator";
+import { X509Certificates } from "packages/core/src/crypto/x509_certs";
 
 context("crypto", () => {
 
@@ -164,15 +165,19 @@ context("crypto", () => {
         modulusLength: 2048,
       };
       const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as CryptoKeyPair;
-      const cert = await X509CertificateGenerator.create({
+      const cert = await X509CertificateGenerator.createSelfSigned({
         serialNumber: "01",
-        subject: "CN=Test",
-        issuer: "CN=Test",
+        name: "CN=Test",
         notBefore: new Date("2020/01/01"),
         notAfter: new Date("2020/01/02"),
         signingAlgorithm: alg,
-        publicKey: keys.publicKey,
-        signingKey: keys.privateKey,
+        keys: keys,
+        extensions: [
+          new BasicConstraintsExtension(true, 2, true),
+          new ExtendedKeyUsageExtension(["1.2.3.4.5.6.7", "2.3.4.5.6.7.8"], true),
+          new KeyUsagesExtension(KeyUsageFlags.keyCertSign | KeyUsageFlags.cRLSign, true),
+          await SubjectKeyIdentifierExtension.create(keys.publicKey),
+        ]
       });
       const ok = await cert.verify({ date: new Date("2020/01/01 12:00") });
       assert.strictEqual(ok, true);
@@ -213,9 +218,43 @@ context("crypto", () => {
 
       ok = await userCert.verify({
         date: new Date("2020/01/01 12:00"),
-        publicKey: await caCert.getPublicKey()
+        publicKey: await caCert.publicKey.export()
       });
       assert.strictEqual(ok, true);
+    });
+
+  });
+
+  context("X509Certificates", () => {
+
+    const certs: X509Certificates = new X509Certificates();
+
+    before(async () => {
+      const alg: EcKeyGenParams & EcdsaParams = { name: "ECDSA", namedCurve: "P-256", hash: "SHA-256" };
+      const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as CryptoKeyPair;
+      certs.push(await X509CertificateGenerator.createSelfSigned({
+        name: "CN=Test #1",
+        notBefore: new Date("2020/01/01"),
+        notAfter: new Date("2020/02/01"),
+        keys,
+        serialNumber: "01",
+        signingAlgorithm: alg,
+      }));
+      certs.push(await X509CertificateGenerator.createSelfSigned({
+        name: "CN=Test #2",
+        notBefore: new Date("2020/01/01"),
+        notAfter: new Date("2020/02/01"),
+        keys,
+        serialNumber: "02",
+        signingAlgorithm: alg,
+      }));
+    });
+
+    it("import/export", async () => {
+      const raw = await certs.export();
+      const certs2 = new X509Certificates(raw);
+
+      assert.strictEqual(certs2.length, 2);
     });
 
   });

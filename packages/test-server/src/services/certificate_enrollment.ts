@@ -63,7 +63,7 @@ export class CertificateEnrollmentService extends BaseService implements ICertif
       notBefore,
       notAfter,
       signingAlgorithm: CertificateEnrollmentService.signingAlgorithm,
-      publicKey: await req.getPublicKey(this.options.cryptoProvider),
+      publicKey: await req.publicKey.export(this.options.cryptoProvider),
       signingKey: ca.privateKey!,
     }, this.options.cryptoProvider);
     return cert.rawData;

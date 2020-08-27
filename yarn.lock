@@ -904,6 +904,17 @@
   dependencies:
     "@types/node" ">= 8"
 
+"@peculiar/asn1-cms@^2.0.17":
+  version "2.0.19"
+  resolved "https://registry.yarnpkg.com/@peculiar/asn1-cms/-/asn1-cms-2.0.19.tgz#36ddb5f7162647b29609834276c08b25e8b71e24"
+  integrity sha512-ACHv69Em5FzGqunyaiW5FfDx20DV7CTyFjJTXxs8OF7t7WlLOLDZs/PnvlsqHFVVMXMwB44mugt7B+D9V1xdgA==
+  dependencies:
+    "@peculiar/asn1-schema" "^2.0.17"
+    "@peculiar/asn1-x509" "^2.0.17"
+    "@peculiar/asn1-x509-attr" "^2.0.17"
+    asn1js "^2.0.26"
+    tslib "^2.0.1"
+
 "@peculiar/asn1-csr@^2.0.1", "@peculiar/asn1-csr@^2.0.3":
   version "2.0.17"
   resolved "https://registry.yarnpkg.com/@peculiar/asn1-csr/-/asn1-csr-2.0.17.tgz#89695ccd80153669d73f14abb8919f87be566c97"
@@ -941,6 +952,16 @@
     "@types/asn1js" "^0.0.1"
     asn1js "^2.0.26"
     pvtsutils "^1.0.11"
+    tslib "^2.0.1"
+
+"@peculiar/asn1-x509-attr@^2.0.17":
+  version "2.0.17"
+  resolved "https://registry.yarnpkg.com/@peculiar/asn1-x509-attr/-/asn1-x509-attr-2.0.17.tgz#7d4bf1447be9b65e0d1b15c324afee50ad057659"
+  integrity sha512-39Zim6oIkaU1ng3AM3hdV3iLh7wC2uwVe5P0y2Ci7mHqljvhzTK9P02n7odJb0RJj9aYW5HwXqZ2Xo2b84BobA==
+  dependencies:
+    "@peculiar/asn1-schema" "^2.0.17"
+    "@peculiar/asn1-x509" "^2.0.17"
+    asn1js "^2.0.26"
     tslib "^2.0.1"
 
 "@peculiar/asn1-x509@^2.0.1", "@peculiar/asn1-x509@^2.0.17", "@peculiar/asn1-x509@^2.0.2", "@peculiar/asn1-x509@^2.0.3":

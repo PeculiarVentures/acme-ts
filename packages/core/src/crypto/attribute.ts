@@ -3,13 +3,16 @@ import { AsnData } from "./asn_data";
 
 export class Attribute extends AsnData<AsnAttribute>{
 
-  public readonly type: string;
-  public readonly values: ArrayBuffer[];
+  public type!: string;
+  public values!: ArrayBuffer[];
 
   public constructor(raw: BufferSource) {
     super(raw, AsnAttribute);
 
-    this.type = this.asn.type;
-    this.values = this.asn.values;
+  }
+
+  protected onInit(asn: AsnAttribute): void {
+    this.type = asn.type;
+    this.values = asn.values;
   }
 }

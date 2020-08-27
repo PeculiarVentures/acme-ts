@@ -1,13 +1,15 @@
 import { AsnConvert } from "@peculiar/asn1-schema";
-import { Certificate, AlgorithmIdentifier } from "@peculiar/asn1-x509";
+import { Certificate } from "@peculiar/asn1-x509";
 import { id_sha1WithRSAEncryption, id_sha256WithRSAEncryption, id_sha384WithRSAEncryption, id_sha512WithRSAEncryption } from "@peculiar/asn1-rsa";
-import { ECParameters, id_ecdsaWithSHA1, id_ecdsaWithSHA256, id_ecdsaWithSHA384, id_ecdsaWithSHA512, id_ecPublicKey, id_secp256r1, id_secp384r1, id_secp521r1 } from "@peculiar/asn1-ecc";
-import { Convert } from "pvtsutils";
+import { id_ecdsaWithSHA1, id_ecdsaWithSHA256, id_ecdsaWithSHA384, id_ecdsaWithSHA512 } from "@peculiar/asn1-ecc";
+import { BufferSourceConverter, Convert } from "pvtsutils";
 import { HashedAlgorithm } from "./types";
 import { cryptoProvider } from "./provider";
 import { Name } from "./name";
 import { Extension } from "./extension";
 import { AsnData } from "./asn_data";
+import { ExtensionFactory } from "./extensions";
+import { PublicKey } from "./public_key";
 
 export interface X509CertificateVerifyParams {
   date?: Date;
@@ -15,23 +17,36 @@ export interface X509CertificateVerifyParams {
 }
 
 export class X509Certificate extends AsnData<Certificate> {
-  public readonly serialNumber: string;
-  public readonly subject: string;
-  public readonly issuer: string;
-  public readonly notBefore: Date;
-  public readonly notAfter: Date;
-  public readonly signatureAlgorithm: HashedAlgorithm;
-  public readonly extensions: Extension[] = [];
+  private tbs!: ArrayBuffer;
+  public serialNumber!: string;
+  public subject!: string;
+  public issuer!: string;
+  public notBefore!: Date;
+  public notAfter!: Date;
+  public signatureAlgorithm!: HashedAlgorithm;
+  public signature!: ArrayBuffer;
+  public extensions!: Extension[];
   public privateKey?: CryptoKey;
+  public publicKey!: PublicKey;
 
-  public constructor(raw: BufferSource) {
-    super(raw, Certificate);
+  public constructor(asn: Certificate);
+  public constructor(raw: BufferSource);
+  public constructor(param: BufferSource | Certificate) {
+    if (BufferSourceConverter.isBufferSource(param)) {
+      super(param, Certificate);
+    } else {
+      super(param);
+    }
+  }
 
-    const tbs = this.asn.tbsCertificate;
+  protected onInit(asn: Certificate) {
+    const tbs = asn.tbsCertificate;
+    this.tbs = AsnConvert.serialize(tbs);
     this.serialNumber = Convert.ToHex(tbs.serialNumber);
     this.subject = new Name(tbs.subject).toString();
     this.issuer = new Name(tbs.issuer).toString();
-    this.signatureAlgorithm = this.getSignatureAlgorithm();
+    this.signatureAlgorithm = this.getSignatureAlgorithm(asn);
+    this.signature = asn.signatureValue;
     const notBefore = tbs.validity.notBefore.utcTime || tbs.validity.notBefore.generalTime;
     if (!notBefore) {
       throw new Error("Cannot get 'notBefore' value");
@@ -42,9 +57,11 @@ export class X509Certificate extends AsnData<Certificate> {
       throw new Error("Cannot get 'notAfter' value");
     }
     this.notAfter = notAfter;
+    this.extensions = [];
     if (tbs.extensions) {
-      this.extensions = tbs.extensions.map(o => new Extension(AsnConvert.serialize(o)));
+      this.extensions = tbs.extensions.map(o => ExtensionFactory.create(AsnConvert.serialize(o)));
     }
+    this.publicKey = new PublicKey(tbs.subjectPublicKeyInfo);
   }
 
   public getExtension(type: string) {
@@ -60,55 +77,8 @@ export class X509Certificate extends AsnData<Certificate> {
     return this.extensions.filter(o => o.type === type);
   }
 
-  public async getPublicKey(crypto?: Crypto): Promise<CryptoKey>;
-  public async getPublicKey(algorithm: Algorithm, keyUsages: KeyUsage[], crypto?: Crypto): Promise<CryptoKey>;
-  public async getPublicKey(...args: any[]) {
-    let algorithm: Algorithm = this.getSignatureAlgorithm();
-    let keyUsages: KeyUsage[] = ["verify"];
-    let crypto: Crypto;
-    if (args.length > 1) {
-      // alg, usages, crypto?
-      algorithm = args[0] || algorithm;
-      keyUsages = args[1] || keyUsages;
-      crypto = args[2] || cryptoProvider.get();
-    } else {
-      // crypto?
-      crypto = args[0] || cryptoProvider.get();
-    }
-
-    const asnSpki = this.asn.tbsCertificate.subjectPublicKeyInfo;
-    switch (asnSpki.algorithm.algorithm) {
-      case id_ecPublicKey:
-        {
-          const eccParamsBuf = asnSpki.algorithm.parameters;
-          if (!eccParamsBuf) {
-            throw new Error("ECC key algorithm doesn't have required parameters");
-          }
-          const eccParams = AsnConvert.parse(eccParamsBuf, ECParameters);
-          switch (eccParams.namedCurve) {
-            case id_secp256r1:
-              (algorithm as any).namedCurve = "P-256";
-              break;
-            case id_secp384r1:
-              (algorithm as any).namedCurve = "P-384";
-              break;
-            case id_secp521r1:
-              (algorithm as any).namedCurve = "P-521";
-              break;
-            default:
-              throw new Error(`Unsupported ECC named curve '${eccParams.namedCurve}'`);
-          }
-        }
-        break;
-      default:
-    }
-
-    const spki = AsnConvert.serialize(this.asn.tbsCertificate.subjectPublicKeyInfo);
-    return crypto.subtle.importKey("spki", spki, algorithm as any, true, keyUsages);
-  }
-
-  public getSignatureAlgorithm(): HashedAlgorithm {
-    const signatureAlgorithm = this.asn.signatureAlgorithm;
+  private getSignatureAlgorithm(asn: Certificate): HashedAlgorithm {
+    const signatureAlgorithm = asn.signatureAlgorithm;
     switch (signatureAlgorithm.algorithm) {
       case id_sha1WithRSAEncryption:
         return { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-1" } };
@@ -131,77 +101,12 @@ export class X509Certificate extends AsnData<Certificate> {
     }
   }
 
-  public setSignatureAlgorithm(algorithm: HashedAlgorithm) {
-    const algName = algorithm.name.toLowerCase();
-    const hashName = algorithm.hash.name.toLowerCase();
-    switch (algName) {
-      case "rsassa-pkcs1-v1_5":
-        switch (hashName) {
-          case "sha-1":
-            this.asn.signatureAlgorithm = new AlgorithmIdentifier({
-              algorithm: id_sha1WithRSAEncryption,
-              parameters: null,
-            });
-            break;
-          case "sha-256":
-            this.asn.signatureAlgorithm = new AlgorithmIdentifier({
-              algorithm: id_sha256WithRSAEncryption,
-              parameters: null,
-            });
-            break;
-          case "sha-384":
-            this.asn.signatureAlgorithm = new AlgorithmIdentifier({
-              algorithm: id_sha384WithRSAEncryption,
-              parameters: null,
-            });
-            break;
-          case "sha-512":
-            this.asn.signatureAlgorithm = new AlgorithmIdentifier({
-              algorithm: id_sha512WithRSAEncryption,
-              parameters: null,
-            });
-            break;
-        }
-        break;
-      case "ecdsa":
-        switch (hashName) {
-          case "sha-1":
-            this.asn.signatureAlgorithm = new AlgorithmIdentifier({
-              algorithm: id_ecdsaWithSHA1,
-              parameters: null,
-            });
-            break;
-          case "sha-256":
-            this.asn.signatureAlgorithm = new AlgorithmIdentifier({
-              algorithm: id_ecdsaWithSHA256,
-              parameters: null,
-            });
-            break;
-          case "sha-384":
-            this.asn.signatureAlgorithm = new AlgorithmIdentifier({
-              algorithm: id_ecdsaWithSHA384,
-              parameters: null,
-            });
-            break;
-          case "sha-512":
-            this.asn.signatureAlgorithm = new AlgorithmIdentifier({
-              algorithm: id_ecdsaWithSHA512,
-              parameters: null,
-            });
-            break;
-        }
-        break;
-      default:
-        throw new Error(`Unsupported algorithm`);
-    }
-  }
-
   public async verify(params: X509CertificateVerifyParams, crypto = cryptoProvider.get()) {
     const date = params.date || new Date();
-    const publicKey = params.publicKey || await this.getPublicKey();
+    const keyAlgorithm = { ...this.publicKey.algorithm, ...this.signatureAlgorithm };
+    const publicKey = params.publicKey || await this.publicKey.export(keyAlgorithm, ["verify"], crypto);
 
-    const tbs = AsnConvert.serialize(this.asn.tbsCertificate);
-    const ok = await crypto.subtle.verify(this.signatureAlgorithm as any, publicKey, this.asn.signatureValue, tbs);
+    const ok = await crypto.subtle.verify(this.signatureAlgorithm, publicKey, this.signature, this.tbs);
     const time = date.getTime();
     return ok && this.notBefore.getTime() < time && time < this.notAfter.getTime();
   }

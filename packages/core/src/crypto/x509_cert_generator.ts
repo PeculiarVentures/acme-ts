@@ -9,19 +9,43 @@ import { JsonName, Name } from "./name";
 import { HashedAlgorithm } from "./types";
 import { X509Certificate } from "./x509_cert";
 
-export interface X509CertificateCreateParams {
+export type X509CertificateCreateParamsName = string | JsonName;
+
+export interface X509CertificateCreateParamsBase {
   serialNumber: string;
-  subject: string | JsonName;
-  issuer: string;
   notBefore: Date;
   notAfter: Date;
   extensions?: Extension[];
-  publicKey: CryptoKey;
-  signingKey: CryptoKey;
   signingAlgorithm: Algorithm | EcdsaParams;
 }
 
+export interface X509CertificateCreateParams extends X509CertificateCreateParamsBase {
+  subject: X509CertificateCreateParamsName;
+  issuer: X509CertificateCreateParamsName;
+  publicKey: CryptoKey;
+  signingKey: CryptoKey;
+}
+
+export interface X509CertificateCreateSelfSignedParams extends X509CertificateCreateParamsBase{
+  name: X509CertificateCreateParamsName;
+  keys: CryptoKeyPair;
+}
+
 export class X509CertificateGenerator {
+
+  public static async createSelfSigned(params: X509CertificateCreateSelfSignedParams, crypto = cryptoProvider.get()) {
+    return this.create({
+      serialNumber: params.serialNumber,
+      subject: params.name,
+      issuer: params.name,
+      notBefore: params.notBefore,
+      notAfter: params.notAfter,
+      publicKey: params.keys.publicKey,
+      signingKey: params.keys.privateKey,
+      signingAlgorithm: params.signingAlgorithm,
+      extensions: params.extensions,
+    }, crypto);
+  }
 
   public static async create(params: X509CertificateCreateParams, crypto = cryptoProvider.get()) {
     const spki = await crypto.subtle.exportKey("spki", params.publicKey);
