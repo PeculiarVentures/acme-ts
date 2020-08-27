@@ -99,6 +99,7 @@ export class AcmeController extends BaseService {
       await action(response);
     }
     catch (e) {
+      // console.error(e);
       if (e instanceof core.AcmeError) {
         response.status = e.status;
         response.content = new core.Content(e, this.options.formattedResponse);
@@ -136,12 +137,13 @@ export class AcmeController extends BaseService {
       // Validate the POST request belongs to a currently active account, as described in Section 6.
       const account = await this.getAccount(request);
       const key = new JsonWebKey(this.options.cryptoProvider, account.key);
-      if (!token || token && !token.verify(key.getPublicKey())) {
+      if (!token || token && !token.verify(await key.getPublicKey())) {
         throw new core.MalformedError();
       }
 
       // Check that the payload of the JWS is a well - formed JWS object(the "inner JWS").
-      const innerJWS = token.getPayload<JsonWebSignature>();
+      const innerJWS = new JsonWebSignature({}, this.options.cryptoProvider);
+      innerJWS.parse(JSON.stringify(token.getPayload<JsonWebSignature>()));
       const innerProtected = innerJWS.getProtected();
 
       // Check that the JWS protected header of the inner JWS has a "jwk" field.
@@ -151,7 +153,7 @@ export class AcmeController extends BaseService {
       }
       const jwk = new JsonWebKey(this.options.cryptoProvider, jwkReq);
       // Check that the inner JWS verifies using the key in its "jwk" field.
-      if (!innerJWS.verify(jwk.getPublicKey())) {
+      if (!innerJWS.verify(await jwk.getPublicKey())) {
         throw new core.MalformedError("The inner JWT not verified");
       }
 
@@ -183,13 +185,13 @@ export class AcmeController extends BaseService {
       try {
         const updatedAccount = await this.accountService.changeKey(account.id, jwk);
         response.content = new core.Content(await this.convertService.toAccount(updatedAccount));
-        response.headers.location = `${this.options.baseAddress}acct/${updatedAccount.id}`;
+        response.headers.location = `${this.options.baseAddress}/acct/${updatedAccount.id}`;
         response.status = 200; // Ok
       }
       catch (e) {
-        if (e.StatusCode === 409) {
+        if (e.status === 409) {
           const conflictAccount = await this.accountService.getByPublicKey(jwk);
-          response.headers.location = `${this.options.baseAddress}acct/${conflictAccount.id}`;
+          response.headers.location = `${this.options.baseAddress}/acct/${conflictAccount.id}`;
         }
         throw e;
       }
@@ -299,7 +301,7 @@ export class AcmeController extends BaseService {
         account = await this.accountService.update(account.id, params);
       }
 
-      response.headers.location = `${this.options.baseAddress}acct/${account.id}`;
+      response.headers.location = `${this.options.baseAddress}/acct/${account.id}`;
       response.content = new core.Content(await this.convertService.toAccount(account));
     }, request, true);
   }
@@ -372,7 +374,7 @@ export class AcmeController extends BaseService {
       }
 
       // Add links
-      const link = `${this.options.baseAddress}orders`;
+      const link = `${this.options.baseAddress}/orders`;
       let page = 0;
       if (params.cursor) {
         page = Number.parseInt(params.cursor.find(o => o) || "0", 10);

@@ -2,7 +2,7 @@ import { ContentType, ErrorType, Request, Response } from "@peculiar/acme-core";
 import * as dataMemory from "@peculiar/acme-data-memory";
 import * as protocol from "@peculiar/acme-protocol";
 import { AcmeController, diAcmeController, DependencyInjection } from "@peculiar/acme-server";
-import { JsonWebSignature } from "@peculiar/jose";
+import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
 import { Crypto } from "@peculiar/webcrypto";
 import * as assert from "assert";
 import { container } from "tsyringe";
@@ -144,324 +144,246 @@ context.only("Server", () => {
     assert.strictEqual(!!resp.headers.replayNonce, true);
   });
 
-  context("new-account", () => {
+  context("account", () => {
 
-    it("wrong nonce", async () => {
-      const alg: RsaHashedKeyGenParams = {
-        name: "RSASSA-PKCS1-v1_5",
-        hash: "SHA-256",
-        publicExponent: new Uint8Array([1, 0, 1]),
-        modulusLength: 2048,
-      };
-      const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as CryptoKeyPair;
-      const jws = new JsonWebSignature({
-        payload: {
-          contact: ["mailto:some@mail.com"],
-        } as protocol.AccountCreateParams,
-        protected: {
-          nonce: "1234567890",
-        }
-      }, crypto);
-      await jws.sign(alg, keys.privateKey);
+    context("new-account", () => {
 
-      const resp = await controller.newAccount(new Request({
-        path: `${baseAddress}/new-acct`,
-        method: "POST",
-        body: jws.toJSON(),
-      }));
+      it("wrong nonce", async () => {
+        const alg: RsaHashedKeyGenParams = {
+          name: "RSASSA-PKCS1-v1_5",
+          hash: "SHA-256",
+          publicExponent: new Uint8Array([1, 0, 1]),
+          modulusLength: 2048,
+        };
+        const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as CryptoKeyPair;
+        const jws = new JsonWebSignature({
+          payload: {
+            contact: ["mailto:some@mail.com"],
+          } as protocol.AccountCreateParams,
+          protected: {
+            nonce: "1234567890",
+          }
+        }, crypto);
+        await jws.sign(alg, keys.privateKey);
 
-      assert.strictEqual(resp.status, 400);
+        const resp = await controller.newAccount(new Request({
+          path: `${baseAddress}/new-acct`,
+          method: "POST",
+          body: jws.toJSON(),
+        }));
 
-      const json = resp.json<protocol.Error>();
-      assert.strictEqual(json.type, ErrorType.badNonce);
-    });
-
-    it("empty url", async () => {
-      const keys = await generateKey();
-      const jws = new JsonWebSignature({
-        payload: {
-          contact: ["mailto:some@mail.com"],
-        } as protocol.AccountCreateParams,
-        protected: {
-          nonce: await getNonce(),
-        }
-      }, crypto);
-      await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
-
-      const resp = await controller.newAccount(new Request({
-        path: `${baseAddress}/new-acct`,
-        method: "POST",
-        body: jws.toJSON(),
-      }));
-
-      assert.strictEqual(resp.status, 401);
-      assert.strictEqual(!!resp.headers.replayNonce, true);
-
-      const json = resp.json<protocol.Error>();
-      assert.strictEqual(json.type, ErrorType.unauthorized);
-    });
-
-    it("invalid jws signature", async () => {
-      const keys = await generateKey();
-      const nonce = await getNonce();
-
-      const jws = new JsonWebSignature({
-        payload: {
-          contact: ["mailto:some@mail.com"],
-        } as protocol.AccountCreateParams,
-        protected: {
-          nonce,
-          url: `${baseAddress}/new-acct`,
-          jwk: await crypto.subtle.exportKey("jwk", keys.publicKey),
-        }
-      }, crypto);
-      await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
-      jws.signature += "a";
-
-      const resp = await controller.newAccount(new Request({
-        path: `${baseAddress}/new-acct`,
-        method: "POST",
-        body: jws.toJSON(),
-      }));
-
-      assert.strictEqual(resp.status, 401);
-      assert.strictEqual(!!resp.headers.replayNonce, true);
-
-      const json = resp.json<protocol.Error>();
-      assert.strictEqual(json.type, ErrorType.unauthorized);
-    });
-
-    it("create with contacts", async () => {
-      const client = await createAccount({
-        contact: ["mailto:some@mail.com"],
-      }, (resp) => {
-        assert.strictEqual(resp.status, 201);
-        assert(resp.headers.location);
-      });
-
-      assert.deepStrictEqual(client.account.contact, ["mailto:some@mail.com"]);
-      assert.deepStrictEqual(client.account.termsOfServiceAgreed, undefined);
-      assert.deepStrictEqual(client.account.status, "valid");
-      assert.deepStrictEqual(!!client.account.orders, true);
-    });
-
-    it("create without contacts", async () => {
-      const client = await createAccount({}, (resp) => {
-        assert.strictEqual(resp.status, 201);
-        assert(resp.headers.location);
-      });
-
-      assert.strictEqual(client.account.contact, undefined);
-    });
-
-    it("unsupported contact", async () => {
-      const client = await createAccount({ contact: ["wrong email address"] }, (resp) => {
         assert.strictEqual(resp.status, 400);
 
         const json = resp.json<protocol.Error>();
-        // If the server rejects a contact URL for using an unsupported scheme,
-        // it MUST return an error of type "unsupportedContact"
-        assert.strictEqual(json.type, ErrorType.unsupportedContact);
+        assert.strictEqual(json.type, ErrorType.badNonce);
       });
 
-      assert.strictEqual(client.account.contact, undefined);
-    });
+      it("empty url", async () => {
+        const keys = await generateKey();
+        const jws = new JsonWebSignature({
+          payload: {
+            contact: ["mailto:some@mail.com"],
+          } as protocol.AccountCreateParams,
+          protected: {
+            nonce: await getNonce(),
+          }
+        }, crypto);
+        await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
 
-    it("incorrect contact", async () => {
-      const client = await createAccount({ contact: ["mailto:wrong email address"] }, (resp) => {
-        assert.strictEqual(resp.status, 400);
+        const resp = await controller.newAccount(new Request({
+          path: `${baseAddress}/new-acct`,
+          method: "POST",
+          body: jws.toJSON(),
+        }));
+
+        assert.strictEqual(resp.status, 401);
+        assert.strictEqual(!!resp.headers.replayNonce, true);
 
         const json = resp.json<protocol.Error>();
-        // If the server rejects a contact URL for using
-        // a supported scheme but an invalid value, then the server MUST return
-        // an error of type "invalidContact".
-        assert.strictEqual(json.type, ErrorType.invalidContact);
+        assert.strictEqual(json.type, ErrorType.unauthorized);
       });
 
-      assert.strictEqual(client.account.contact, undefined);
-    });
+      it("invalid jws signature", async () => {
+        const keys = await generateKey();
+        const nonce = await getNonce();
 
-    it("get nonexisting account onlyReturnExisting:true", async () => {
-      await createAccount({ onlyReturnExisting: true }, (resp) => {
-        assert.strictEqual(resp.status, 400);
+        const jws = new JsonWebSignature({
+          payload: {
+            contact: ["mailto:some@mail.com"],
+          } as protocol.AccountCreateParams,
+          protected: {
+            nonce,
+            url: `${baseAddress}/new-acct`,
+            jwk: await crypto.subtle.exportKey("jwk", keys.publicKey),
+          }
+        }, crypto);
+        await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
+        jws.signature += "a";
+
+        const resp = await controller.newAccount(new Request({
+          path: `${baseAddress}/new-acct`,
+          method: "POST",
+          body: jws.toJSON(),
+        }));
+
+        assert.strictEqual(resp.status, 401);
+        assert.strictEqual(!!resp.headers.replayNonce, true);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, ErrorType.accountDoesNotExist);
+        assert.strictEqual(json.type, ErrorType.unauthorized);
       });
+
+      it("create with contacts", async () => {
+        const client = await createAccount({
+          contact: ["mailto:some@mail.com"],
+        }, (resp) => {
+          assert.strictEqual(resp.status, 201);
+          assert(resp.headers.location);
+        });
+
+        assert.deepStrictEqual(client.account.contact, ["mailto:some@mail.com"]);
+        assert.deepStrictEqual(client.account.termsOfServiceAgreed, undefined);
+        assert.deepStrictEqual(client.account.status, "valid");
+        assert.deepStrictEqual(!!client.account.orders, true);
+      });
+
+      it("create without contacts", async () => {
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+          assert(resp.headers.location);
+        });
+
+        assert.strictEqual(client.account.contact, undefined);
+      });
+
+      it("unsupported contact", async () => {
+        const client = await createAccount({ contact: ["wrong email address"] }, (resp) => {
+          assert.strictEqual(resp.status, 400);
+
+          const json = resp.json<protocol.Error>();
+          // If the server rejects a contact URL for using an unsupported scheme,
+          // it MUST return an error of type "unsupportedContact"
+          assert.strictEqual(json.type, ErrorType.unsupportedContact);
+        });
+
+        assert.strictEqual(client.account.contact, undefined);
+      });
+
+      it("incorrect contact", async () => {
+        const client = await createAccount({ contact: ["mailto:wrong email address"] }, (resp) => {
+          assert.strictEqual(resp.status, 400);
+
+          const json = resp.json<protocol.Error>();
+          // If the server rejects a contact URL for using
+          // a supported scheme but an invalid value, then the server MUST return
+          // an error of type "invalidContact".
+          assert.strictEqual(json.type, ErrorType.invalidContact);
+        });
+
+        assert.strictEqual(client.account.contact, undefined);
+      });
+
+      it("get nonexisting account onlyReturnExisting:true", async () => {
+        await createAccount({ onlyReturnExisting: true }, (resp) => {
+          assert.strictEqual(resp.status, 400);
+
+          const json = resp.json<protocol.Error>();
+          assert.strictEqual(json.type, ErrorType.accountDoesNotExist);
+        });
+      });
+
+      it("get existing account onlyReturnExisting:true", async () => {
+        // Create new account
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+
+          const json = resp.json<protocol.Account>();
+          assert.strictEqual(json.status, "valid");
+        });
+
+        // Get existing account
+        await createAccount({ onlyReturnExisting: true, keys: client.keys }, (resp) => {
+          assert.strictEqual(resp.status, 200);
+
+          const json = resp.json<protocol.Account>();
+          assert.strictEqual(json.status, "valid");
+        });
+
+      });
+
+      it("get existing account onlyReturnExisting:false", async () => {
+        // Create new account
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+
+          const json = resp.json<protocol.Account>();
+          assert.strictEqual(json.status, "valid");
+        });
+
+        // Get existing account
+        await createAccount({ keys: client.keys }, (resp) => {
+          assert.strictEqual(resp.status, 200);
+
+          const json = resp.json<protocol.Account>();
+          assert.strictEqual(json.status, "valid");
+        });
+
+      });
+
     });
 
-    it("get existing account onlyReturnExisting:true", async () => {
-      // Create new account
-      const client = await createAccount({}, (resp) => {
-        assert.strictEqual(resp.status, 201);
+    context("terms agreement", () => {
 
-        const json = resp.json<protocol.Account>();
-        assert.strictEqual(json.status, "valid");
+      before(() => {
+        controller.options.meta = { termsOfService: `${baseAddress}/terms.pdf` };
       });
 
-      // Get existing account
-      await createAccount({ onlyReturnExisting: true, keys: client.keys }, (resp) => {
+      it("get directory", async () => {
+        const resp = await controller.getDirectory(new Request({
+          method: "GET",
+          path: `${baseAddress}/directory`,
+        }));
+
         assert.strictEqual(resp.status, 200);
 
-        const json = resp.json<protocol.Account>();
-        assert.strictEqual(json.status, "valid");
+        const json = resp.json<protocol.Directory>();
+        assert(json.meta, "Property 'meta' is required in Directory object");
+        assert(json.meta.termsOfService);
+      });
+
+      it("create account without termsOfServiceAgreed", async () => {
+        await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 403);
+
+          const json = resp.json<protocol.Error>();
+          assert.strictEqual(json.type, ErrorType.malformed);
+        });
+      });
+
+      it("create account with termsOfServiceAgreed", async () => {
+        await createAccount({ termsOfServiceAgreed: true }, (resp) => {
+          assert.strictEqual(resp.status, 201);
+
+          const json = resp.json<protocol.Account>();
+          assert.strictEqual(json.termsOfServiceAgreed, true);
+        });
+      });
+
+      after(() => {
+        delete controller.options.meta;
       });
 
     });
 
-    it("get existing account onlyReturnExisting:false", async () => {
-      // Create new account
-      const client = await createAccount({}, (resp) => {
-        assert.strictEqual(resp.status, 201);
+    context("POST account", () => {
 
-        const json = resp.json<protocol.Account>();
-        assert.strictEqual(json.status, "valid");
-      });
-
-      // Get existing account
-      await createAccount({ keys: client.keys }, (resp) => {
-        assert.strictEqual(resp.status, 200);
-
-        const json = resp.json<protocol.Account>();
-        assert.strictEqual(json.status, "valid");
-      });
-
-    });
-
-  });
-
-  context("terms agreement", () => {
-
-    before(() => {
-      controller.options.meta = { termsOfService: `${baseAddress}/terms.pdf` };
-    });
-
-    it("get directory", async () => {
-      const resp = await controller.getDirectory(new Request({
-        method: "GET",
-        path: `${baseAddress}/directory`,
-      }));
-
-      assert.strictEqual(resp.status, 200);
-
-      const json = resp.json<protocol.Directory>();
-      assert(json.meta, "Property 'meta' is required in Directory object");
-      assert(json.meta.termsOfService);
-    });
-
-    it("create account without termsOfServiceAgreed", async () => {
-      await createAccount({}, (resp) => {
-        assert.strictEqual(resp.status, 403);
-
-        const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, ErrorType.malformed);
-      });
-    });
-
-    it("create account with termsOfServiceAgreed", async () => {
-      await createAccount({ termsOfServiceAgreed: true }, (resp) => {
-        assert.strictEqual(resp.status, 201);
-
-        const json = resp.json<protocol.Account>();
-        assert.strictEqual(json.termsOfServiceAgreed, true);
-      });
-    });
-
-    after(() => {
-      delete controller.options.meta;
-    });
-
-  });
-
-  context("POST account", () => {
-
-    it("update contacts", async () => {
-      const client = await createAccount({}, (resp) => {
-        assert.strictEqual(resp.status, 201);
-      });
-      const resp = await controller.postAccount(await createPostRequest(
-        {
-          contact: ["mailto:some-new@mail.com"],
-        } as protocol.AccountUpdateParams,
-        client.location!,
-        client.location!,
-        client.keys,
-      ));
-
-      assert.strictEqual(resp.status, 200);
-
-      const json = resp.json<protocol.Account>();
-      assert.strictEqual(json.status, "valid");
-      assert.deepStrictEqual(json.contact, ["mailto:some-new@mail.com"]);
-    });
-
-    it("remove contacts", async () => {
-      const client = await createAccount({}, (resp) => {
-        assert.strictEqual(resp.status, 201);
-      });
-      const resp = await controller.postAccount(await createPostRequest(
-        {
-          contact: [],
-        } as protocol.AccountUpdateParams,
-        client.location!,
-        client.location!,
-        client.keys,
-      ));
-
-      assert.strictEqual(resp.status, 200);
-
-      const json = resp.json<protocol.Account>();
-      assert.strictEqual(json.status, "valid");
-      assert.deepStrictEqual(json.contact, []);
-    });
-
-    it("invalid contact", async () => {
-      const client = await createAccount({}, (resp) => {
-        assert.strictEqual(resp.status, 201);
-      });
-      const resp = await controller.postAccount(await createPostRequest(
-        {
-          contact: ["mailto:wrong email$address_com"],
-        } as protocol.AccountUpdateParams,
-        client.location!,
-        client.location!,
-        client.keys,
-      ));
-
-      assert.strictEqual(resp.status, 400);
-
-      const json = resp.json<protocol.Error>();
-      assert.strictEqual(json.type, ErrorType.invalidContact);
-    });
-
-    it("unsupported contact", async () => {
-      const client = await createAccount({}, (resp) => {
-        assert.strictEqual(resp.status, 201);
-      });
-      const resp = await controller.postAccount(await createPostRequest(
-        {
-          contact: ["wrong email$address_com"],
-        } as protocol.AccountUpdateParams,
-        client.location!,
-        client.location!,
-        client.keys,
-      ));
-
-      assert.strictEqual(resp.status, 400);
-
-      const json = resp.json<protocol.Error>();
-      assert.strictEqual(json.type, ErrorType.unsupportedContact);
-    });
-
-    it("deactivate", async () => {
-      const client = await createAccount({}, (resp) => {
-        assert.strictEqual(resp.status, 201);
-      });
-
-      {
+      it("update contacts", async () => {
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
         const resp = await controller.postAccount(await createPostRequest(
           {
-            status: "deactivated",
+            contact: ["mailto:some-new@mail.com"],
           } as protocol.AccountUpdateParams,
           client.location!,
           client.location!,
@@ -471,23 +393,164 @@ context.only("Server", () => {
         assert.strictEqual(resp.status, 200);
 
         const json = resp.json<protocol.Account>();
-        assert.strictEqual(json.status, "deactivated");
-      }
+        assert.strictEqual(json.status, "valid");
+        assert.deepStrictEqual(json.contact, ["mailto:some-new@mail.com"]);
+      });
 
-      {
-        // send request to deactivated account
+      it("remove contacts", async () => {
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
         const resp = await controller.postAccount(await createPostRequest(
-          {} as protocol.AccountUpdateParams,
+          {
+            contact: [],
+          } as protocol.AccountUpdateParams,
           client.location!,
           client.location!,
           client.keys,
         ));
 
-        assert.strictEqual(resp.status, 401);
+        assert.strictEqual(resp.status, 200);
+
+        const json = resp.json<protocol.Account>();
+        assert.strictEqual(json.status, "valid");
+        assert.deepStrictEqual(json.contact, []);
+      });
+
+      it("invalid contact", async () => {
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+        const resp = await controller.postAccount(await createPostRequest(
+          {
+            contact: ["mailto:wrong email$address_com"],
+          } as protocol.AccountUpdateParams,
+          client.location!,
+          client.location!,
+          client.keys,
+        ));
+
+        assert.strictEqual(resp.status, 400);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, ErrorType.unauthorized);
+        assert.strictEqual(json.type, ErrorType.invalidContact);
+      });
+
+      it("unsupported contact", async () => {
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+        const resp = await controller.postAccount(await createPostRequest(
+          {
+            contact: ["wrong email$address_com"],
+          } as protocol.AccountUpdateParams,
+          client.location!,
+          client.location!,
+          client.keys,
+        ));
+
+        assert.strictEqual(resp.status, 400);
+
+        const json = resp.json<protocol.Error>();
+        assert.strictEqual(json.type, ErrorType.unsupportedContact);
+      });
+
+      it("deactivate", async () => {
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+
+        {
+          const resp = await controller.postAccount(await createPostRequest(
+            {
+              status: "deactivated",
+            } as protocol.AccountUpdateParams,
+            client.location!,
+            client.location!,
+            client.keys,
+          ));
+
+          assert.strictEqual(resp.status, 200);
+
+          const json = resp.json<protocol.Account>();
+          assert.strictEqual(json.status, "deactivated");
+        }
+
+        {
+          // send request to deactivated account
+          const resp = await controller.postAccount(await createPostRequest(
+            {} as protocol.AccountUpdateParams,
+            client.location!,
+            client.location!,
+            client.keys,
+          ));
+
+          assert.strictEqual(resp.status, 401);
+
+          const json = resp.json<protocol.Error>();
+          assert.strictEqual(json.type, ErrorType.unauthorized);
+        }
+      });
+
+    });
+
+    context("key rollover", () => {
+
+      async function createNewKey(oldKey: CryptoKey, kid: string, keys?: CryptoKeyPair) {
+        keys ??= await generateKey();
+        const innerToken = new JsonWebSignature({
+          protected: {
+            url: `${baseAddress}/key-change`,
+            jwk: new JsonWebKey(crypto, await crypto.subtle.exportKey("jwk", keys.publicKey)),
+          },
+          payload: {
+            account: kid,
+            oldKey: new JsonWebKey(crypto, await crypto.subtle.exportKey("jwk", oldKey)),
+          }
+        }, crypto);
+        await innerToken.sign({ hash: "SHA-256", ...keys.privateKey.algorithm }, keys.privateKey);
+        return innerToken.toJSON();
       }
+
+      it("success", async () => {
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+        const resp = await controller.keyChange(await createPostRequest(
+          await createNewKey(client.keys.publicKey, client.location!),
+          `${baseAddress}/key-change`,
+          client.location!,
+          client.keys,
+        ));
+
+        assert.strictEqual(resp.status, 200);
+        assert.strictEqual(resp.headers.location, client.location);
+
+        const json = resp.json<protocol.Account>();
+        assert.strictEqual(json.status, "valid");
+      });
+
+      it("conflict", async () => {
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+        const client2 = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+        const resp = await controller.keyChange(await createPostRequest(
+          await createNewKey(client.keys.publicKey, client.location!, client2.keys),
+          `${baseAddress}/key-change`,
+          client.location!,
+          client.keys,
+        ));
+
+        assert.strictEqual(resp.status, 409);
+        assert.strictEqual(resp.headers.location, client2.location);
+
+        const json = resp.json<protocol.Error>();
+        assert.strictEqual(json.type, ErrorType.malformed);
+      });
+
     });
 
   });
