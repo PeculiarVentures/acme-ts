@@ -1,14 +1,12 @@
 import express = require("express");
 import { PORT } from './config/constants';
 import "./dependency";
-import { routers } from "./routes";
+import { AcmeExpress } from "./test_index";
 
 const app = express();
 
-app.use(express.json({ type: "application/jose+json" }));
-
-app.use('/acme', routers);
+AcmeExpress.register(app)
 
 app.listen(PORT, () => {
-  console.log(`Server is listening on port ${PORT}`);
+  console.log(`Server is running`);
 });
