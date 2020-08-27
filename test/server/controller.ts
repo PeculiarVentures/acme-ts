@@ -48,6 +48,25 @@ context.only("Server", () => {
     return await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as CryptoKeyPair;
   }
 
+  async function createPostRequest(params: any, url: string, kid: string, keys: CryptoKeyPair) {
+    const jws = new JsonWebSignature({
+      payload: params,
+      protected: {
+        nonce: await getNonce(),
+        url,
+        kid,
+        jwk: await crypto.subtle.exportKey("jwk", keys.publicKey),
+      }
+    }, crypto);
+    await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
+
+    return new Request({
+      path: url,
+      method: "POST",
+      body: jws.toJSON(),
+    });
+  }
+
   // eslint-disable-next-line @typescript-eslint/member-delimiter-style
   async function createAccount(params: protocol.AccountCreateParams & { keys?: CryptoKeyPair; }, response?: (resp: Response) => void) {
     const keys = params.keys || await generateKey();
@@ -69,8 +88,7 @@ context.only("Server", () => {
 
     if (resp.status === 200 || resp.status === 201) {
       assert(resp.headers.location, "location header is required");
-      // todo: uncomment
-      // assert.strictEqual(resp.headers.location.startsWith(`${baseAddress}/acct/`), true, "Wrong Account location URL");
+      assert.strictEqual(resp.headers.location.startsWith(`${baseAddress}/acct/`), true, "Wrong Account location URL");
     }
     assert.strictEqual(!!resp.headers.replayNonce, true);
 
@@ -222,6 +240,7 @@ context.only("Server", () => {
       });
 
       assert.deepStrictEqual(client.account.contact, ["mailto:some@mail.com"]);
+      assert.deepStrictEqual(client.account.termsOfServiceAgreed, undefined);
       assert.deepStrictEqual(client.account.status, "valid");
       assert.deepStrictEqual(!!client.account.orders, true);
     });
@@ -235,7 +254,7 @@ context.only("Server", () => {
       assert.strictEqual(client.account.contact, undefined);
     });
 
-    it("wrong contact scheme", async () => {
+    it("unsupported contact", async () => {
       const client = await createAccount({ contact: ["wrong email address"] }, (resp) => {
         assert.strictEqual(resp.status, 400);
 
@@ -248,7 +267,7 @@ context.only("Server", () => {
       assert.strictEqual(client.account.contact, undefined);
     });
 
-    it("wrong contact format", async () => {
+    it("incorrect contact", async () => {
       const client = await createAccount({ contact: ["mailto:wrong email address"] }, (resp) => {
         assert.strictEqual(resp.status, 400);
 
@@ -350,6 +369,125 @@ context.only("Server", () => {
 
     after(() => {
       delete controller.options.meta;
+    });
+
+  });
+
+  context("POST account", () => {
+
+    it("update contacts", async () => {
+      const client = await createAccount({}, (resp) => {
+        assert.strictEqual(resp.status, 201);
+      });
+      const resp = await controller.postAccount(await createPostRequest(
+        {
+          contact: ["mailto:some-new@mail.com"],
+        } as protocol.AccountUpdateParams,
+        client.location!,
+        client.location!,
+        client.keys,
+      ));
+
+      assert.strictEqual(resp.status, 200);
+
+      const json = resp.json<protocol.Account>();
+      assert.strictEqual(json.status, "valid");
+      assert.deepStrictEqual(json.contact, ["mailto:some-new@mail.com"]);
+    });
+
+    it("remove contacts", async () => {
+      const client = await createAccount({}, (resp) => {
+        assert.strictEqual(resp.status, 201);
+      });
+      const resp = await controller.postAccount(await createPostRequest(
+        {
+          contact: [],
+        } as protocol.AccountUpdateParams,
+        client.location!,
+        client.location!,
+        client.keys,
+      ));
+
+      assert.strictEqual(resp.status, 200);
+
+      const json = resp.json<protocol.Account>();
+      assert.strictEqual(json.status, "valid");
+      assert.deepStrictEqual(json.contact, []);
+    });
+
+    it("invalid contact", async () => {
+      const client = await createAccount({}, (resp) => {
+        assert.strictEqual(resp.status, 201);
+      });
+      const resp = await controller.postAccount(await createPostRequest(
+        {
+          contact: ["mailto:wrong email$address_com"],
+        } as protocol.AccountUpdateParams,
+        client.location!,
+        client.location!,
+        client.keys,
+      ));
+
+      assert.strictEqual(resp.status, 400);
+
+      const json = resp.json<protocol.Error>();
+      assert.strictEqual(json.type, ErrorType.invalidContact);
+    });
+
+    it("unsupported contact", async () => {
+      const client = await createAccount({}, (resp) => {
+        assert.strictEqual(resp.status, 201);
+      });
+      const resp = await controller.postAccount(await createPostRequest(
+        {
+          contact: ["wrong email$address_com"],
+        } as protocol.AccountUpdateParams,
+        client.location!,
+        client.location!,
+        client.keys,
+      ));
+
+      assert.strictEqual(resp.status, 400);
+
+      const json = resp.json<protocol.Error>();
+      assert.strictEqual(json.type, ErrorType.unsupportedContact);
+    });
+
+    it("deactivate", async () => {
+      const client = await createAccount({}, (resp) => {
+        assert.strictEqual(resp.status, 201);
+      });
+
+      {
+        const resp = await controller.postAccount(await createPostRequest(
+          {
+            status: "deactivated",
+          } as protocol.AccountUpdateParams,
+          client.location!,
+          client.location!,
+          client.keys,
+        ));
+
+        assert.strictEqual(resp.status, 200);
+
+        const json = resp.json<protocol.Account>();
+        assert.strictEqual(json.status, "deactivated");
+      }
+
+      {
+        // send request to deactivated account
+        const resp = await controller.postAccount(await createPostRequest(
+          {} as protocol.AccountUpdateParams,
+          client.location!,
+          client.location!,
+          client.keys,
+        ));
+
+        assert.strictEqual(resp.status, 401);
+
+        const json = resp.json<protocol.Error>();
+        assert.strictEqual(json.type, ErrorType.unauthorized);
+      }
     });
 
   });
