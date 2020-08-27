@@ -3,7 +3,6 @@ import * as types from "./services/types";
 import * as services from "./services";
 import { AcmeController, diAcmeController } from "./controllers";
 import { Empty } from "@peculiar/acme-data";
-import { diLogger } from "packages/core/src/logger";
 
 export class DependencyInjection {
   public static register(container: DependencyContainer, options: services.IServerOptions) {

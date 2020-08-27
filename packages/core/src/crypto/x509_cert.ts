@@ -65,15 +65,15 @@ export class X509Certificate extends AsnData<Certificate> {
   public async getPublicKey(...args: any[]) {
     let algorithm: Algorithm = this.getSignatureAlgorithm();
     let keyUsages: KeyUsage[] = ["verify"];
-    let crypto = cryptoProvider.get();
+    let crypto: Crypto;
     if (args.length > 1) {
       // alg, usages, crypto?
       algorithm = args[0] || algorithm;
       keyUsages = args[1] || keyUsages;
-      crypto = args[2] || crypto;
+      crypto = args[2] || cryptoProvider.get();
     } else {
       // crypto?
-      crypto = args[0] || crypto;
+      crypto = args[0] || cryptoProvider.get();
     }
 
     const asnSpki = this.asn.tbsCertificate.subjectPublicKeyInfo;
