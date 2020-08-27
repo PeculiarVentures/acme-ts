@@ -332,7 +332,7 @@ context.only("Server", () => {
 
     it("create account without termsOfServiceAgreed", async () => {
       await createAccount({}, (resp) => {
-        assert.strictEqual(resp.status, 400);
+        assert.strictEqual(resp.status, 403);
 
         const json = resp.json<protocol.Error>();
         assert.strictEqual(json.type, ErrorType.malformed);
