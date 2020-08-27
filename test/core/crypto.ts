@@ -255,6 +255,8 @@ context("crypto", () => {
       const certs2 = new X509Certificates(raw);
 
       assert.strictEqual(certs2.length, 2);
+      assert.strictEqual(certs2[0].subject, "CN=Test #1");
+      assert.strictEqual(certs2[1].subject, "CN=Test #2");
     });
 
   });
