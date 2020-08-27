@@ -52,8 +52,8 @@ export class AccountService extends BaseService implements IAccountService {
   protected onCreate(account: IAccount, key: JsonWebKey, params: AccountCreateParams) {
     account.status = "valid";
     account.key = key;
-    account.contacts = params.contact || [];
-    account.termsOfServiceAgreed = params.termsOfServiceAgreed || false;
+    account.contacts = params.contact;
+    account.termsOfServiceAgreed = params.termsOfServiceAgreed;
   }
 
   public async deactivate(accountId: Key) {

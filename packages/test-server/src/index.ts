@@ -1,6 +1,4 @@
 import express = require("express");
-import { PORT } from './config/constants';
-import "./dependency";
 import { AcmeExpress } from "./test_index";
 import { container } from "tsyringe";
 import { diLogger } from "@peculiar/acme-core";
@@ -14,8 +12,6 @@ container
   .register(diLogger, ConsoleLogger)
   .registerSingleton(diCertificateEnrollmentService, CertificateEnrollmentService);
 
-AcmeExpress.register(app);
+AcmeExpress.register(app, {baseAddress: "http://localhost:4000/acme"});
 
-app.listen(PORT, () => {
-  console.log(`Server is running`);
-});
+app.listen(4000, () => { console.log(`Server is running`); });

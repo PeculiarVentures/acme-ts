@@ -12,8 +12,8 @@ export const diAccount = "ACME.Models.Account";
 export interface IAccount extends IBaseObject {
   status: AccountStatus;
   key: JsonWebKey;
-  termsOfServiceAgreed: boolean;
+  termsOfServiceAgreed?: boolean;
   externalAccountId?: Key;
-  contacts: string[];
+  contacts?: string[];
   createdAt: Date;
 }

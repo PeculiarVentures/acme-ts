@@ -8,6 +8,7 @@ import { DependencyInjection as diData } from "@peculiar/acme-data-memory";
 import { Crypto } from "@peculiar/webcrypto";
 import { diControllers, Controllers } from "./controllers";
 import * as normalizeURL from "normalize-url";
+import * as url from "url";
 
 export interface IAcmeExpressOptions {
   baseAddress?: string;
@@ -29,12 +30,11 @@ export class AcmeExpress {
     //#region baseAddress
     let baseAddress = options?.baseAddress;
     if (baseAddress) {
-      const url = new URL(baseAddress);
-      if (!url.hostname) {
-        url.hostname = "http://localhost/";
+      let urlPath = url.parse(baseAddress);
+      if (!urlPath.hostname) {
+        urlPath = url.parse(`http://localhost/${urlPath.pathname}`);
       }
-      //todo add normalize-url
-      baseAddress = normalizeURL(url.toString());
+      baseAddress = normalizeURL(urlPath.href);
     } else {
       baseAddress = BaseAddress;
     }
@@ -92,13 +92,13 @@ export class AcmeExpress {
     container.register(diControllers, Controllers);
 
     app.use(express.json({ type: "application/jose+json" }));
-    app.use('/acme', routers);
+    app.use(url.parse(baseAddress).pathname || "/", routers);
 
     //#region Print options
     const logger = container.resolve<ILogger>(diLogger);
     const keys = Object.keys(serverOptions);
     logger.info("Server options:");
-    keys.forEach( key => logger.info(`  ${key}: ${(serverOptions as any)[key]}`));
+    keys.forEach(key => logger.info(`  ${key}: ${(serverOptions as any)[key]}`));
     //#endregion
   }
 }
