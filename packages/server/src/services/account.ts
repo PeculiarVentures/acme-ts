@@ -3,7 +3,7 @@ import { BaseService, diServerOptions, IServerOptions } from "./base";
 import { IAccountRepository, diAccountRepository, IAccount, Key, diAccount } from "@peculiar/acme-data";
 import { IExternalAccountService, diExternalAccountService, IAccountService } from "./types";
 import { AccountCreateParams, AccountUpdateParams } from "@peculiar/acme-protocol";
-import { AccountDoesNotExistError, MalformedError, UnsupportedContactError, ArgumentNullError, Logger, diLogger, ILogger } from "@peculiar/acme-core";
+import { AccountDoesNotExistError, MalformedError, UnsupportedContactError, ArgumentNullError, Logger, diLogger, ILogger, InvalidContactError } from "@peculiar/acme-core";
 import { JsonWebKey } from "@peculiar/jose";
 
 @injectable()
@@ -18,6 +18,10 @@ export class AccountService extends BaseService implements IAccountService {
   }
 
   public async create(key: JsonWebKey, params: AccountCreateParams) {
+    if (params.contact) {
+      this.validateContacts(params.contact);
+    }
+
     // Creates account
     let account = container.resolve<IAccount>(diAccount);
     this.onCreate(account, key, params);
@@ -111,14 +115,9 @@ export class AccountService extends BaseService implements IAccountService {
   }
 
   public async update(accountId: Key, params: AccountUpdateParams) {
-    //#region Check arguments
-    if (!params) {
-      throw new MalformedError("Parameters is empty");
+    if (params.contact) {
+      this.validateContacts(params.contact);
     }
-    if (params.contact && !this.validateContacts(params.contact)) {
-      throw new UnsupportedContactError();
-    }
-    //#endregion
 
     // Get account
     let account = await this.getById(accountId);
@@ -140,39 +139,29 @@ export class AccountService extends BaseService implements IAccountService {
   }
 
   protected validateContacts(contacts: string[]) {
-    //#region Check arguments
-    if (contacts == null) {
+    if (!contacts) {
       throw new ArgumentNullError("contacts");
     }
-    //#endregion
 
     contacts.forEach(contact => {
-      try {
-        if (!this.onValidateContact(contact)) {
-          return false;
-        }
-      }
-      catch (error) {
-        //todo logger.error
-        return false;
-      }
+      this.onValidateContact(contact);
     });
-
-    return true;
   }
 
   protected onValidateContact(contact: string) {
-    return this.isMailto(contact);
+    this.isMailto(contact);
   }
 
   protected isMailto(contact: string) {
-    try {
-      const url = new URL(contact);
-      return url.protocol == "mailto:";
+    const patternType = /^mailto:/g;
+    if (!patternType.test(contact)) {
+      throw new UnsupportedContactError();
     }
-    catch (error) {
-      //todo logger.error
-      return false;
+
+    // eslint-disable-next-line no-control-regex
+    const pattern = /^mailto:(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$/g;
+    if (!pattern.test(contact)) {
+      throw new InvalidContactError;
     }
   }
 
