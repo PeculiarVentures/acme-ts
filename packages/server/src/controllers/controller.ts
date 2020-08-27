@@ -226,15 +226,17 @@ export class AcmeController extends BaseService {
         }
         response.content = new core.Content(await this.convertService.toAccount(account), this.options.formattedResponse);
         response.status = core.HttpStatusCode.ok;
-      }
-      else {
+      } else {
         if (!account) {
-          // Create new account
-          account = await this.accountService.create( new JsonWebKey(this.options.cryptoProvider, header.jwk!), params);
-          response.content = new core.Content(await this.convertService.toAccount(account), this.options.formattedResponse);
-          response.status = 201; // Created
-        }
-        else {
+          if (!params.termsOfServiceAgreed) {
+            throw new core.MalformedError("Must agree to terms of service");
+          } else {
+            // Create new account
+            account = await this.accountService.create(new JsonWebKey(this.options.cryptoProvider, header.jwk!), params);
+            response.content = new core.Content(await this.convertService.toAccount(account), this.options.formattedResponse);
+            response.status = 201; // Created
+          }
+        } else {
           // Existing account
           response.content = new core.Content(await this.convertService.toAccount(account), this.options.formattedResponse);
         }
@@ -298,7 +300,7 @@ export class AcmeController extends BaseService {
       }
 
       response.headers.location = `${this.options.baseAddress}acct/${account.id}`;
-      response.content = new core.Content( await this.convertService.toAccount(account));
+      response.content = new core.Content(await this.convertService.toAccount(account));
     }, request, true);
   }
   //#endregion
