@@ -121,65 +121,30 @@ export class JsonWebKey implements globalThis.JsonWebKey {
     return hash;
   }
 
-  public getPublicKey() {
+  public async getPublicKey() {
     if (this.kty === KeyTypes.EC) {
-      return this.getEcdsaKey();
+      return this.getEcdsaPublicKey();
     }
     else if (this.kty === KeyTypes.RSA) {
-      return this.getRsaKey();
+      return this.getRsaPublicKey();
     }
     throw new Error(`Unsupported type ${this.kty}`);
   }
 
-  public getEcdsaKey() {
-    let result = new CryptoKey();
-    this.#cryptoProvider.subtle.importKey(
-      "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
-      {   //this is an example jwk key, other key types are Uint8Array objects
-        kty: this.kty,
-        crv: this.crv,
-        x: this.x,
-        y: this.y,
-        ext: this.ext,
-      },
-      {   //these are the algorithm options
-        name: "ECDSA",
-        namedCurve: this.crv, //can be "P-256", "P-384", or "P-521"
-      },
-      false, //whether the key is extractable (i.e. can be used in exportKey)
-      ["verify"] //"verify" for public key import, "sign" for private key imports
-    )
-      .then(function (publicKey) {
-        //returns a publicKey (or privateKey if you are importing a private key)
-        result = publicKey;
-      });
-    return result;
+  public async getEcdsaPublicKey() {
+    const alg = {
+      name: "ECDSA",
+      namedCurve: this.crv,
+    };
+    return await this.#cryptoProvider.subtle.importKey("jwk", this, alg, true, ["verify"]);
   }
 
-  public getRsaKey() {
-    let result = new CryptoKey();
-    this.#cryptoProvider.subtle.importKey(
-      "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
-      {   //this is an example jwk key, other key types are Uint8Array objects
-        kty: this.kty,
-        e: this.e,
-        n: this.n,
-        alg: this.alg,
-        ext: this.ext,
-
-      },
-      {   //these are the algorithm options
-        name: "RSASSA-PKCS1-v1_5",
-        hash: { name: "SHA-256" }, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
-      },
-      false, //whether the key is extractable (i.e. can be used in exportKey)
-      ["verify"] //"verify" for public key import, "sign" for private key imports
-    )
-      .then(function (publicKey) {
-        //returns a publicKey (or privateKey if you are importing a private key)
-        result = publicKey;
-      });
-    return result;
+  public async getRsaPublicKey() {
+    const alg = {
+      name: "RSASSA-PKCS1-v1_5",
+      hash: { name: "SHA-256" },
+    };
+    return await this.#cryptoProvider.subtle.importKey("jwk", this, alg, true, ["verify"]);
   }
 }
 
