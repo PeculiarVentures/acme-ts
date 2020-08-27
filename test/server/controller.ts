@@ -7,7 +7,7 @@ import { Crypto } from "@peculiar/webcrypto";
 import * as assert from "assert";
 import { container } from "tsyringe";
 
-const baseAddress = "http://localhost/";
+const baseAddress = "http://localhost";
 
 context.only("Server", () => {
 
@@ -31,7 +31,7 @@ context.only("Server", () => {
   //#region Helpers
   async function getNonce() {
     const nonceResp = await controller.getNonce(new Request({
-      path: `${baseAddress}new-nonce`,
+      path: `${baseAddress}/new-nonce`,
       method: "HEAD",
     }));
     assert(nonceResp.headers.replayNonce, "replayNonce is required");
@@ -48,27 +48,30 @@ context.only("Server", () => {
     return await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as CryptoKeyPair;
   }
 
-  async function createAccount(params: protocol.AccountCreateParams, response?: (resp: Response) => void) {
-    const keys = await generateKey();
+  // eslint-disable-next-line @typescript-eslint/member-delimiter-style
+  async function createAccount(params: protocol.AccountCreateParams & { keys?: CryptoKeyPair; }, response?: (resp: Response) => void) {
+    const keys = params.keys || await generateKey();
     const jws = new JsonWebSignature({
       payload: params,
       protected: {
         nonce: await getNonce(),
-        url: `${baseAddress}new-acct`,
+        url: `${baseAddress}/new-acct`,
         jwk: await crypto.subtle.exportKey("jwk", keys.publicKey),
       }
     }, crypto);
     await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
 
     const resp = await controller.newAccount(new Request({
-      path: `${baseAddress}new-acct`,
+      path: `${baseAddress}/new-acct`,
       method: "POST",
       body: jws.toJSON(),
     }));
 
-    assert(resp.headers.location, "location header is required");
-    // todo: uncomment
-    // assert.strictEqual(resp.headers.location.startsWith(`${baseAddress}acct/`), true, "Wrong Account location URL");
+    if (resp.status === 200 || resp.status === 201) {
+      assert(resp.headers.location, "location header is required");
+      // todo: uncomment
+      // assert.strictEqual(resp.headers.location.startsWith(`${baseAddress}/acct/`), true, "Wrong Account location URL");
+    }
     assert.strictEqual(!!resp.headers.replayNonce, true);
 
     if (response) {
@@ -85,7 +88,7 @@ context.only("Server", () => {
 
   it("GET directory", async () => {
     const resp = await controller.getDirectory(new Request({
-      path: `${baseAddress}directory`,
+      path: `${baseAddress}/directory`,
       method: "GET",
     }));
 
@@ -93,17 +96,17 @@ context.only("Server", () => {
     assert.strictEqual(resp.content?.type, ContentType.json);
 
     const json: protocol.Directory = resp.json();
-    assert.strictEqual(json.keyChange, `${baseAddress}key-change`);
-    assert.strictEqual(json.newAccount, `${baseAddress}new-acct`);
-    assert.strictEqual(json.newAuth, `${baseAddress}new-authz`);
-    assert.strictEqual(json.newNonce, `${baseAddress}new-nonce`);
-    assert.strictEqual(json.newOrder, `${baseAddress}new-order`);
-    assert.strictEqual(json.revokeCert, `${baseAddress}revoke`);
+    assert.strictEqual(json.keyChange, `${baseAddress}/key-change`);
+    assert.strictEqual(json.newAccount, `${baseAddress}/new-acct`);
+    assert.strictEqual(json.newAuth, `${baseAddress}/new-authz`);
+    assert.strictEqual(json.newNonce, `${baseAddress}/new-nonce`);
+    assert.strictEqual(json.newOrder, `${baseAddress}/new-order`);
+    assert.strictEqual(json.revokeCert, `${baseAddress}/revoke`);
   });
 
   it("GET new-nonce", async () => {
     const resp = await controller.getNonce(new Request({
-      path: `${baseAddress}new-nonce`,
+      path: `${baseAddress}/new-nonce`,
       method: "GET",
     }));
 
@@ -114,7 +117,7 @@ context.only("Server", () => {
 
   it("HEAD new-nonce", async () => {
     const resp = await controller.getNonce(new Request({
-      path: `${baseAddress}new-nonce`,
+      path: `${baseAddress}/new-nonce`,
       method: "HEAD",
     }));
 
@@ -144,7 +147,7 @@ context.only("Server", () => {
       await jws.sign(alg, keys.privateKey);
 
       const resp = await controller.newAccount(new Request({
-        path: `${baseAddress}new-acct`,
+        path: `${baseAddress}/new-acct`,
         method: "POST",
         body: jws.toJSON(),
       }));
@@ -168,7 +171,7 @@ context.only("Server", () => {
       await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
 
       const resp = await controller.newAccount(new Request({
-        path: `${baseAddress}new-acct`,
+        path: `${baseAddress}/new-acct`,
         method: "POST",
         body: jws.toJSON(),
       }));
@@ -190,7 +193,7 @@ context.only("Server", () => {
         } as protocol.AccountCreateParams,
         protected: {
           nonce,
-          url: `${baseAddress}new-acct`,
+          url: `${baseAddress}/new-acct`,
           jwk: await crypto.subtle.exportKey("jwk", keys.publicKey),
         }
       }, crypto);
@@ -198,7 +201,7 @@ context.only("Server", () => {
       jws.signature += "a";
 
       const resp = await controller.newAccount(new Request({
-        path: `${baseAddress}new-acct`,
+        path: `${baseAddress}/new-acct`,
         method: "POST",
         body: jws.toJSON(),
       }));
@@ -219,6 +222,8 @@ context.only("Server", () => {
       });
 
       assert.deepStrictEqual(client.account.contact, ["mailto:some@mail.com"]);
+      assert.deepStrictEqual(client.account.status, "valid");
+      assert.deepStrictEqual(!!client.account.orders, true);
     });
 
     it("create without contacts", async () => {
@@ -231,7 +236,7 @@ context.only("Server", () => {
     });
 
     it("wrong contact scheme", async () => {
-      const client = await createAccount({contact: ["wrong email address"]}, (resp) => {
+      const client = await createAccount({ contact: ["wrong email address"] }, (resp) => {
         assert.strictEqual(resp.status, 400);
 
         const json = resp.json<protocol.Error>();
@@ -244,7 +249,7 @@ context.only("Server", () => {
     });
 
     it("wrong contact format", async () => {
-      const client = await createAccount({contact: ["mailto:wrong email address"]}, (resp) => {
+      const client = await createAccount({ contact: ["mailto:wrong email address"] }, (resp) => {
         assert.strictEqual(resp.status, 400);
 
         const json = resp.json<protocol.Error>();
@@ -257,13 +262,60 @@ context.only("Server", () => {
       assert.strictEqual(client.account.contact, undefined);
     });
 
+    it("get nonexisting account onlyReturnExisting:true", async () => {
+      await createAccount({ onlyReturnExisting: true }, (resp) => {
+        assert.strictEqual(resp.status, 400);
+
+        const json = resp.json<protocol.Error>();
+        assert.strictEqual(json.type, ErrorType.accountDoesNotExist);
+      });
+    });
+
+    it("get existing account onlyReturnExisting:true", async () => {
+      // Create new account
+      const client = await createAccount({}, (resp) => {
+        assert.strictEqual(resp.status, 201);
+
+        const json = resp.json<protocol.Account>();
+        assert.strictEqual(json.status, "valid");
+      });
+
+      // Get existing account
+      await createAccount({ onlyReturnExisting: true, keys: client.keys }, (resp) => {
+        assert.strictEqual(resp.status, 200);
+
+        const json = resp.json<protocol.Account>();
+        assert.strictEqual(json.status, "valid");
+      });
+
+    });
+
+    it("get existing account onlyReturnExisting:false", async () => {
+      // Create new account
+      const client = await createAccount({}, (resp) => {
+        assert.strictEqual(resp.status, 201);
+
+        const json = resp.json<protocol.Account>();
+        assert.strictEqual(json.status, "valid");
+      });
+
+      // Get existing account
+      await createAccount({ keys: client.keys }, (resp) => {
+        assert.strictEqual(resp.status, 200);
+
+        const json = resp.json<protocol.Account>();
+        assert.strictEqual(json.status, "valid");
+      });
+
+    });
+
   });
 
   context("terms agreement", () => {
 
     before(() => {
       controller.options.termsOfService = `${baseAddress}/terms.pdf`;
-    })
+    });
 
     it("get directory", async () => {
       const resp = await controller.getDirectory(new Request({
@@ -278,7 +330,7 @@ context.only("Server", () => {
       assert(json.meta.termsOfService);
     });
 
-    it("create account", async () => {
+    it("create account without termsOfServiceAgreed", async () => {
       const client = await createAccount({}, (resp) => {
         assert.strictEqual(resp.status, 400);
 
@@ -289,9 +341,20 @@ context.only("Server", () => {
       assert.strictEqual(client.account.contact, undefined);
     });
 
+    it("create account with termsOfServiceAgreed", async () => {
+      const client = await createAccount({ termsOfServiceAgreed: true }, (resp) => {
+        assert.strictEqual(resp.status, 201);
+
+        const json = resp.json<protocol.Account>();
+        assert.strictEqual(json.termsOfServiceAgreed, true);
+      });
+
+      assert.strictEqual(client.account.contact, undefined);
+    });
+
     after(() => {
       delete controller.options.termsOfService;
-    })
+    });
 
   });
 
