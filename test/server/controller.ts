@@ -314,7 +314,7 @@ context.only("Server", () => {
   context("terms agreement", () => {
 
     before(() => {
-      controller.options.termsOfService = `${baseAddress}/terms.pdf`;
+      controller.options.meta = { termsOfService: `${baseAddress}/terms.pdf` };
     });
 
     it("get directory", async () => {
@@ -349,7 +349,7 @@ context.only("Server", () => {
     });
 
     after(() => {
-      delete controller.options.termsOfService;
+      delete controller.options.meta;
     });
 
   });

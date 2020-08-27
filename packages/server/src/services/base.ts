@@ -1,5 +1,6 @@
 import { MalformedError, ILogger, Level, Logger, diLogger } from "@peculiar/acme-core";
 import { inject } from "tsyringe";
+import { DirectoryMetadata } from "@peculiar/acme-protocol";
 
 export const diServerOptions = "ACME.ServerOptions";
 
@@ -18,7 +19,7 @@ export interface IServerOptions {
   downloadCertificateFormat: "PemCertificateChain" | "PkixCert" | "Pkcs7Mime";
   levelLogger: Level;
   debugMode: boolean;
-  termsOfService?: string;
+  meta?: DirectoryMetadata;
 }
 
 export class BaseService {

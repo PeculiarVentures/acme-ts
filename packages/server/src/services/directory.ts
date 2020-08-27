@@ -24,6 +24,10 @@ export class DirectoryService extends BaseService implements IDirectoryService {
       keyChange: `${url}/key-change`,
     };
 
+    if (this.options.meta && Object.keys(this.options.meta).length) {
+      directory.meta = this.options.meta;
+    }
+
     this.onGetDirectory(directory);
 
     return directory;

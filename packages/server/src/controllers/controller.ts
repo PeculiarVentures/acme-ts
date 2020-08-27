@@ -228,7 +228,7 @@ export class AcmeController extends BaseService {
         response.status = core.HttpStatusCode.ok;
       } else {
         if (!account) {
-          if (this.options.termsOfService && !params.termsOfServiceAgreed) {
+          if (this.options.meta?.termsOfService && !params.termsOfServiceAgreed) {
             throw new core.MalformedError("Must agree to terms of service");
           } else {
             // Create new account
