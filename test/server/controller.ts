@@ -331,25 +331,21 @@ context.only("Server", () => {
     });
 
     it("create account without termsOfServiceAgreed", async () => {
-      const client = await createAccount({}, (resp) => {
+      await createAccount({}, (resp) => {
         assert.strictEqual(resp.status, 400);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, ErrorType.invalidContact);
+        assert.strictEqual(json.type, ErrorType.malformed);
       });
-
-      assert.strictEqual(client.account.contact, undefined);
     });
 
     it("create account with termsOfServiceAgreed", async () => {
-      const client = await createAccount({ termsOfServiceAgreed: true }, (resp) => {
+      await createAccount({ termsOfServiceAgreed: true }, (resp) => {
         assert.strictEqual(resp.status, 201);
 
         const json = resp.json<protocol.Account>();
         assert.strictEqual(json.termsOfServiceAgreed, true);
       });
-
-      assert.strictEqual(client.account.contact, undefined);
     });
 
     after(() => {
