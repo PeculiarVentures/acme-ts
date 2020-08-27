@@ -2,6 +2,7 @@ import { Algorithms } from "./algorithms";
 import { KeyTypes } from "./key_types";
 import { EllipticCurves } from "./elliptic_curves";
 import * as pvtsutils from "pvtsutils";
+import { Crypto } from "@peculiar/webcrypto";
 
 export class JsonWebKey implements globalThis.JsonWebKey {
 
@@ -25,8 +26,13 @@ export class JsonWebKey implements globalThis.JsonWebKey {
   public oth?: RsaOtherPrimesInfo[];
   public use?: string;
 
-  public constructor(private cryptoProvider: Crypto, params: globalThis.JsonWebKey = {}) {
+  // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+  #cryptoProvider: Crypto;
+
+  public constructor(cryptoProvider: Crypto, params: globalThis.JsonWebKey = {}) {
     Object.assign(this, params);
+
+    this.#cryptoProvider = cryptoProvider;
   }
 
   public async exportKey(crypto?: Crypto): Promise<CryptoKey>;
@@ -35,7 +41,7 @@ export class JsonWebKey implements globalThis.JsonWebKey {
     // defaults
     let algorithm: any;
     let keyUsages: KeyUsage[] = ["verify"];
-    let crypto = this.cryptoProvider;
+    let crypto = this.#cryptoProvider;
 
     if (arguments.length < 2) {
       // crypto?
@@ -70,7 +76,8 @@ export class JsonWebKey implements globalThis.JsonWebKey {
    */
   public async getThumbprint(alg: Algorithms = Algorithms.SHA256) {
 
-    const listKeys: { [key: string]: string } = {};
+    // eslint-disable-next-line @typescript-eslint/member-delimiter-style
+    const listKeys: { [key: string]: string; } = {};
     if (this.crv) {
       listKeys["crv"] = this.crv.toString();
     }
@@ -105,12 +112,12 @@ export class JsonWebKey implements globalThis.JsonWebKey {
   }
 
   public async digest(json: string, alg: string) {
-    const hash = await this.cryptoProvider.subtle.digest(
+    const hash = await this.#cryptoProvider.subtle.digest(
       {
         name: alg,
       },
       pvtsutils.BufferSourceConverter.toUint8Array(pvtsutils.Convert.FromUtf8String(json))
-    )
+    );
     return hash;
   }
 
@@ -126,7 +133,7 @@ export class JsonWebKey implements globalThis.JsonWebKey {
 
   public getEcdsaKey() {
     let result = new CryptoKey();
-    this.cryptoProvider.subtle.importKey(
+    this.#cryptoProvider.subtle.importKey(
       "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
       {   //this is an example jwk key, other key types are Uint8Array objects
         kty: this.kty,
@@ -151,7 +158,7 @@ export class JsonWebKey implements globalThis.JsonWebKey {
 
   public getRsaKey() {
     let result = new CryptoKey();
-    this.cryptoProvider.subtle.importKey(
+    this.#cryptoProvider.subtle.importKey(
       "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
       {   //this is an example jwk key, other key types are Uint8Array objects
         kty: this.kty,
