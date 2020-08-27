@@ -164,15 +164,13 @@ context("crypto", () => {
         modulusLength: 2048,
       };
       const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as CryptoKeyPair;
-      const cert = await X509CertificateGenerator.create({
+      const cert = await X509CertificateGenerator.createSelfSigned({
         serialNumber: "01",
-        subject: "CN=Test",
-        issuer: "CN=Test",
+        name: "CN=Test",
         notBefore: new Date("2020/01/01"),
         notAfter: new Date("2020/01/02"),
         signingAlgorithm: alg,
-        publicKey: keys.publicKey,
-        signingKey: keys.privateKey,
+        keyPair: keys,
         extensions: [
           new BasicConstraintsExtension(true, 2, true),
           new ExtendedKeyUsageExtension(["1.2.3.4.5.6.7", "2.3.4.5.6.7.8"], true),
