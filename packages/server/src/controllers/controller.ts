@@ -35,6 +35,8 @@ export class AcmeController extends BaseService {
     try {
       // TODO Logger.Info("Request {method} {path} {token}", request.Method, request.Path, request.Token);
 
+      response.headers.replayNonce = await this.nonceService.create();
+
       if (request.method === "POST") {
         //#region Check JWS
         let account: IAccount | null = null;
@@ -43,6 +45,14 @@ export class AcmeController extends BaseService {
         const token = this.getToken(request);
 
         const header = token.getProtected();
+
+        //#region Check Nonce
+        const nonce = header.nonce;
+        if (!nonce) {
+          throw new core.BadNonceError();
+        }
+        await this.nonceService.validate(nonce);
+        //#endregion;
 
         if (!header.url) {
           throw new core.UnauthorizedError("The JWS header MUST have 'url' field");
@@ -83,24 +93,12 @@ export class AcmeController extends BaseService {
           }
         }
         //#endregion
-
-        //#region Check Nonce
-        const nonce = header.nonce;
-        if (!nonce) {
-          throw new core.BadNonceError();
-        }
-        await this.nonceService.validate(nonce);
-
-        //#endregion;
       }
 
       // Invoke action
       await action(response);
     }
     catch (e) {
-      //todo delete
-      console.error(e);
-
       if (e instanceof core.AcmeError) {
         response.status = e.status;
         response.content = new core.Content(e, this.options.formattedResponse);
@@ -208,7 +206,6 @@ export class AcmeController extends BaseService {
 
   public async getNonce(request: core.Request) {
     return this.wrapAction(async (response) => {
-      response.headers.replayNonce = await this.nonceService.create();
       if (!request.method || request.method !== "HEAD") {
         response.status = 204; // No content
       }
