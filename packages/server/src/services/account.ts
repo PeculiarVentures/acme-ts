@@ -108,7 +108,7 @@ export class AccountService extends BaseService implements IAccountService {
     // Save changes
     account = await this.accountRepository.update(account);
 
-    // TODO Logger.Info("Account {id} revoked", account.Id);
+    this.logger.info(`Account ${account.id} revoked`);
 
     // Return JSON
     return account;
@@ -186,7 +186,7 @@ export class AccountService extends BaseService implements IAccountService {
     // Save changes
     account = await this.accountRepository.update(account);
 
-    // TODO Logger.Info("Account {id} key changed", account.Id);
+    this.logger.info(`Account ${account.id} key changed`);
 
     // Return JSON
     return account;

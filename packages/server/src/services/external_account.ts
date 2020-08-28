@@ -17,14 +17,14 @@ export class ExternalAccountService extends BaseService implements IExternalAcco
     super(options, logger);
   }
 
-  public async  create(account: any) {
+  public async create(account: any) {
     const macKey = cryptoProvider.get().getRandomValues(new Uint8Array(256 >> 3)); // TODO use service options for HMAC key length
 
     let externalAccount = container.resolve<IExternalAccount>(diExternalAccount);
     this.onCreate(externalAccount, account, macKey);
     externalAccount = await this.externalAccountRepository.add(externalAccount);
 
-    // TODO Logger.Info("External account {id} created", account.Id);
+    this.logger.info(`External account ${account.id} created`);
 
     return externalAccount;
   }
@@ -48,7 +48,7 @@ export class ExternalAccountService extends BaseService implements IExternalAcco
       externalAccount.status = "expired";
       await this.externalAccountRepository.update(externalAccount);
 
-      // TODO Logger.Info("External account {id} status updated to {status}", externalAccount.Id, externalAccount.Status);
+      this.logger.info(`External account ${externalAccount.id} status updated to ${externalAccount.status}`);
     }
     return externalAccount;
   }
@@ -79,7 +79,7 @@ export class ExternalAccountService extends BaseService implements IExternalAcco
     externalAccount.status = ok ? "valid" : "invalid";
     await this.externalAccountRepository.update(externalAccount);
 
-    // TODO Logger.Info("External account {id} status updated to {status}", externalAccount.Id, externalAccount.Status);
+    this.logger.info(`External account ${externalAccount.id} status updated to ${externalAccount.status}`);
 
     return externalAccount;
   }
