@@ -56,14 +56,14 @@ export class ConvertService extends BaseService implements IConvertService {
         };
         return identifier;
       }),
-      authorizations: authzs.map(o => `${this.options.baseAddress}authz/${o.id}`),
+      authorizations: authzs.map(o => `${this.options.baseAddress}/authz/${o.id}`),
       status: data.status,
       notBefore: data.notBefore?.toUTCString(),
       notAfter: data.notAfter?.toUTCString(),
       expires: data.expires?.toUTCString(),
       error: data.error ? await this.toError(data.error) : undefined,
-      finalize: `${this.options.baseAddress}finalize/${data.id}`,
-      certificate: data.certificate && data.certificate.rawData ? `${this.options.baseAddress}cert/${data.certificate.thumbprint}` : undefined,
+      finalize: `${this.options.baseAddress}/finalize/${data.id}`,
+      certificate: data.certificate && data.certificate.rawData ? `${this.options.baseAddress}/cert/${data.certificate.thumbprint}` : undefined,
     };
     return order;
   }
@@ -95,7 +95,7 @@ export class ConvertService extends BaseService implements IConvertService {
       validated: data.validated?.toUTCString(),
       error: data.error ? await this.toError(data.error) : undefined,
       token: data.token,
-      url: `${this.options.baseAddress}challenge/${data.id}`,
+      url: `${this.options.baseAddress}/challenge/${data.id}`,
     };
     return challenge;
   }
@@ -117,7 +117,7 @@ export class ConvertService extends BaseService implements IConvertService {
 
   public async toOrderList(orders: data.IOrder[]): Promise<protocol.OrderList> {
     const orderList: protocol.OrderList = {
-      orders: orders.map(o => `${this.options.baseAddress}order/${o.id}`),
+      orders: orders.map(o => `${this.options.baseAddress}/order/${o.id}`),
     };
     return orderList;
   }

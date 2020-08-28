@@ -326,7 +326,7 @@ export class AcmeController extends BaseService {
       }
 
       // add headers
-      response.headers.location = new URL(`order/${order.id}`, this.options.baseAddress).toString();
+      response.headers.location = `${this.options.baseAddress}/order/${order.id}`;
 
       // convert to JSON
       response.content = new core.Content(await this.convertService.toOrder(order), this.options.formattedResponse);
@@ -342,7 +342,7 @@ export class AcmeController extends BaseService {
       const order = await this.orderService.getById(account.id, orderId);
 
       // add headers
-      response.headers.location = new URL(`order/${order.id}`, this.options.baseAddress).toString();
+      response.headers.location = `${this.options.baseAddress}/order/${order.id}`;
 
       // convert to JSON
       response.content = new core.Content(await this.convertService.toOrder(order), this.options.formattedResponse);
@@ -402,7 +402,7 @@ export class AcmeController extends BaseService {
       const order = await this.orderService.enrollCertificate(account.id, orderId, params);
 
       // add headers
-      response.headers.location = new URL(`order/${order.id}`, this.options.baseAddress).toString();
+      response.headers.location = `${this.options.baseAddress}/order/${order.id}`;
       response.content = new core.Content(await this.convertService.toOrder(order), this.options.formattedResponse);
     }, request);
   }
