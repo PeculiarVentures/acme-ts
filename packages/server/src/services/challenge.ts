@@ -31,7 +31,7 @@ export class ChallengeService extends BaseService implements IChallengeService {
       challenge.status = "processing";
       await this.challengeRepository.update(challenge);
 
-      // Logger.Info("Challenge {id} status updated to {status}", challenge.Id, challenge.Status);
+      this.logger.info(`Challenge ${challenge.id} status updated to ${challenge.status}`);
 
       // validate challenge
       switch (challenge.type) {
@@ -55,7 +55,7 @@ export class ChallengeService extends BaseService implements IChallengeService {
           throw new Error(`Unsupported Challenge type '${challenge.type}'`);
       }
 
-      // Logger.Info("Challenge {id} status updated to {status}", challenge.Id, challenge.Status);
+      this.logger.info(`Challenge ${challenge.id} status updated to ${challenge.status}`);
     } else {
       throw new MalformedError("Wrong challenge status");
     }
@@ -67,7 +67,7 @@ export class ChallengeService extends BaseService implements IChallengeService {
 
     await this.challengeRepository.add(challenge);
 
-    // Logger.Info("Challenge {id} created", challenge.Id);
+    this.logger.info(`Challenge ${challenge.id} created`);
 
     return challenge;
   }
@@ -104,7 +104,7 @@ export class ChallengeService extends BaseService implements IChallengeService {
     if (!auth) {
       throw new MalformedError("Cannot get Authorization by Id");
     }
-    const url = `$http://${auth.identifier.value}/.well-known/acme-challenge/${challenge.token}`;
+    const url = `$http:;//${auth.identifier.value}/.well-known/acme-challenge/${challenge.token}`;
 
     if (!this.options.debugMode) {
       const response = await fetch(url);
@@ -126,7 +126,7 @@ export class ChallengeService extends BaseService implements IChallengeService {
         throw new Error("Response status is not 200(OK)");
       }
     }
-    // Logger.Warn("HTTP challenge validation is disabled fo DEBUG mode");
+    this.logger.warn("HTTP challenge validation is disabled fo DEBUG mode");
   }
 
 

@@ -73,7 +73,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     // update order
     order = await this.orderRepository.update(order);
 
-    // Logger.Info("Order {id} created", order.Id);
+    this.logger.info(`Order ${order.id} created`);
 
     return order;
   }
@@ -230,7 +230,7 @@ export class OrderService extends BaseService implements types.IOrderService {
       // Update repository
       await this.orderRepository.update(order);
 
-      // Logger.Info("Order {id} status updated to {status}", order.Id, order.Status);
+      this.logger.info(`Order ${order.id} status updated to ${order.status}`);
     }
 
     if (order
@@ -275,7 +275,7 @@ export class OrderService extends BaseService implements types.IOrderService {
 
     order.status = "processing";
     await this.orderRepository.update(order);
-    // Logger.Info("Order {id} status updated to {status}", order.Id, order.Status);
+    this.logger.info(`Order ${order.id} status updated to ${order.status}`);
 
     // check cancel
     if (!certificateEnrollParams.cancel) {
@@ -295,7 +295,7 @@ export class OrderService extends BaseService implements types.IOrderService {
           order.status = "valid";
           await this.orderRepository.update(order);
 
-          // Logger.Info("Certificate {thumbprint} for Order {id} issued successfully", order.Certificate.Thumbprint, order.Id);
+          this.logger.info(`Certificate ${order.certificate.thumbprint} for Order ${order.id} issued successfully`);
         }
       } catch (error) {
         // TODO Optimize Error assignment
@@ -303,7 +303,7 @@ export class OrderService extends BaseService implements types.IOrderService {
 
       }
 
-      // Logger.Info("Order {id} status updated to {status}", order.Id, order.Status);
+      this.logger.info(`Order ${order.id} status updated to ${order.status}`);
     }
     return order;
   }
@@ -375,7 +375,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     order.certificate.status = "revoked";
     await this.orderRepository.update(order);
 
-    // Logger.Info("Certificate {thumbprint} revoked", order.Certificate.Thumbprint);
+    this.logger.info(`Certificate ${order.certificate.thumbprint} revoked`);
   }
 
   /**

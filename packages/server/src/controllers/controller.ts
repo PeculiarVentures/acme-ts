@@ -33,7 +33,7 @@ export class AcmeController extends BaseService {
     const response = new core.Response();
 
     try {
-      // TODO Logger.Info("Request {method} {path} {token}", request.Method, request.Path, request.Token);
+      this.logger.info(`Request ${request.method} ${request.path} ${request.body}`);
 
       response.headers.replayNonce = await this.nonceService.create();
 
@@ -104,16 +104,16 @@ export class AcmeController extends BaseService {
         response.status = e.status;
         response.content = new core.Content(e, this.options.formattedResponse);
 
-        // TODO Logger.Error(e);
+        this.logger.error(e.message);
       } else if (e) {
         response.status = core.HttpStatusCode.internalServerError;
         const error = new core.AcmeError(core.ErrorType.serverInternal, `Unexpected server error exception. ${e.message || e}`, core.HttpStatusCode.internalServerError, e);
         response.content = new core.Content(error, this.options.formattedResponse);
 
-        // TODO Logger.Error(e);
+        this.logger.error(e.message);
       }
 
-      // TODO Logger.Info("Response {@response}", response);
+      this.logger.info(`Response ${response}`);
 
     }
     return response;

@@ -56,7 +56,7 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
     //const tls = ChallengeService.Create(addedAuth.Id, "tls-01");
     //const dns = ChallengeService.Create(addedAuth.Id, "dns-01");
 
-    // Logger.Info("Authorization {id} created", auth.id);
+    this.logger.info(`Authorization ${auth.id} created`);
 
     return addedAuth;
   }
@@ -82,7 +82,7 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
         await this.authorizationRepository.update(item);
       }
     }
-    // Logger.Info("Authorization {id} status updated to {status}", item.id, item.status);
+    this.logger.info(`Authorization ${item.id} status updated to ${item.status}`);
     return item;
   }
 
