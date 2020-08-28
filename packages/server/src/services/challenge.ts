@@ -83,7 +83,7 @@ export class ChallengeService extends BaseService implements IChallengeService {
     challenge.authorizationId = authId;
     challenge.status = "pending";
     const httpToken = new Uint8Array(20);
-    this.options.cryptoProvider.getRandomValues(httpToken);
+    this.getCrypto().getRandomValues(httpToken);
     challenge.token = pvtsutils.Convert.ToBase64Url(httpToken);
   }
 
@@ -114,7 +114,7 @@ export class ChallengeService extends BaseService implements IChallengeService {
 
         //Accounts.GetById(challenge.Authorization.AccountId
         const account = await this.accountService.getById(auth.accountId);
-        const thumbprint = await new JsonWebKey(this.options.cryptoProvider, account.key).getThumbprint();
+        const thumbprint = await new JsonWebKey(this.getCrypto(), account.key).getThumbprint();
         const controlValue = `${challenge.token}.${thumbprint}`;
 
         if (controlValue !== text) {

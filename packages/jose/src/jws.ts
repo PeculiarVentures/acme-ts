@@ -36,7 +36,7 @@ export class JsonWebSignature {
   public payload = "";
   public signature = "";
 
-  public constructor(params: JwsConstructorParams = {}, private cryptoProvider: Crypto) {
+  public constructor(params: JwsConstructorParams = {}, private cryptoProvider?: Crypto) {
     if (params.protected) {
       this.setProtected(params.protected);
     }
@@ -57,9 +57,9 @@ export class JsonWebSignature {
     return this.payload === "e30";
   }
 
-  public getProtected() {
+  public getProtected(crypto?: Crypto) {
     const result = this.read(this.protected) as JwsProtectedGetter;
-    result.jwk = new JsonWebKey(this.cryptoProvider, result.jwk);
+    result.jwk = new JsonWebKey(this.getCryptoProvider(crypto), result.jwk);
     return result;
   }
   public setProtected(data: JwsProtectedSetter) {
@@ -106,7 +106,7 @@ export class JsonWebSignature {
     return Convert.ToBase64Url(bytes);
   }
 
-  public async verify(key?: CryptoKey, crypto = this.cryptoProvider) {
+  public async verify(key?: CryptoKey, crypto?: Crypto) {
     // get alg from protected
     const attrs = this.getProtected();
     if (!attrs.alg) {
@@ -127,11 +127,11 @@ export class JsonWebSignature {
 
     // verify
     const data = Convert.FromUtf8String(this.toStringSign());
-    const ok = await crypto.subtle.verify(alg as any, key, this.getSignature(), data);
+    const ok = await this.getCryptoProvider(crypto).subtle.verify(alg as any, key, this.getSignature(), data);
     return ok;
   }
 
-  protected async getKey(crypto = this.cryptoProvider) {
+  protected async getKey(crypto?: Crypto) {
     const attrs = this.getProtected();
     if (!attrs.jwk) {
       return null;
@@ -149,11 +149,11 @@ export class JsonWebSignature {
       alg.namedCurve = attrs.jwk.crv;
     }
 
-    const key = await crypto.subtle.importKey("jwk", attrs.jwk, alg, true, ["verify"]);
+    const key = await this.getCryptoProvider(crypto).subtle.importKey("jwk", attrs.jwk, alg, true, ["verify"]);
     return key;
   }
 
-  public async sign(algorithm: JwsParams, key: CryptoKey, crypto = this.cryptoProvider) {
+  public async sign(algorithm: JwsParams, key: CryptoKey, crypto?: Crypto) {
     // set alg to protected
     const attrs = this.getProtected();
     const jwa = JsonWebAlgorithmConverter.fromAlgorithm({ ...algorithm, ...key.algorithm });
@@ -165,7 +165,7 @@ export class JsonWebSignature {
 
     // sign
     const data = Convert.FromUtf8String(this.toStringSign());
-    const signature = await crypto.subtle.sign(algorithm as any, key, data);
+    const signature = await this.getCryptoProvider(crypto).subtle.sign(algorithm as any, key, data);
     this.setSignature(signature);
   }
 
@@ -210,4 +210,12 @@ export class JsonWebSignature {
     return JSON.stringify(this.toJSON());
   }
 
+  private getCryptoProvider(crypto?: Crypto) {
+    if (crypto) {
+      return crypto;
+    } else if (this.cryptoProvider) {
+      return this.cryptoProvider;
+    }
+    throw new Error("Cannot find Crypto");
+  }
 }

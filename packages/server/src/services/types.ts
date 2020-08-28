@@ -1,7 +1,7 @@
 import * as protocol from "@peculiar/acme-protocol";
 import * as data from "@peculiar/acme-data";
 import { JsonWebSignature, JsonWebKey } from "@peculiar/jose";
-import { QueryParams } from "@peculiar/acme-core";
+import { QueryParams, X509Certificates } from "@peculiar/acme-core";
 
 export const diConvertService = "ACME.ConvertService";
 
@@ -206,7 +206,7 @@ export interface IOrderService {
    * @param accountId Account specific id
    * @param param Thumbprint of Certificate
    */
-  getCertificate(accountId: data.Key, param: string | ArrayBuffer): Promise<data.ICertificate[]>;
+  getCertificate(accountId: data.Key, param: string | ArrayBuffer): Promise<X509Certificates>;
 
   /**
    * Revokes Certificate

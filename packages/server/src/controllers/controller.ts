@@ -5,7 +5,7 @@ import { inject, injectable } from "tsyringe";
 import { IAccount, Key } from "@peculiar/acme-data";
 import { AccountCreateParams, AccountUpdateParams, ChangeKey, OrderCreateParams, Finalize, RevokeCertificateParams } from "@peculiar/acme-protocol";
 import { BaseService, diServerOptions, IServerOptions } from "../services";
-import { diLogger, ILogger } from "@peculiar/acme-core";
+import { diLogger, ILogger, X509Certificates } from "@peculiar/acme-core";
 
 export const diAcmeController = "ACME.AcmeController";
 /**
@@ -80,7 +80,7 @@ export class AcmeController extends BaseService {
 
           account = await this.accountService.getById(this.getKeyIdentifier(header.kid));
 
-          const key = await new JsonWebKey(this.options.cryptoProvider, account.key).exportKey();
+          const key = await new JsonWebKey(this.getCrypto(), account.key).exportKey();
           if (!token.verify(key)) {
             throw new core.UnauthorizedError("JWS signature is invalid");
           }
@@ -124,7 +124,7 @@ export class AcmeController extends BaseService {
     if (!token || !Object.keys(token).length) {
       throw new core.MalformedError("JSON Web Token is empty");
     }
-    const jws = new JsonWebSignature({}, this.options.cryptoProvider);
+    const jws = new JsonWebSignature({}, this.getCrypto());
     jws.fromJSON(token);
     return jws;
   }
@@ -136,14 +136,14 @@ export class AcmeController extends BaseService {
 
       // Validate the POST request belongs to a currently active account, as described in Section 6.
       const account = await this.getAccount(request);
-      const key = new JsonWebKey(this.options.cryptoProvider, account.key);
+      const key = new JsonWebKey(this.getCrypto(), account.key);
       if (!token || token && !token.verify(await key.getPublicKey())) {
         throw new core.MalformedError();
       }
 
       // Check that the payload of the JWS is a well - formed JWS object(the "inner JWS").
-      const innerJWS = new JsonWebSignature({}, this.options.cryptoProvider);
-      innerJWS.parse(JSON.stringify(token.getPayload<JsonWebSignature>()));
+      const innerJWS = new JsonWebSignature({}, this.getCrypto());
+      innerJWS.fromJSON(token.getPayload<JsonWebSignature>());
       const innerProtected = innerJWS.getProtected();
 
       // Check that the JWS protected header of the inner JWS has a "jwk" field.
@@ -151,7 +151,7 @@ export class AcmeController extends BaseService {
       if (!jwkReq) {
         throw new core.MalformedError("The inner JWS hasn't a 'jwk' field");
       }
-      const jwk = new JsonWebKey(this.options.cryptoProvider, jwkReq);
+      const jwk = new JsonWebKey(this.getCrypto(), jwkReq);
       // Check that the inner JWS verifies using the key in its "jwk" field.
       if (!innerJWS.verify(await jwk.getPublicKey())) {
         throw new core.MalformedError("The inner JWT not verified");
@@ -174,7 +174,7 @@ export class AcmeController extends BaseService {
       }
 
       // Check that the "oldKey" field of the keyChange object is the same as the account key for the account in question.
-      const testAccount = await this.accountService.getByPublicKey(new JsonWebKey(this.options.cryptoProvider, param.oldKey));
+      const testAccount = await this.accountService.getByPublicKey(new JsonWebKey(this.getCrypto(), param.oldKey));
       if (testAccount.id !== account.id) {
         throw new core.MalformedError("The 'oldKey' is the not same as the account key");
       }
@@ -234,7 +234,7 @@ export class AcmeController extends BaseService {
             throw new core.MalformedError("Must agree to terms of service");
           } else {
             // Create new account
-            account = await this.accountService.create(new JsonWebKey(this.options.cryptoProvider, header.jwk!), params);
+            account = await this.accountService.create(new JsonWebKey(this.getCrypto(), header.jwk!), params);
             response.content = new core.Content(await this.convertService.toAccount(account), this.options.formattedResponse);
             response.status = 201; // Created
           }
@@ -453,15 +453,12 @@ export class AcmeController extends BaseService {
         case "PkixCert":
           {
             response.content = new core.Content(certs[0].rawData, "application/pkix-cert");
+            //todo add header links on other certificates
           }
           break;
         case "Pkcs7Mime":
           {
-            throw new Error("Method not implemented");
-            //todo https://www.npmjs.com/package/pkijs
-            // const x509Certs = certs.map(o => o.rawData);
-            // const x509Collection = new X509Certificate2Collection(x509Certs);
-            // response.content = new Content(x509Collection.Export(X509ContentType.Pkcs7), "application/pkcs7-mime");
+            response.content = new core.Content(certs.export(), "application/pkcs7-mime");
           }
           break;
       }

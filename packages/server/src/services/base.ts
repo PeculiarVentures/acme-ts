@@ -39,4 +39,11 @@ export class BaseService {
     }
     return res;
   }
+
+  protected getCrypto() {
+    if (!this.options.cryptoProvider) {
+      throw new Error("Cannot get 'cryptoProvider' option");
+    }
+    return this.options.cryptoProvider;
+  }
 }

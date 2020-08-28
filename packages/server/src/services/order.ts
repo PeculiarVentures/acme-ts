@@ -7,8 +7,6 @@ import * as core from "@peculiar/acme-core";
 import { JsonWebKey } from "@peculiar/jose";
 import * as ModelFabric from "./model_fabric";
 import * as pvtsutils from "pvtsutils";
-import { ICertificate } from "@peculiar/acme-data";
-import { diLogger, ILogger } from "@peculiar/acme-core";
 
 export interface ICertificateEnrollParams {
   /**
@@ -41,7 +39,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     @inject(types.diAuthorizationService) protected authorizationService: types.IAuthorizationService,
     @inject(data.diOrderAuthorizationRepository) protected orderAuthorizationRepository: data.IOrderAuthorizationRepository,
     @inject(types.diCertificateEnrollmentService) protected certificateEnrollmentService: types.ICertificateEnrollmentService,
-    @inject(diLogger) logger: ILogger,
+    @inject(core.diLogger) logger: core.ILogger,
     @inject(diServerOptions) options: IServerOptions) {
     super(options, logger);
   }
@@ -51,7 +49,7 @@ export class OrderService extends BaseService implements types.IOrderService {
    * @param obj
    */
   protected async getHash(obj: ArrayBuffer, alg: string = this.options.hashAlgorithm) {
-    return this.options.cryptoProvider.subtle.digest(alg, obj);
+    return this.getCrypto().subtle.digest(alg, obj);
   }
 
   public async create(accountId: data.Key, params: protocol.OrderCreateParams) {
@@ -315,7 +313,8 @@ export class OrderService extends BaseService implements types.IOrderService {
     if (!order.certificate) {
       throw new core.MalformedError("Certificate not found");
     }
-    const chain: ICertificate[] = new Array(order.certificate);
+    const cert = new core.X509Certificate(order.certificate.rawData);
+    const chain = new core.X509Certificates(cert);
 
     return chain;
   }

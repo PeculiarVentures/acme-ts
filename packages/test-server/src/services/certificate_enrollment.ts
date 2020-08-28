@@ -30,7 +30,7 @@ export class CertificateEnrollmentService extends BaseService implements ICertif
       const notAfter = new Date();
       notAfter.setUTCFullYear(notAfter.getUTCFullYear() + 1);
       const name = "CN=ACME demo CA, O=PeculiarVentures LLC";
-      const keys = await this.options.cryptoProvider.subtle.generateKey(CertificateEnrollmentService.signingAlgorithm, false, ["sign", "verify"]) as CryptoKeyPair;
+      const keys = await this.getCrypto().subtle.generateKey(CertificateEnrollmentService.signingAlgorithm, false, ["sign", "verify"]) as CryptoKeyPair;
 
       this.caCert = await X509CertificateGenerator.create({
         serialNumber: "01",
@@ -41,7 +41,7 @@ export class CertificateEnrollmentService extends BaseService implements ICertif
         signingAlgorithm: CertificateEnrollmentService.signingAlgorithm,
         publicKey: keys.publicKey,
         signingKey: keys.privateKey,
-      }, this.options.cryptoProvider);
+      }, this.getCrypto());
       this.caCert.privateKey = keys.privateKey;
     }
     return this.caCert;
@@ -57,15 +57,15 @@ export class CertificateEnrollmentService extends BaseService implements ICertif
     notAfter.setUTCMonth(notAfter.getUTCMonth() + 1);
 
     const cert = await X509CertificateGenerator.create({
-      serialNumber: Convert.ToHex(this.options.cryptoProvider.getRandomValues(new Uint8Array(10))),
+      serialNumber: Convert.ToHex(this.getCrypto().getRandomValues(new Uint8Array(10))),
       subject: req.subject,
       issuer: ca.issuer,
       notBefore,
       notAfter,
       signingAlgorithm: CertificateEnrollmentService.signingAlgorithm,
-      publicKey: await req.publicKey.export(this.options.cryptoProvider),
+      publicKey: await req.publicKey.export(this.getCrypto()),
       signingKey: ca.privateKey!,
-    }, this.options.cryptoProvider);
+    }, this.getCrypto());
     return cert.rawData;
   }
 
