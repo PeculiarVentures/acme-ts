@@ -1,6 +1,7 @@
 import { injectable, container } from "tsyringe";
 
 export interface ILogger {
+  level: Level;
   error(msg: string, ...obj: any[]): void;
   info(msg: string, ...obj: any[]): void;
   warn(msg: string, ...obj: any[]): void;
@@ -13,7 +14,8 @@ export const diLogger = "ACME.Logger";
 
 @injectable()
 export class Logger implements ILogger {
-  public level: Level;
+
+  public level: Level = "info";
 
   public error(msg: string, ...obj: any[]): void {
     if (this.checkLevel("error")) {

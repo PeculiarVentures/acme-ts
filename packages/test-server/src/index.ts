@@ -12,6 +12,6 @@ container
   .register(diLogger, ConsoleLogger)
   .registerSingleton(diCertificateEnrollmentService, CertificateEnrollmentService);
 
-AcmeExpress.register(app, {baseAddress: "http://localhost:4000/acme"});
+AcmeExpress.register(app, {baseAddress: "http://localhost:4000/acme", debugMode: true});
 
 app.listen(4000, () => { console.log(`Server is running`); });

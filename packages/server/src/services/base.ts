@@ -28,6 +28,7 @@ export class BaseService {
     @inject(diServerOptions) public options: IServerOptions,
     @inject(diLogger) protected logger: ILogger,
   ) {
+    logger.level = this.options.levelLogger;
     options.ordersPageSize = 5;
     options.hashAlgorithm = "SHA-1";
   }

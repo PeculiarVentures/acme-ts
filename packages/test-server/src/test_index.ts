@@ -65,10 +65,9 @@ export class AcmeExpress {
     if (!debugMode) {
       debugMode = false;
     }
-    let levelLogger = options?.levelLogger;
-    if (!levelLogger) {
-      levelLogger = "error";
-    }
+
+    const levelLogger = options?.levelLogger;
+
     let ordersPageSize = options?.ordersPageSize;
     if (!ordersPageSize) {
       ordersPageSize = 10;
