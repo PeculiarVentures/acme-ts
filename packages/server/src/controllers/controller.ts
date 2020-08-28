@@ -1,11 +1,11 @@
 import * as core from "@peculiar/acme-core";
 import * as types from "../services/types";
+import * as protocol from "@peculiar/acme-protocol";
+
 import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
 import { inject, injectable } from "tsyringe";
 import { IAccount, Key } from "@peculiar/acme-data";
-import { AccountCreateParams, AccountUpdateParams, ChangeKey, OrderCreateParams, Finalize, RevokeCertificateParams } from "@peculiar/acme-protocol";
 import { BaseService, diServerOptions, IServerOptions } from "../services";
-import { diLogger, ILogger, X509Certificates } from "@peculiar/acme-core";
 
 export const diAcmeController = "ACME.AcmeController";
 /**
@@ -24,7 +24,7 @@ export class AcmeController extends BaseService {
     @inject(types.diAuthorizationService) protected authorizationService: types.IAuthorizationService,
     @inject(types.diChallengeService) protected challengeService: types.IChallengeService,
     @inject(types.diOrderService) protected orderService: types.IOrderService,
-    @inject(diLogger) logger: ILogger,
+    @inject(core.diLogger) logger: core.ILogger,
     @inject(diServerOptions) options: IServerOptions) {
     super(options, logger);
   }
@@ -158,7 +158,7 @@ export class AcmeController extends BaseService {
       }
 
       // Check that the payload of the inner JWS is a well-formed keyChange object (as described above).
-      const param = innerJWS.tryGetPayload<ChangeKey>();
+      const param = innerJWS.tryGetPayload<protocol.ChangeKey>();
       if (!param) {
         throw new core.MalformedError("The payload of the inner JWS is not a well-formed keyChange object");
       }
@@ -219,7 +219,7 @@ export class AcmeController extends BaseService {
     return this.wrapAction(async (response) => {
       const token = this.getToken(request);
       const header = token.getProtected();
-      const params = token.getPayload<AccountCreateParams>();
+      const params = token.getPayload<protocol.AccountCreateParams>();
       let account = await this.accountService.findByPublicKey(header.jwk!);
 
       if (params.onlyReturnExisting) {
@@ -283,7 +283,7 @@ export class AcmeController extends BaseService {
   public async postAccount(request: core.Request) {
     return this.wrapAction(async (response) => {
       const token = this.getToken(request);
-      const params = token.getPayload<AccountUpdateParams>();
+      const params = token.getPayload<protocol.AccountUpdateParams>();
 
       let account = await this.getAccount(request);
       this.assertAccountStatus(account);
@@ -315,7 +315,7 @@ export class AcmeController extends BaseService {
       const account = await this.getAccount(request);
 
       // get params
-      const params = token.getPayload<OrderCreateParams>();
+      const params = token.getPayload<protocol.OrderCreateParams>();
 
       // get order
       let order = await this.orderService.getActual(account.id, params);
@@ -398,7 +398,7 @@ export class AcmeController extends BaseService {
       const account = await this.getAccount(request);
 
       // enroll certificate
-      const params = token.getPayload<Finalize>();
+      const params = token.getPayload<protocol.Finalize>();
       const order = await this.orderService.enrollCertificate(account.id, orderId, params);
 
       // add headers
@@ -453,7 +453,7 @@ export class AcmeController extends BaseService {
         case "PkixCert":
           {
             response.content = new core.Content(certs[0].rawData, "application/pkix-cert");
-            //todo add header links on other certificates
+            // todo add header links on other certificates
           }
           break;
         case "Pkcs7Mime":
@@ -469,7 +469,7 @@ export class AcmeController extends BaseService {
     return this.wrapAction(async (response) => {
       const token = this.getToken(request);
       const header = token.getProtected();
-      const params = token.getPayload<RevokeCertificateParams>();
+      const params = token.getPayload<protocol.RevokeCertificateParams>();
       if (header.kid) {
         const account = await this.getAccount(request);
         await this.orderService.revokeCertificate(account.id, params);

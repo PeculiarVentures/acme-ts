@@ -7,13 +7,13 @@ export interface ILogger {
   debug(msg: string, ...obj: any[]): void;
 }
 
-export type Level = 'debug' | 'info' | 'warning' | 'error';
+export type Level = 'debug' | 'info' | 'warning' | 'error' | undefined;
 
 export const diLogger = "ACME.Logger";
 
 @injectable()
 export class Logger implements ILogger {
-  public level: Level = "info";
+  public level: Level;
 
   public error(msg: string, ...obj: any[]): void {
     if (this.checkLevel("error")) {
@@ -51,6 +51,8 @@ export class Logger implements ILogger {
         return lvl === "error" || lvl === "warning";
       case "error":
         return lvl === "error";
+      default:
+        return false;
     }
   }
 }

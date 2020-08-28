@@ -1,4 +1,4 @@
-import { MalformedError, ILogger, Level, Logger, diLogger } from "@peculiar/acme-core";
+import { MalformedError, ILogger, Level, diLogger } from "@peculiar/acme-core";
 import { inject } from "tsyringe";
 import { DirectoryMetadata } from "@peculiar/acme-protocol";
 
@@ -17,7 +17,7 @@ export interface IServerOptions {
   ordersPageSize: number;
   expireAuthorizationDays: number;
   downloadCertificateFormat: "PemCertificateChain" | "PkixCert" | "Pkcs7Mime";
-  levelLogger: Level;
+  levelLogger?: Level;
   debugMode: boolean;
   meta?: DirectoryMetadata;
 }

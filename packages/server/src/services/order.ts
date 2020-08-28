@@ -388,7 +388,7 @@ export class OrderService extends BaseService implements types.IOrderService {
 
     order.error = er;
     order.error.detail = err.message;
-    //todo need parse
+    // todo need parse
     order.error.type = core.ErrorType.serverInternal;
     order.status = "invalid";
     await this.orderRepository.update(order);
