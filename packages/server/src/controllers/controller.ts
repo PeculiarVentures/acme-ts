@@ -33,7 +33,7 @@ export class AcmeController extends BaseService {
     const response = new core.Response();
 
     try {
-      this.logger.info(`Request ${request.method} ${request.path} ${request.body}`);
+      this.logger.debug(`Request ${request.method} ${request.path}`, request.body);
 
       response.headers.replayNonce = await this.nonceService.create();
 
@@ -112,10 +112,8 @@ export class AcmeController extends BaseService {
 
         this.logger.error(e.message);
       }
-
-      this.logger.info(`Response ${response}`);
-
     }
+    this.logger.debug(`Response:`, response);
     return response;
   }
 

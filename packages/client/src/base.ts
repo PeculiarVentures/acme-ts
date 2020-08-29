@@ -1,7 +1,4 @@
-import {
-  cryptoProvider, Response as AcmeResponse,
-  Content, ContentType, AcmeError, ErrorType, HttpStatusCode, Headers,
-} from "@peculiar/acme-core";
+import * as core from "@peculiar/acme-core";
 import {JsonWebSignature, JwsProtectedSetter, JsonWebKey, } from "@peculiar/jose";
 import { Error } from "@peculiar/acme-protocol";
 
@@ -17,7 +14,7 @@ export type AcmeMethod = "GET" | "HEAD" | "POST" | "POST-as-GET";
 
 export interface GetParams<T> {
   method: "GET" | "HEAD";
-  convert: (res: AcmeResponse) => T;
+  convert: (res: core.Response) => T;
 }
 export interface PostParams<T> {
   method: "POST" | "POST-as-GET";
@@ -26,20 +23,20 @@ export interface PostParams<T> {
   nonce: string;
   key: CryptoKey;
   hash?: AlgorithmIdentifier;
-  convert: (res: AcmeResponse) => T;
+  convert: (res: core.Response) => T;
 }
 
 export type RequestParams<T> = GetParams<T> | PostParams<T>;
 
 export interface ApiResponse<T> {
-  status: HttpStatusCode;
-  headers: Headers;
+  status: core.HttpStatusCode;
+  headers: core.Headers;
   content: T;
 }
 
 export class BaseClient {
 
-  public static createResponse<T>(resp: AcmeResponse, content: T): ApiResponse<T> {
+  public static createResponse<T>(resp: core.Response, content: T): ApiResponse<T> {
     return {
       status: resp.status,
       headers: resp.headers,
@@ -51,7 +48,7 @@ export class BaseClient {
 
   public constructor(options: ClientOptions = {}) {
     this.options = {
-      crypto: cryptoProvider.get(),
+      crypto: core.cryptoProvider.get(),
       debug: options.debug,
       defaultHash: "SHA-256",
       fetch: typeof fetch !== "undefined" ? fetch : undefined,
@@ -59,7 +56,7 @@ export class BaseClient {
     };
   }
 
-  protected async fetch<T = Content>(url: string, params: RequestParams<T>) {
+  protected async fetch<T = core.Content>(url: string, params: RequestParams<T>) {
     if (!this.options.fetch) {
       throw new Error("Cannot get 'fetch' option");
     }
@@ -103,7 +100,7 @@ export class BaseClient {
       await jws.sign({ hash: postParams.hash || this.options.defaultHash, ...postParams.key.algorithm }, postParams.key, crypto);
       request.body = jws.toString();
       request.headers = {
-        "Content-Type": ContentType.joseJson,
+        "Content-Type": core.ContentType.joseJson,
       };
 
       response = await fetch(url, request);
@@ -116,19 +113,19 @@ export class BaseClient {
     }
 
     // Convert to ACME response
-    const acmeResp = new AcmeResponse();
+    const acmeResp = new core.Response();
     acmeResp.status = response.status;
     response.headers.forEach((v, k) => acmeResp.headers.set(k, v));
     const buf = await response.arrayBuffer();
-    acmeResp.content = new Content(buf, acmeResp.headers.contentType?.mediaType || ContentType.json);
+    acmeResp.content = new core.Content(buf, acmeResp.headers.contentType?.mediaType || core.ContentType.json);
 
     // If Error response, throw AcmeError
     if (acmeResp.content && (acmeResp.status < 200 || acmeResp.status > 299)) {
-      if (acmeResp.headers.contentType?.mediaType === ContentType.problemJson) {
+      if (acmeResp.headers.contentType?.mediaType === core.ContentType.problemJson) {
         const json = acmeResp.content.toJSON() as Error;
-        throw new AcmeError(json.type, json.detail, acmeResp.status);
+        throw new core.AcmeError(json.type, json.detail, acmeResp.status);
       } else {
-        throw new AcmeError(ErrorType.serverInternal, "Wrong Content-Type of ACME response. Must be application/problem+json. See inner exception for more details.", acmeResp.status, new globalThis.Error(acmeResp.content.toString()));
+        throw new core.AcmeError(core.ErrorType.serverInternal, "Wrong Content-Type of ACME response. Must be application/problem+json. See inner exception for more details.", acmeResp.status, new globalThis.Error(acmeResp.content.toString()));
       }
     }
 
