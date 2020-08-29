@@ -145,11 +145,10 @@ export class AcmeController extends BaseService {
       const innerProtected = innerJWS.getProtected();
 
       // Check that the JWS protected header of the inner JWS has a "jwk" field.
-      const jwkReq = innerProtected.jwk;
-      if (!jwkReq) {
-        throw new core.MalformedError("The inner JWS hasn't a 'jwk' field");
+      if (!innerProtected.jwk) {
+        throw new core.MalformedError("The inner JWS doesn't have a 'jwk' field");
       }
-      const jwk = new JsonWebKey(this.getCrypto(), jwkReq);
+      const jwk = new JsonWebKey(this.getCrypto(), innerProtected.jwk);
       // Check that the inner JWS verifies using the key in its "jwk" field.
       if (!innerJWS.verify(await jwk.getPublicKey())) {
         throw new core.MalformedError("The inner JWT not verified");

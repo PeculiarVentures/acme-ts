@@ -59,7 +59,9 @@ export class JsonWebSignature {
 
   public getProtected(crypto?: Crypto) {
     const result = this.read(this.protected) as JwsProtectedGetter;
-    result.jwk = new JsonWebKey(this.getCryptoProvider(crypto), result.jwk);
+    if (result.jwk) {
+      result.jwk = new JsonWebKey(this.getCryptoProvider(crypto), result.jwk);
+    }
     return result;
   }
   public setProtected(data: JwsProtectedSetter) {

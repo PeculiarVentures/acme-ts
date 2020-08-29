@@ -508,15 +508,16 @@ context.only("Server", () => {
           }
         }, crypto);
         await innerToken.sign({ hash: "SHA-256", ...keys.privateKey.algorithm }, keys.privateKey);
-        return innerToken.toJSON();
+        return innerToken;
       }
 
       it("success", async () => {
         const client = await createAccount({}, (resp) => {
           assert.strictEqual(resp.status, 201);
         });
+        const innerToken = await createNewKey(client.keys.publicKey, client.location!)
         const resp = await controller.keyChange(await createPostRequest(
-          await createNewKey(client.keys.publicKey, client.location!),
+          innerToken.toJSON(),
           `${baseAddress}/key-change`,
           client.location!,
           client.keys,
@@ -536,8 +537,9 @@ context.only("Server", () => {
         const client2 = await createAccount({}, (resp) => {
           assert.strictEqual(resp.status, 201);
         });
+        const innerToken = await createNewKey(client.keys.publicKey, client.location!, client2.keys)
         const resp = await controller.keyChange(await createPostRequest(
-          await createNewKey(client.keys.publicKey, client.location!, client2.keys),
+          innerToken.toJSON(),
           `${baseAddress}/key-change`,
           client.location!,
           client.keys,
@@ -545,6 +547,27 @@ context.only("Server", () => {
 
         assert.strictEqual(resp.status, 409);
         assert.strictEqual(resp.headers.location, client2.location);
+
+        const json = resp.json<protocol.Error>();
+        assert.strictEqual(json.type, ErrorType.malformed);
+      });
+
+      it("inner token must have JWK", async () => {
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+        const innerToken = await createNewKey(client.keys.publicKey, client.location!)
+        const header = innerToken.getProtected();
+        delete header.jwk;
+        innerToken.setProtected(header);
+        const resp = await controller.keyChange(await createPostRequest(
+          innerToken,
+          `${baseAddress}/key-change`,
+          client.location!,
+          client.keys,
+        ));
+
+        assert.strictEqual(resp.status, 403);
 
         const json = resp.json<protocol.Error>();
         assert.strictEqual(json.type, ErrorType.malformed);
