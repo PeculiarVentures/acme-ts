@@ -1,6 +1,5 @@
 import { IBaseObject, Key } from "./base";
 import { AccountStatus } from "@peculiar/acme-protocol";
-import { JsonWebKey } from "@peculiar/jose";
 
 export const diAccount = "ACME.Models.Account";
 
