@@ -1,16 +1,24 @@
 import { Empty } from "@peculiar/acme-data";
 import { Crypto } from "@peculiar/webcrypto";
 import { cryptoProvider } from "@peculiar/acme-core";
-import { DependencyInjection as diData } from "@peculiar/acme-data";
-import { DependencyContainer } from "tsyringe";
+import { DependencyContainer, RegistrationOptions } from "tsyringe";
 import { AcmeController, diAcmeController } from "./controllers";
+import { IServerOptions } from "./services";
+
+import * as data from "@peculiar/acme-data";
 import * as types from "./services/types";
 import * as services from "./services";
-import { IServerOptions } from "./services";
 import * as normalizeURL from "normalize-url";
 import * as url from "url";
 
 const BaseAddress = "http://localhost/acme";
+
+function registerEmpty(container: DependencyContainer, token: string, provider: any, options?: RegistrationOptions): void {
+  if (!container.isRegistered(token)) {
+    container.register(token, provider, options);
+  }
+}
+
 
 export class DependencyInjection {
   public static register(container: DependencyContainer, options: Partial<services.IServerOptions> = {}) {
@@ -41,19 +49,20 @@ export class DependencyInjection {
       levelLogger: options.levelLogger,
     };
 
-    diData.register(container);
+    if (!container.isRegistered(data.diAccountRepository)) {
+      data.DependencyInjection.register(container);
+    }
+    container.registerInstance(services.diServerOptions, serverOptions);
 
-    container
-      .registerInstance(services.diServerOptions, serverOptions)
-      .register(types.diConvertService, services.ConvertService)
-      .register(types.diDirectoryService, services.DirectoryService)
-      .register(types.diNonceService, services.NonceService)
-      .register(types.diAccountService, services.AccountService)
-      .register(types.diExternalAccountService, services.ExternalAccountService)
-      .register(types.diAuthorizationService, services.AuthorizationService)
-      .register(types.diChallengeService, services.ChallengeService)
-      .register(types.diOrderService, services.OrderService)
-      .register(types.diCertificateEnrollmentService, Empty)
-      .register(diAcmeController, AcmeController);
+    registerEmpty(container, types.diConvertService, services.ConvertService);
+    registerEmpty(container, types.diDirectoryService, services.DirectoryService);
+    registerEmpty(container, types.diNonceService, services.NonceService);
+    registerEmpty(container, types.diAccountService, services.AccountService);
+    registerEmpty(container, types.diExternalAccountService, services.ExternalAccountService);
+    registerEmpty(container, types.diAuthorizationService, services.AuthorizationService);
+    registerEmpty(container, types.diChallengeService, services.ChallengeService);
+    registerEmpty(container, types.diOrderService, services.OrderService);
+    registerEmpty(container, types.diCertificateEnrollmentService, Empty);
+    registerEmpty(container, diAcmeController, AcmeController);
   }
 }
