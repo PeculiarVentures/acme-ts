@@ -515,7 +515,7 @@ context.only("Server", () => {
         const client = await createAccount({}, (resp) => {
           assert.strictEqual(resp.status, 201);
         });
-        const innerToken = await createNewKey(client.keys.publicKey, client.location!)
+        const innerToken = await createNewKey(client.keys.publicKey, client.location!);
         const resp = await controller.keyChange(await createPostRequest(
           innerToken.toJSON(),
           `${baseAddress}/key-change`,
@@ -537,7 +537,7 @@ context.only("Server", () => {
         const client2 = await createAccount({}, (resp) => {
           assert.strictEqual(resp.status, 201);
         });
-        const innerToken = await createNewKey(client.keys.publicKey, client.location!, client2.keys)
+        const innerToken = await createNewKey(client.keys.publicKey, client.location!, client2.keys);
         const resp = await controller.keyChange(await createPostRequest(
           innerToken.toJSON(),
           `${baseAddress}/key-change`,
@@ -556,12 +556,71 @@ context.only("Server", () => {
         const client = await createAccount({}, (resp) => {
           assert.strictEqual(resp.status, 201);
         });
-        const innerToken = await createNewKey(client.keys.publicKey, client.location!)
+        const innerToken = await createNewKey(client.keys.publicKey, client.location!);
         const header = innerToken.getProtected();
         delete header.jwk;
         innerToken.setProtected(header);
         const resp = await controller.keyChange(await createPostRequest(
-          innerToken,
+          innerToken.toJSON(),
+          `${baseAddress}/key-change`,
+          client.location!,
+          client.keys,
+        ));
+
+        assert.strictEqual(resp.status, 403);
+
+        const json = resp.json<protocol.Error>();
+        assert.strictEqual(json.type, ErrorType.malformed);
+      });
+
+      it("inner token must have JWK", async () => {
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+        const innerToken = await createNewKey(client.keys.publicKey, client.location!);
+        const header = innerToken.getProtected();
+        delete header.jwk;
+        innerToken.setProtected(header);
+        const resp = await controller.keyChange(await createPostRequest(
+          innerToken.toJSON(),
+          `${baseAddress}/key-change`,
+          client.location!,
+          client.keys,
+        ));
+
+        assert.strictEqual(resp.status, 403);
+
+        const json = resp.json<protocol.Error>();
+        assert.strictEqual(json.type, ErrorType.malformed);
+      });
+
+      it("inner token invalid signature", async () => {
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+        const innerToken = await createNewKey(client.keys.publicKey, client.location!);
+        innerToken.signature = "wrongSignatureValue";
+        const resp = await controller.keyChange(await createPostRequest(
+          innerToken.toJSON(),
+          `${baseAddress}/key-change`,
+          client.location!,
+          client.keys,
+        ));
+
+        assert.strictEqual(resp.status, 403);
+
+        const json = resp.json<protocol.Error>();
+        assert.strictEqual(json.type, ErrorType.malformed);
+      });
+
+      it("inner token invalid signature", async () => {
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+        const innerToken = await createNewKey(client.keys.publicKey, client.location!);
+        innerToken.signature = "wrongSignatureValue";
+        const resp = await controller.keyChange(await createPostRequest(
+          innerToken.toJSON(),
           `${baseAddress}/key-change`,
           client.location!,
           client.keys,

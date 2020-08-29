@@ -62,7 +62,7 @@ export class AcmeController extends BaseService {
           if (!header.jwk) {
             throw new core.IncorrectResponseError("JWS MUST contain 'jwk' field");
           }
-          if (!(await token.verify())) {
+          if (!await token.verify()) {
             throw new core.UnauthorizedError("JWS signature is invalid");
           }
 
@@ -81,7 +81,7 @@ export class AcmeController extends BaseService {
           account = await this.accountService.getById(this.getKeyIdentifier(header.kid));
 
           const key = await new JsonWebKey(this.getCrypto(), account.key).exportKey();
-          if (!token.verify(key)) {
+          if (!await token.verify(key)) {
             throw new core.UnauthorizedError("JWS signature is invalid");
           }
 
@@ -134,10 +134,6 @@ export class AcmeController extends BaseService {
 
       // Validate the POST request belongs to a currently active account, as described in Section 6.
       const account = await this.getAccount(request);
-      const key = new JsonWebKey(this.getCrypto(), account.key);
-      if (!token || token && !token.verify(await key.getPublicKey())) {
-        throw new core.MalformedError();
-      }
 
       // Check that the payload of the JWS is a well - formed JWS object(the "inner JWS").
       const innerJWS = new JsonWebSignature({}, this.getCrypto());
@@ -148,15 +144,16 @@ export class AcmeController extends BaseService {
       if (!innerProtected.jwk) {
         throw new core.MalformedError("The inner JWS doesn't have a 'jwk' field");
       }
-      const jwk = new JsonWebKey(this.getCrypto(), innerProtected.jwk);
+
       // Check that the inner JWS verifies using the key in its "jwk" field.
-      if (!innerJWS.verify(await jwk.getPublicKey())) {
+      if (!await innerJWS.verify(await innerProtected.jwk.getPublicKey())) {
         throw new core.MalformedError("The inner JWT not verified");
       }
 
       // Check that the payload of the inner JWS is a well-formed keyChange object (as described above).
-      const param = innerJWS.tryGetPayload<protocol.ChangeKey>();
-      if (!param) {
+      const param = innerJWS.getPayload<protocol.ChangeKey>();
+      if (!(param.account && typeof param.account === "string" &&
+        param.oldKey && typeof param.oldKey === "object")) {
         throw new core.MalformedError("The payload of the inner JWS is not a well-formed keyChange object");
       }
 
@@ -176,18 +173,15 @@ export class AcmeController extends BaseService {
         throw new core.MalformedError("The 'oldKey' is the not same as the account key");
       }
 
-      // TODO Check that no account exists whose account key is the same as the key in the "jwk" header parameter of the inner JWS.
-      // in repository
-
       try {
-        const updatedAccount = await this.accountService.changeKey(account.id, jwk);
+        const updatedAccount = await this.accountService.changeKey(account.id, innerProtected.jwk);
         response.content = new core.Content(await this.convertService.toAccount(updatedAccount));
         response.headers.location = `${this.options.baseAddress}/acct/${updatedAccount.id}`;
         response.status = 200; // Ok
       }
       catch (e) {
         if (e.status === 409) {
-          const conflictAccount = await this.accountService.getByPublicKey(jwk);
+          const conflictAccount = await this.accountService.getByPublicKey(innerProtected.jwk);
           response.headers.location = `${this.options.baseAddress}/acct/${conflictAccount.id}`;
         }
         throw e;
