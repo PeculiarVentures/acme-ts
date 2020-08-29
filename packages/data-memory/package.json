@@ -37,6 +37,7 @@
   "dependencies": {
     "@peculiar/acme-core": "^0.0.0",
     "@peculiar/acme-data": "^0.0.0",
+    "@peculiar/jose": "^1.0.0",
     "tsyringe": "^4.2.0"
   }
 }
