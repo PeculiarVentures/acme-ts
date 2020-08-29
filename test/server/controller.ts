@@ -1,4 +1,5 @@
 import { ContentType, ErrorType, Request, Response } from "@peculiar/acme-core";
+import * as data from "@peculiar/acme-data";
 import * as dataMemory from "@peculiar/acme-data-memory";
 import * as protocol from "@peculiar/acme-protocol";
 import { AcmeController, diAcmeController, DependencyInjection } from "@peculiar/acme-server";
@@ -13,7 +14,6 @@ context.only("Server", () => {
 
   const crypto = new Crypto();
 
-  dataMemory.DependencyInjection.register(container);
   DependencyInjection.register(container, {
     baseAddress,
 
@@ -25,6 +25,7 @@ context.only("Server", () => {
     ordersPageSize: 10,
     formattedResponse: true,
   });
+  dataMemory.DependencyInjection.register(container);
   const controller = container.resolve<AcmeController>(diAcmeController);
 
   //#region Helpers
@@ -100,6 +101,16 @@ context.only("Server", () => {
       account: resp.json<protocol.Account>(),
       keys,
     };
+  }
+
+  function getId(location: any) {
+    assert(location);
+    assert.strictEqual(typeof location, "string");
+
+    const matches = /([^/]+)$/.exec(location);
+    assert(matches);
+
+    return matches[1];
   }
   //#endregion
 
@@ -632,6 +643,233 @@ context.only("Server", () => {
         assert.strictEqual(json.type, ErrorType.malformed);
       });
 
+    });
+
+  });
+
+  context("order", async () => {
+
+    it("create", async () => {
+      // Create new account
+      const client = await createAccount({}, (resp) => {
+        assert.strictEqual(resp.status, 201);
+      });
+
+      const resp = await controller.createOrder(await createPostRequest(
+        {
+          identifiers: [
+            {
+              type: "dns",
+              value: "some.com"
+            }
+          ],
+        } as protocol.OrderCreateParams,
+        `${baseAddress}/new-order`,
+        client.location!,
+        client.keys));
+
+      assert.strictEqual(resp.status, 201);
+      assert.strictEqual(/http:\/\/localhost\/order\/\d+/.test(resp.headers.location!), true, "Order response wrong Location header");
+
+      const json = resp.json<protocol.Order>();
+      assert.strictEqual(json.status, "pending");
+      assert.strictEqual(/http:\/\/localhost\/finalize\/\d+/.test(json.finalize), true, "Order response wrong 'finalize' value");
+      assert.strictEqual(/http:\/\/localhost\/authz\/\d+/.test(json.authorizations[0]), true, "Order response wrong authorizations link");
+      assert.deepStrictEqual(json.identifiers, [{ type: "dns", value: "some.com" }]);
+    });
+
+    it("create if already exists", async () => {
+      // Create new account
+      const client = await createAccount({}, (resp) => {
+        assert.strictEqual(resp.status, 201);
+      });
+
+      const resp = await controller.createOrder(await createPostRequest(
+        {
+          identifiers: [
+            {
+              type: "dns",
+              value: "some.com"
+            }
+          ],
+        } as protocol.OrderCreateParams,
+        `${baseAddress}/new-order`,
+        client.location!,
+        client.keys));
+
+      assert.strictEqual(resp.status, 201);
+
+      const resp2 = await controller.createOrder(await createPostRequest(
+        {
+          identifiers: [
+            {
+              type: "dns",
+              value: "some.com"
+            }
+          ],
+        } as protocol.OrderCreateParams,
+        `${baseAddress}/new-order`,
+        client.location!,
+        client.keys));
+
+      assert.strictEqual(resp2.status, 200);
+      assert.strictEqual(resp.headers.location, resp2.headers.location);
+    });
+
+    it("create if already exists, another order of identifiers", async () => {
+      // Create new account
+      const client = await createAccount({}, (resp) => {
+        assert.strictEqual(resp.status, 201);
+      });
+
+      const resp = await controller.createOrder(await createPostRequest(
+        {
+          identifiers: [
+            {
+              type: "dns",
+              value: "some.com"
+            },
+            {
+              type: "dns",
+              value: "some2.com"
+            },
+            {
+              type: "dns",
+              value: "some3.com"
+            }
+          ],
+        } as protocol.OrderCreateParams,
+        `${baseAddress}/new-order`,
+        client.location!,
+        client.keys));
+
+      assert.strictEqual(resp.status, 201);
+
+      const resp2 = await controller.createOrder(await createPostRequest(
+        {
+          identifiers: [
+            {
+              type: "dns",
+              value: "some2.com"
+            },
+            {
+              type: "dns",
+              value: "some3.com"
+            },
+            {
+              type: "dns",
+              value: "some.com"
+            }
+          ],
+        } as protocol.OrderCreateParams,
+        `${baseAddress}/new-order`,
+        client.location!,
+        client.keys));
+
+      assert.strictEqual(resp2.status, 200);
+      assert.strictEqual(resp.headers.location, resp2.headers.location);
+    });
+
+    it("create if already exists and valid", async () => {
+      // Create new account
+      const client = await createAccount({}, (resp) => {
+        assert.strictEqual(resp.status, 201);
+      });
+
+      const resp = await controller.createOrder(await createPostRequest(
+        {
+          identifiers: [
+            {
+              type: "dns",
+              value: "some.com"
+            }
+          ],
+        } as protocol.OrderCreateParams,
+        `${baseAddress}/new-order`,
+        client.location!,
+        client.keys));
+
+      assert.strictEqual(resp.status, 201);
+
+      // Change status of order
+      const orderRepo = container.resolve<data.IOrderRepository>(data.diOrderRepository);
+      const order = await orderRepo.findById(getId(resp.headers.location));
+      assert(order);
+      order.status = "valid";
+      orderRepo.update(order);
+
+
+      const resp2 = await controller.createOrder(await createPostRequest(
+        {
+          identifiers: [
+            {
+              type: "dns",
+              value: "some.com"
+            }
+          ],
+        } as protocol.OrderCreateParams,
+        `${baseAddress}/new-order`,
+        client.location!,
+        client.keys));
+
+      assert.strictEqual(resp2.status, 201);
+    });
+
+    it("create if authz has status valid", async () => {
+      // Create new account
+      const client = await createAccount({}, (resp) => {
+        assert.strictEqual(resp.status, 201);
+      });
+
+      const resp = await controller.createOrder(await createPostRequest(
+        {
+          identifiers: [
+            {
+              type: "dns",
+              value: "some.com"
+            }
+          ],
+        } as protocol.OrderCreateParams,
+        `${baseAddress}/new-order`,
+        client.location!,
+        client.keys));
+
+      assert.strictEqual(resp.status, 201);
+
+      // Change status of order
+      const orderRepo = container.resolve<data.IOrderRepository>(data.diOrderRepository);
+      const order = await orderRepo.findById(getId(resp.headers.location));
+      assert(order);
+      order.status = "valid";
+      orderRepo.update(order);
+
+      // Change status of authz
+      const authzRepo = container.resolve<data.IAuthorizationRepository>(data.diAuthorizationRepository);
+      const jsonOrder = resp.json<protocol.Order>();
+      const authz = await authzRepo.findById(getId(jsonOrder.authorizations[0]));
+      assert(authz);
+      authz.status = "valid";
+      authzRepo.update(authz);
+
+
+      const resp2 = await controller.createOrder(await createPostRequest(
+        {
+          identifiers: [
+            {
+              type: "dns",
+              value: "some.com"
+            }
+          ],
+        } as protocol.OrderCreateParams,
+        `${baseAddress}/new-order`,
+        client.location!,
+        client.keys));
+
+      assert.strictEqual(resp2.status, 201);
+
+      const json = resp2.json<protocol.Order>();
+      assert.strictEqual(json.authorizations[0], jsonOrder.authorizations[0]);
+      assert.strictEqual(json.status, "ready");
     });
 
   });

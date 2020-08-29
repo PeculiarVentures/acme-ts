@@ -73,6 +73,8 @@ export class OrderService extends BaseService implements types.IOrderService {
     // update order
     order = await this.orderRepository.update(order);
 
+    await this.refreshStatus(order);
+
     this.logger.info(`Order ${order.id} created`);
 
     return order;
@@ -87,8 +89,12 @@ export class OrderService extends BaseService implements types.IOrderService {
    */
   protected onCreateParams(order: data.IOrder, params: protocol.OrderCreateParams, accountId: data.Key) {
     order.accountId = accountId;
-    order.notAfter = params.notAfter;
-    order.notBefore = params.notBefore;
+    if (params.notAfter) {
+      order.notAfter = params.notAfter;
+    }
+    if (params.notBefore) {
+      order.notBefore = params.notBefore;
+    }
   }
 
   /**
@@ -161,13 +167,9 @@ export class OrderService extends BaseService implements types.IOrderService {
       // Checks expires
       if (order.expires && order.expires < new Date()) {
         order.status = "invalid";
+        await this.orderRepository.update(order);
       }
       else {
-
-        // RefreshStatus authorizations
-        // async () => {
-        //   return Promise.all(list.map(item => anAsyncFunction(item)))
-        // }
         const orderAuthorization = await this.orderAuthorizationRepository.findByOrder(order.id);
         const authorizations = await Promise.all(orderAuthorization.map(o => this.authorizationService.getById(order.accountId!, o.authorizationId)));
 
@@ -176,15 +178,14 @@ export class OrderService extends BaseService implements types.IOrderService {
           if (!authorizations.find(o => o.status === "pending"
             || o.status === "valid")) {
             order.status = "invalid";
+            await this.orderRepository.update(order);
           }
           else if (authorizations.find(o => o.status === "valid")) {
             order.status = "ready";
+            await this.orderRepository.update(order);
           }
         }
       }
-
-      // Update repository
-     await this.orderRepository.update(order);
     }
   }
 

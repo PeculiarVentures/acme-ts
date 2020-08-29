@@ -98,8 +98,10 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
     auth.accountId = accountId;
     auth.status = "pending";
 
-    const date = new Date();
-    date.setDate(new Date().getDate() + this.options.expireAuthorizationDays);
-    auth.expires = date;
+    if (this.options.expireAuthorizationDays > 0) {
+      const date = new Date();
+      date.setDate(new Date().getDate() + this.options.expireAuthorizationDays);
+      auth.expires = date;
+    }
   }
 }
