@@ -1,11 +1,13 @@
 {
-  "name": "@peculiar/acme-test-server",
-  "private": true,
-  "version": "1.0.0",
+  "name": "@peculiar/acme-express",
+  "version": "0.0.0",
+  "description": "> TODO: description",
+  "keywords": [
+    "acme"
+  ],
+  "author": "romashine <miroshin.ry@gmail.com>",
+  "homepage": "https://github.com/PeculiarVentures/ts-acme#readme",
   "license": "MIT",
-  "description": "",
-  "keywords": [],
-  "author": "microshine <microshine@mail.ru>",
   "main": "build/index.js",
   "module": "build/index.es.js",
   "types": "build/types/index.d.ts",
@@ -35,7 +37,8 @@
     "url": "https://github.com/PeculiarVentures/ts-acme/issues"
   },
   "dependencies": {
-    "@peculiar/acme-express": "^0.0.0",
+    "@peculiar/acme-core": "^0.0.0",
+    "@peculiar/acme-data": "^0.0.0",
     "@peculiar/acme-server": "^0.0.0",
     "@types/express": "^4.17.7",
     "express": "^4.17.1"

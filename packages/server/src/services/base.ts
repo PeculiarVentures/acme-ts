@@ -21,7 +21,7 @@ export interface IServerOptions {
   expireAuthorizationDays: number;
   downloadCertificateFormat: "PemCertificateChain" | "PkixCert" | "Pkcs7Mime";
   levelLogger?: Level;
-  debugMode: boolean;
+  debugMode?: boolean;
   meta?: DirectoryMetadata;
 }
 
@@ -30,11 +30,7 @@ export class BaseService {
   public constructor(
     @inject(diServerOptions) public options: IServerOptions,
     @inject(diLogger) protected logger: ILogger,
-  ) {
-    logger.level = this.options.levelLogger;
-    options.ordersPageSize = 5;
-    options.hashAlgorithm = "SHA-1";
-  }
+  ) { }
 
   public getKeyIdentifier(kid: string) {
     const res = /\/([^/?]+)\??[^/]*$/.exec(kid)?.[1];

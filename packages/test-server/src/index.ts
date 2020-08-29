@@ -1,10 +1,10 @@
 import express = require("express");
-import { AcmeExpress } from "./test_index";
-import { container, Lifecycle } from "tsyringe";
-import { diLogger } from "@peculiar/acme-core";
-import { ConsoleLogger } from "packages/core/src/logger/console_logger";
-import { CertificateEnrollmentService } from "./services";
+import { diLogger, ConsoleLogger } from "@peculiar/acme-core";
+import { AcmeExpress } from "@peculiar/acme-express";
 import { diCertificateEnrollmentService } from "@peculiar/acme-server";
+import { container, Lifecycle } from "tsyringe";
+import { CertificateEnrollmentService } from "./services";
+import { DependencyInjection as diData} from "@peculiar/acme-data-memory";
 
 const app = express();
 
@@ -15,5 +15,6 @@ AcmeExpress.register(app, {baseAddress: "http://localhost:4000/acme", levelLogge
 
 // after AcmeExpress because need first register base class
 container.register(diCertificateEnrollmentService, CertificateEnrollmentService, {lifecycle: Lifecycle.Singleton});
+diData.register(container);
 
 app.listen(4000, () => { console.log(`Server is running`); });
