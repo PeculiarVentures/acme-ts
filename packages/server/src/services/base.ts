@@ -12,7 +12,10 @@ export const diServerOptions = "ACME.ServerOptions";
 export interface IServerOptions {
   baseAddress: string;
   formattedResponse?: boolean;
-  cryptoProvider: Crypto;
+  /**
+   * WebCrypto provider. Default provider is @peculiar/webcrypto
+   */
+  cryptoProvider?: Crypto;
   hashAlgorithm: string;
   ordersPageSize: number;
   expireAuthorizationDays: number;

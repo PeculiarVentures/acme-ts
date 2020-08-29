@@ -2,7 +2,6 @@ import { Algorithms } from "./algorithms";
 import { KeyTypes } from "./key_types";
 import { EllipticCurves } from "./elliptic_curves";
 import * as pvtsutils from "pvtsutils";
-import { Crypto } from "@peculiar/webcrypto";
 
 export class JsonWebKey implements globalThis.JsonWebKey {
 

@@ -1,11 +1,16 @@
+import { Empty } from "@peculiar/acme-data";
+import { Crypto } from "@peculiar/webcrypto";
+import { cryptoProvider } from "@peculiar/acme-core";
 import { DependencyContainer } from "tsyringe";
+import { AcmeController, diAcmeController } from "./controllers";
 import * as types from "./services/types";
 import * as services from "./services";
-import { AcmeController, diAcmeController } from "./controllers";
-import { Empty } from "@peculiar/acme-data";
 
 export class DependencyInjection {
   public static register(container: DependencyContainer, options: services.IServerOptions) {
+    options.cryptoProvider ??= new Crypto();
+    cryptoProvider.set(options.cryptoProvider);
+
     container
       .registerInstance(services.diServerOptions, options)
       .register(types.diConvertService, services.ConvertService)

@@ -16,7 +16,6 @@ context.only("Server", () => {
   dataMemory.DependencyInjection.register(container);
   DependencyInjection.register(container, {
     baseAddress,
-    cryptoProvider: crypto,
 
     debugMode: true,
     downloadCertificateFormat: "PemCertificateChain",
