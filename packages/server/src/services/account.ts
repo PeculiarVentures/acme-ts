@@ -1,10 +1,10 @@
+import * as core from "@peculiar/acme-core";
+import { IAccountRepository, diAccountRepository, IAccount, Key, diAccount } from "@peculiar/acme-data";
+import { AccountCreateParams, AccountUpdateParams } from "@peculiar/acme-protocol";
+import { JsonWebKey } from "@peculiar/jose";
 import { inject, container, injectable } from "tsyringe";
 import { BaseService, diServerOptions, IServerOptions } from "./base";
-import { IAccountRepository, diAccountRepository, IAccount, Key, diAccount } from "@peculiar/acme-data";
 import { IExternalAccountService, diExternalAccountService, IAccountService } from "./types";
-import { AccountCreateParams, AccountUpdateParams } from "@peculiar/acme-protocol";
-import { AccountDoesNotExistError, MalformedError, UnsupportedContactError, ArgumentNullError, Logger, diLogger, ILogger, InvalidContactError } from "@peculiar/acme-core";
-import { JsonWebKey } from "@peculiar/jose";
 
 @injectable()
 export class AccountService extends BaseService implements IAccountService {
@@ -12,7 +12,7 @@ export class AccountService extends BaseService implements IAccountService {
   public constructor(
     @inject(diAccountRepository) protected accountRepository: IAccountRepository,
     @inject(diExternalAccountService) protected externalAccountService: IExternalAccountService,
-    @inject(diLogger) logger: ILogger,
+    @inject(core.diLogger) logger: core.ILogger,
     @inject(diServerOptions) options: IServerOptions) {
     super(options, logger);
   }
@@ -79,7 +79,7 @@ export class AccountService extends BaseService implements IAccountService {
   public async getById(accountId: Key) {
     const account = await this.accountRepository.findById(accountId);
     if (!account) {
-      throw new AccountDoesNotExistError();
+      throw new core.AccountDoesNotExistError();
     }
     return account;
   }
@@ -88,7 +88,7 @@ export class AccountService extends BaseService implements IAccountService {
     const account = await this.findByPublicKey(key);
 
     if (!account) {
-      throw new AccountDoesNotExistError();
+      throw new core.AccountDoesNotExistError();
     }
 
     return account;
@@ -140,7 +140,7 @@ export class AccountService extends BaseService implements IAccountService {
 
   protected validateContacts(contacts: string[]) {
     if (!contacts) {
-      throw new ArgumentNullError("contacts");
+      throw new core.ArgumentNullError("contacts");
     }
 
     contacts.forEach(contact => {
@@ -155,13 +155,13 @@ export class AccountService extends BaseService implements IAccountService {
   protected isMailto(contact: string) {
     const patternType = /^mailto:/g;
     if (!patternType.test(contact)) {
-      throw new UnsupportedContactError();
+      throw new core.UnsupportedContactError();
     }
 
     // eslint-disable-next-line no-control-regex
     const pattern = /^mailto:(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$/g;
     if (!pattern.test(contact)) {
-      throw new InvalidContactError;
+      throw new core.InvalidContactError;
     }
   }
 
@@ -177,7 +177,7 @@ export class AccountService extends BaseService implements IAccountService {
       // If there is an existing account with the new key
       // provided, then the server SHOULD use status code 409 (Conflict) and
       // provide the URL of that account in the Location header field.
-      throw new MalformedError("Account with the same key already exists", 409);
+      throw new core.MalformedError("Account with the same key already exists", 409);
     }
 
     // Change key

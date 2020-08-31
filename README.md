@@ -25,17 +25,8 @@ yarn
 
 ### Create packages
 
-Schema
-```
-packages
-  |-project_1
-  |-project_2
-  |-project_3
-```
-
-Then in each folder call the command
 ```ts
-yarn init -y
+lerna create name-project
 ```
 
 ### Dependency manage

@@ -37,7 +37,10 @@
   "dependencies": {
     "@peculiar/acme-core": "^0.0.0",
     "@peculiar/acme-data": "^0.0.0",
+    "@peculiar/acme-protocol": "^0.0.0",
+    "@peculiar/asn1-x509": "^2.0.17",
     "@peculiar/jose": "^1.0.0",
+    "pvtsutils": "^1.0.11",
     "tsyringe": "^4.2.0"
   }
 }

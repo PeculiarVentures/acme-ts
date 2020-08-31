@@ -14,7 +14,6 @@
   },
 
   "dependencies": {
-    "@peculiar/webcrypto": "^1.1.2",
     "pvtsutils": "^1.0.11"
   },
   "scripts": {

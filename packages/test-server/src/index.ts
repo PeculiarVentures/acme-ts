@@ -13,7 +13,6 @@ container.register(diLogger, ConsoleLogger)
 
 AcmeExpress.register(app, {baseAddress: "http://localhost:4000/acme", levelLogger: "info", debugMode: true});
 
-// after AcmeExpress because need first register base class
 container.register(diCertificateEnrollmentService, CertificateEnrollmentService, {lifecycle: Lifecycle.Singleton});
 diData.register(container);
 

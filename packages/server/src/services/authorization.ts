@@ -1,10 +1,10 @@
+import { MalformedError, diLogger, ILogger } from "@peculiar/acme-core";
+import { Identifier } from "@peculiar/acme-protocol";
+import { IIdentifier, IAuthorization, diAuthorizationRepository, IAuthorizationRepository, Key } from "@peculiar/acme-data";
 import { injectable, inject } from "tsyringe";
 import { BaseService, diServerOptions, IServerOptions } from "./base";
 import { IAuthorizationService, diChallengeService, IChallengeService } from "./types";
-import { IIdentifier, IAuthorization, diAuthorizationRepository, IAuthorizationRepository, Key } from "@peculiar/acme-data";
 import * as ModelFabric from "./model_fabric";
-import { Identifier } from "@peculiar/acme-protocol";
-import { MalformedError, diLogger, ILogger } from "@peculiar/acme-core";
 
 @injectable()
 export class AuthorizationService extends BaseService implements IAuthorizationService {

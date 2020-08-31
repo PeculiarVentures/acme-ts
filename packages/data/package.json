@@ -36,6 +36,8 @@
   "homepage": "https://github.com/PeculiarVentures/ts-acme#readme",
   "dependencies": {
     "@peculiar/acme-core": "^0.0.0",
-    "@peculiar/acme-protocol": "^0.0.0"
+    "@peculiar/acme-protocol": "^0.0.0",
+    "@peculiar/asn1-x509": "^2.0.17",
+    "tsyringe": "^4.3.0"
   }
 }
