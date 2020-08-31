@@ -183,7 +183,7 @@ export class OrderService extends BaseService implements types.IOrderService {
             order.error.type = ErrorType.malformed;
             order.error.detail = "One of order authorizations has wrong status";
             await this.orderRepository.update(order);
-          } else if (authorizations.find(o => o.status === "valid")) {
+          } else if (authorizations.every(o => o.status === "valid")) {
             order.status = "ready";
             await this.orderRepository.update(order);
           }
