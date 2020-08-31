@@ -20,6 +20,7 @@ export class DirectoryService extends BaseService implements IDirectoryService {
       newAccount: `${url}/new-acct`,
       newAuth: `${url}/new-authz`,
       newOrder: `${url}/new-order`,
+      newAuthz: `${url}/new-authz`,
       revokeCert: `${url}/revoke`,
       keyChange: `${url}/key-change`,
     };
