@@ -261,8 +261,7 @@ export const diIdentifierService = "ACME.IdentifierService";
 
 export interface IIdentifierService {
   type: string;
-  // todo stepan
-  _challengesCreate(auth: data.IAuthorization): Promise<data.IChallenge[]>;
-  _challengeValidate(challenge: data.IChallenge): Promise<void>;
-  _identifierValidate(identifier: data.IIdentifier): Promise<void>;
+  challengesCreate(auth: data.IAuthorization): Promise<data.IChallenge[]>;
+  challengeValidate(challenge: data.IChallenge): Promise<void>;
+  identifierValidate(identifier: data.IIdentifier): Promise<void>;
 }

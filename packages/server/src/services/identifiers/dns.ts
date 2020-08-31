@@ -1,17 +1,16 @@
 import * as core from "@peculiar/acme-core";
 import * as data from "@peculiar/acme-data";
-import { inject, injectable } from "tsyringe";
 import * as ModelFabric from "../model_fabric";
-import { diServerOptions, IServerOptions } from "../base";
-import { ChallengeService } from "../challenge";
 import * as pvtsutils from "pvtsutils";
-import { JsonWebKey } from "@peculiar/jose";
 import * as types from "../types";
+import { inject, injectable } from "tsyringe";
+import { BaseService, diServerOptions, IServerOptions } from "../base";
+import { JsonWebKey } from "@peculiar/jose";
 import { IChallenge } from "@peculiar/acme-data";
-import { MalformedError, UnsupportedIdentifierError } from "@peculiar/acme-core";
+import { MalformedError } from "@peculiar/acme-core";
 
 @injectable()
-export class DnsChallengeService extends ChallengeService implements types.IIdentifierService {
+export class DnsChallengeService extends BaseService implements types.IIdentifierService {
   public type = "dns";
 
   public constructor(
@@ -20,16 +19,17 @@ export class DnsChallengeService extends ChallengeService implements types.IIden
     @inject(types.diAccountService) protected accountService: types.IAccountService,
     @inject(core.diLogger) logger: core.ILogger,
     @inject(diServerOptions) options: IServerOptions) {
-    super(challengeRepository, logger, options,);
+    super(options, logger);
   }
-  public async _identifierValidate(identifier: data.IIdentifier): Promise<void> {
+
+  public async identifierValidate(identifier: data.IIdentifier): Promise<void> {
     const pattern = /^(?:[-A-Za-zА-Яа-я0-9]+\.)+[A-Za-zА-Яа-я]{2,6}$/g;
     if (!pattern.test(identifier.value)) {
       throw new MalformedError();
     }
   }
 
-  public async _challengesCreate(auth: data.IAuthorization): Promise<IChallenge[]> {
+  public async challengesCreate(auth: data.IAuthorization): Promise<IChallenge[]> {
     const challenges: IChallenge[] = [];
     // Add challenges
     challenges.push(await this._create(auth.id, "http-01"));
@@ -38,7 +38,7 @@ export class DnsChallengeService extends ChallengeService implements types.IIden
     return challenges;
   }
 
-  public async _challengeValidate(challenge: IChallenge): Promise<void> {
+  public async challengeValidate(challenge: IChallenge): Promise<void> {
     if (challenge.status === "pending") {
       challenge.status = "processing";
       await this.challengeRepository.update(challenge);

@@ -15,7 +15,7 @@ export class ChallengeService extends BaseService implements IChallengeService {
   }
   public async create(auth: IAuthorization, type: string): Promise<data.IChallenge[]> {
     const service = await this.getValidator(type);
-    return await service._challengesCreate(auth);
+    return await service.challengesCreate(auth);
   }
 
   public async getById(id: data.Key): Promise<data.IChallenge> {
@@ -28,12 +28,12 @@ export class ChallengeService extends BaseService implements IChallengeService {
 
   public async identifierValidate(identifier: data.IIdentifier): Promise<void> {
     const service = await this.getValidator(identifier.type);
-    await service._identifierValidate(identifier);
+    await service.identifierValidate(identifier);
   }
 
   public async challengeValidate(challenge: data.IChallenge, type: string): Promise<void> {
     const service = await this.getValidator(type);
-    await service._challengeValidate(challenge);
+    await service.challengeValidate(challenge);
   }
 
   public async getByAuthorization(id: data.Key): Promise<data.IChallenge[]> {
