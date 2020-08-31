@@ -1,21 +1,21 @@
-import { injectable, inject } from "tsyringe";
+import { injectable, inject, container } from "tsyringe";
 import { BaseService, IServerOptions, diServerOptions } from "./base";
-import { IChallengeService, diAccountService, IAccountService } from "./types";
+import { diIdentifierService, IChallengeService, IIdentifierService } from "./types";
 import * as data from "@peculiar/acme-data";
-import * as ModelFabric from "./model_fabric";
-import { MalformedError, UnauthorizedError, ErrorType, diLogger, ILogger } from "@peculiar/acme-core";
-import * as pvtsutils from "pvtsutils";
-import { JsonWebKey } from "@peculiar/jose";
+import { MalformedError, diLogger, ILogger, UnsupportedIdentifierError } from "@peculiar/acme-core";
+import { IAuthorization, IIdentifier } from "@peculiar/acme-data";
 
 @injectable()
 export class ChallengeService extends BaseService implements IChallengeService {
   public constructor(
     @inject(data.diChallengeRepository) protected challengeRepository: data.IChallengeRepository,
-    @inject(data.diAuthorizationRepository) protected authorizationRepository: data.IAuthorizationRepository,
-    @inject(diAccountService) protected accountService: IAccountService,
     @inject(diLogger) logger: ILogger,
     @inject(diServerOptions) options: IServerOptions) {
     super(options, logger);
+  }
+  public async create(auth: IAuthorization, type: string): Promise<data.IChallenge[]> {
+    const service = await this.getValidator(type);
+    return await service._challengesCreate(auth);
   }
 
   public async getById(id: data.Key): Promise<data.IChallenge> {
@@ -26,65 +26,14 @@ export class ChallengeService extends BaseService implements IChallengeService {
     return challenge;
   }
 
-  public async validate(challenge: data.IChallenge): Promise<void> {
-    if (challenge.status === "pending") {
-      challenge.status = "processing";
-      await this.challengeRepository.update(challenge);
-
-      this.logger.info(`Challenge ${challenge.id} status updated to ${challenge.status}`);
-
-      // validate challenge
-      switch (challenge.type) {
-        case "http-01":
-          try {
-            await this.validateHttpChallenge(challenge);
-            if (challenge.status === "processing") {
-              challenge.status = "valid";
-              challenge.validated = new Date();
-              await this.challengeRepository.update(challenge);
-            }
-          } catch (error) {
-            challenge.error = ModelFabric.error();
-            challenge.error.detail = error.message;
-            challenge.error.type = ErrorType.serverInternal;
-            challenge.status = "invalid";
-            await this.challengeRepository.update(challenge);
-          }
-          break;
-        default:
-          throw new Error(`Unsupported Challenge type '${challenge.type}'`);
-      }
-
-      this.logger.info(`Challenge ${challenge.id} status updated to ${challenge.status}`);
-    } else {
-      throw new MalformedError("Wrong challenge status");
-    }
+  public async identifierValidate(identifier: data.IIdentifier): Promise<void> {
+    const service = await this.getValidator(identifier.type);
+    await service._identifierValidate(identifier);
   }
 
-  public async create(authId: data.Key, type: string): Promise<data.IChallenge> {
-    const challenge = ModelFabric.challenge();
-    this.onCreateParams(challenge, authId, type);
-
-    await this.challengeRepository.add(challenge);
-
-    this.logger.info(`Challenge ${challenge.id} created`);
-
-    return challenge;
-  }
-
-  /**
-   * Fills parameters
-   * @param challenge
-   * @param authId
-   * @param type
-   */
-  protected onCreateParams(challenge: data.IChallenge, authId: data.Key, type: string) {
-    challenge.type = type;
-    challenge.authorizationId = authId;
-    challenge.status = "pending";
-    const httpToken = new Uint8Array(20);
-    this.getCrypto().getRandomValues(httpToken);
-    challenge.token = pvtsutils.Convert.ToBase64Url(httpToken);
+  public async challengeValidate(challenge: data.IChallenge, type: string): Promise<void> {
+    const service = await this.getValidator(type);
+    await service._challengeValidate(challenge);
   }
 
   public async getByAuthorization(id: data.Key): Promise<data.IChallenge[]> {
@@ -95,39 +44,18 @@ export class ChallengeService extends BaseService implements IChallengeService {
     return challenge;
   }
 
-  /**
-   * Validates the http challenge
-   * @param challenge Challenge
-   */
-  private async validateHttpChallenge(challenge: data.IChallenge): Promise<void> {
-    const auth = await this.authorizationRepository.findById(challenge.authorizationId);
-    if (!auth) {
-      throw new MalformedError("Cannot get Authorization by Id");
+  protected async getValidator(identifier: IIdentifier | string): Promise<IIdentifierService> {
+    const validators = container.resolveAll<IIdentifierService>(diIdentifierService);
+    let type: string;
+    if (typeof (identifier) === "string") {
+      type = identifier;
+    } else {
+      type = identifier.type;
     }
-    const url = `$http:;//${auth.identifier.value}/.well-known/acme-challenge/${challenge.token}`;
-
-    if (!this.options.debugMode) {
-      const response = await fetch(url);
-      if (response.status === 200) {
-
-        const text = await response.text();
-
-        //Accounts.GetById(challenge.Authorization.AccountId
-        const account = await this.accountService.getById(auth.accountId);
-        const thumbprint = await new JsonWebKey(this.getCrypto(), account.key).getThumbprint();
-        const controlValue = `${challenge.token}.${thumbprint}`;
-
-        if (controlValue !== text) {
-          const errMessage = "The key authorization file from the server did not match this challenge.";
-          throw new UnauthorizedError(errMessage);
-        }
-      }
-      else {
-        throw new Error("Response status is not 200(OK)");
-      }
+    const validator = validators.find(o => o.type === type);
+    if (!validator) {
+      throw new UnsupportedIdentifierError();
     }
-    this.logger.warn("HTTP challenge validation is disabled fo DEBUG mode");
+    return validator;
   }
-
-
 }

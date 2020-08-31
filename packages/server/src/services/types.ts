@@ -226,21 +226,37 @@ export interface IChallengeService {
   getById(id: data.Key): Promise<data.IChallenge>;
 
   /**
+   * Validates a identifier
+   * @param identifier Identifier
+   */
+  identifierValidate(identifier: data.IIdentifier): Promise<void>;
+
+  /**
    * Validates a challenge
    * @param challenge Challenge
    */
-  validate(challenge: data.IChallenge): Promise<void>;
+  challengeValidate(challenge: data.IChallenge, type: string): Promise<void>;
 
   /**
    * Creates new Challenge
    * @param authId The identifier of Authorization
    * @param type THe type of Challenge
    */
-  create(authId: data.Key, type: string): Promise<data.IChallenge>;
+  create(auth: data.IAuthorization, type: string): Promise<data.IChallenge[]>;
 
   /**
    * Returns array of Challenge
    * @param id The identifier of Authorization
    */
   getByAuthorization(id: data.Key): Promise<data.IChallenge[]>;
+}
+
+export const diIdentifierService = "ACME.IdentifierService";
+
+export interface IIdentifierService {
+  type: string;
+  // todo stepan
+  _challengesCreate(auth: data.IAuthorization): Promise<data.IChallenge[]>;
+  _challengeValidate(challenge: data.IChallenge): Promise<void>;
+  _identifierValidate(identifier: data.IIdentifier): Promise<void>;
 }

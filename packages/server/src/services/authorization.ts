@@ -45,20 +45,23 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
     // Create Authorization
     const auth = ModelFabric.authorization();
 
+    await this.challengeService.identifierValidate(identifier);
+
     // Fill params
     this.onCreateParams(auth, accountId, identifier);
-
     // Save authorization
     const addedAuth = await this.authorizationRepository.add(auth);
-
-    // Add challenges
-    await this.challengeService.create(addedAuth.id, "http-01");
-    //const tls = ChallengeService.Create(addedAuth.Id, "tls-01");
-    //const dns = ChallengeService.Create(addedAuth.Id, "dns-01");
-
-    this.logger.info(`Authorization ${auth.id} created`);
-
-    return addedAuth;
+    try {
+      await this.challengeService.create(auth, identifier.type);
+      this.logger.info(`Authorization ${auth.id} created`);
+      return addedAuth;
+    } catch (error) {
+      addedAuth.status = "invalid";
+      await this.authorizationRepository.update(addedAuth);
+      this.logger.info(`Authorization '${auth.id}' status updated to 'invalid'`);
+      this.logger.error("Error create challenges", error);
+      throw new MalformedError("Cannot create challenges");
+    }
   }
 
   public async refreshStatus(item: IAuthorization): Promise<IAuthorization> {

@@ -407,9 +407,9 @@ export class AcmeController extends BaseService {
 
       // get challenge
       const challenge = await this.challengeService.getById(challengeId);
-      await this.authorizationService.getById(account.id, challenge.authorizationId);
+      const auth = await this.authorizationService.getById(account.id, challenge.authorizationId);
       if (token.isPayloadEmptyObject()) {
-        await this.challengeService.validate(challenge);
+        await this.challengeService.challengeValidate(challenge, auth.identifier.type);
       }
       response.content = new core.Content(await this.convertService.toChallenge(challenge));
     }, request);
