@@ -8,7 +8,7 @@ import * as pvtsutils from "pvtsutils";
 import { JsonWebKey } from "@peculiar/jose";
 import * as types from "../types";
 import { IChallenge } from "@peculiar/acme-data";
-import { UnsupportedIdentifierError } from "@peculiar/acme-core";
+import { MalformedError, UnsupportedIdentifierError } from "@peculiar/acme-core";
 
 @injectable()
 export class DnsChallengeService extends ChallengeService implements types.IIdentifierService {
@@ -23,9 +23,9 @@ export class DnsChallengeService extends ChallengeService implements types.IIden
     super(challengeRepository, logger, options,);
   }
   public async _identifierValidate(identifier: data.IIdentifier): Promise<void> {
-    const pattern = /^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}$/g;
+    const pattern = /^(?:[-A-Za-zА-Яа-я0-9]+\.)+[A-Za-zА-Яа-я]{2,6}$/g;
     if (!pattern.test(identifier.value)) {
-      throw new UnsupportedIdentifierError();
+      throw new MalformedError();
     }
   }
 

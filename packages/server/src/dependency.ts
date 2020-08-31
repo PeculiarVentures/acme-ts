@@ -10,6 +10,7 @@ import * as types from "./services/types";
 import * as services from "./services";
 import * as normalizeURL from "normalize-url";
 import * as url from "url";
+import { DnsChallengeService } from "./services/identifiers";
 
 const BaseAddress = "http://localhost/acme";
 
@@ -53,6 +54,7 @@ export class DependencyInjection {
       data.DependencyInjection.register(container);
     }
     container.registerInstance(services.diServerOptions, serverOptions);
+    container.register(types.diIdentifierService, DnsChallengeService);
 
     registerEmpty(container, types.diConvertService, services.ConvertService);
     registerEmpty(container, types.diDirectoryService, services.DirectoryService);

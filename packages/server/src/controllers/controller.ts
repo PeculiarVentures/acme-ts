@@ -109,7 +109,6 @@ export class AcmeController extends BaseService {
         const error = new core.AcmeError(core.ErrorType.serverInternal, `Unexpected server error exception. ${e.message || e}`, core.HttpStatusCode.internalServerError, e);
         response.content = new core.Content(error, this.options.formattedResponse);
 
-        console.error(e);
         this.logger.error(e.message);
       }
     }
