@@ -7,6 +7,7 @@ import * as core from "@peculiar/acme-core";
 import { JsonWebKey } from "@peculiar/jose";
 import * as ModelFabric from "./model_fabric";
 import * as pvtsutils from "pvtsutils";
+import { ErrorType } from "@peculiar/acme-core";
 
 export interface ICertificateEnrollParams {
   /**
@@ -73,9 +74,9 @@ export class OrderService extends BaseService implements types.IOrderService {
     // update order
     order = await this.orderRepository.update(order);
 
-    await this.refreshStatus(order);
-
     this.logger.info(`Order ${order.id} created`);
+
+    await this.refreshStatus(order);
 
     return order;
   }
@@ -175,12 +176,14 @@ export class OrderService extends BaseService implements types.IOrderService {
 
         if (order.status === "pending") {
           // Check Auth statuses
-          if (!authorizations.find(o => o.status === "pending"
-            || o.status === "valid")) {
+          if (authorizations.find(o => !(o.status === "pending"
+            || o.status === "valid"))) {
             order.status = "invalid";
+            order.error = ModelFabric.error();
+            order.error.type = ErrorType.malformed;
+            order.error.detail = "One of order authorizations has wrong status";
             await this.orderRepository.update(order);
-          }
-          else if (authorizations.find(o => o.status === "valid")) {
+          } else if (authorizations.find(o => o.status === "valid")) {
             order.status = "ready";
             await this.orderRepository.update(order);
           }
@@ -210,9 +213,6 @@ export class OrderService extends BaseService implements types.IOrderService {
       else {
 
         // RefreshStatus authorizations
-        // async () => {
-        //   return Promise.all(list.map(item => anAsyncFunction(item)))
-        // }
         const orderAuthorization = await this.orderAuthorizationRepository.findByOrder(order.id);
         const authorizations = await Promise.all(orderAuthorization.map(o => this.authorizationService.getById(accountId, o.authorizationId)));
 
