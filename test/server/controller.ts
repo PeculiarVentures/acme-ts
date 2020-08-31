@@ -1,13 +1,17 @@
-import { ContentType, ErrorType, Request, Response } from "@peculiar/acme-core";
+import { ContentType, ErrorType, Extension, Request, Response } from "@peculiar/acme-core";
 import * as data from "@peculiar/acme-data";
 import { IAccountRepository, IAuthorizationRepository } from "@peculiar/acme-data";
 import * as dataMemory from "@peculiar/acme-data-memory";
 import * as protocol from "@peculiar/acme-protocol";
 import { AcmeController, diAcmeController, DependencyInjection } from "@peculiar/acme-server";
+import { AsnConvert } from "@peculiar/asn1-schema";
+import { GeneralName, id_ce_subjectAltName, SubjectAlternativeName } from "@peculiar/asn1-x509";
 import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
 import { Crypto } from "@peculiar/webcrypto";
 import * as assert from "assert";
+import { Pkcs10CertificateRequestGenerator } from "packages/core/src/crypto/pkcs10_cert_req_generator";
 import { authorization } from "packages/server/src/services/model_fabric";
+import { Convert } from "pvtsutils";
 import { container } from "tsyringe";
 
 const baseAddress = "http://localhost";
@@ -651,6 +655,14 @@ context.only("Server", () => {
 
   context("order", async () => {
 
+    async function changeAuthzStatus(location: string, status: protocol.AuthorizationStatus) {
+      const authzRepo = container.resolve<data.IAuthorizationRepository>(data.diAuthorizationRepository);
+      const authz = await authzRepo.findById(getId(location));
+      assert(authz);
+      authz.status = status;
+      authzRepo.update(authz);
+    }
+
     context("create", () => {
 
       it("create", async () => {
@@ -925,13 +937,6 @@ context.only("Server", () => {
     context("get", () => {
 
       context("status", () => {
-        async function changeAuthzStatus(location: string, status: protocol.AuthorizationStatus) {
-          const authzRepo = container.resolve<data.IAuthorizationRepository>(data.diAuthorizationRepository);
-          const authz = await authzRepo.findById(getId(location));
-          assert(authz);
-          authz.status = status;
-          authzRepo.update(authz);
-        }
 
         it("authz: valid, valid ", async () => {
           // Create new account
@@ -1044,6 +1049,142 @@ context.only("Server", () => {
           assert(order2.error);
         });
 
+      });
+
+    });
+
+    context("finalize", () => {
+
+      it("wrong CSR message", async () => {
+        // Create new account
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+
+        // create order
+        const resp = await controller.createOrder(await createPostRequest(
+          {
+            identifiers: [{ type: "dns", value: "some.com" }],
+          } as protocol.OrderCreateParams,
+          `${baseAddress}/new-order`,
+          client.location!,
+          client.keys));
+
+        assert.strictEqual(resp.status, 201);
+        const order = resp.json<protocol.Order>();
+        const orderId = getId(resp.headers.location);
+
+        await changeAuthzStatus(order.authorizations[0], "valid");
+
+        const resp2 = await controller.finalizeOrder(await createPostRequest(
+          {
+            csr: "AaAaAaAaAaAaAaAaAaAaAaAa",
+          } as protocol.Finalize,
+          `${baseAddress}/finalize/${orderId}`,
+          client.location!,
+          client.keys), orderId);
+
+        assert.strictEqual(resp2.status, 403);
+        const error = resp.json<protocol.Error>();
+        assert.strictEqual(error.type, ErrorType.badCSR);
+      });
+
+      it("CSR doesn't have required identifiers", async () => {
+        // Create new account
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+
+        // create order
+        const resp = await controller.createOrder(await createPostRequest(
+          {
+            identifiers: [
+              { type: "dns", value: "some.com" },
+              { type: "dns", value: "some2.com" },
+            ],
+          } as protocol.OrderCreateParams,
+          `${baseAddress}/new-order`,
+          client.location!,
+          client.keys));
+
+        assert.strictEqual(resp.status, 201);
+        const order = resp.json<protocol.Order>();
+        const orderId = getId(resp.headers.location);
+
+        await changeAuthzStatus(order.authorizations[0], "valid");
+        await changeAuthzStatus(order.authorizations[1], "valid");
+
+        const resp2 = await controller.finalizeOrder(await createPostRequest(
+          {
+            csr: "MIICRzCCAS8CAQAwAjEAMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArut7tLrb1BEHXImMTWipet+3/J2isn7mBv278oP7YyOkmX/Vzxvk9nvSc/B1wh6kSo6nfaxYacNNSP3r+WQYaTeLm5TsDbUfCJYtvvTuYH0GVTM8Qm7QhMZKnyUy/D60WNcRM4pnBDSEMpKppi7HhfL37DZpQnsQfr9r8LQPWZ9t/mf+FsSeWyQOQcz+ob6cODfNQIvbzpaXXdNpKIHLPW+/e4af5/WlZ9wL5Sy7kOf4X6nErdl74s1vSji9goANSQkd5TbswtFPRNybikrrisz0HtsIq2uTGDY6t3iOEHTe5qe/ux4anjbSqKVuIQEQWQOKb4h+mHTc+EC5yknihQIDAQABoAAwDQYJKoZIhvcNAQELBQADggEBAE7TU20ui1MLtxLM0UZMytYAjC7vtXxB5Vl6bzHUzZkVFW6oTeizqDxjeBtZ1SqErpgdyvzMvFSxF6f+679kl1/Zs2V0IPa4y58he3wTT/M1xCBN/bITY2cA4ETozbtK4cGoi6jY/0j8NcxTLfiBgwhE3ap+9GzLtWEhHWCXmpsohbvAktXSh1tLh4xmgoQoePEBSPbnaOmsonyzscKiBMASDvjrFdNbtD0uY2v/wYXwtRGvV/Q/O3lLWEosE4NdnZmgId4bm7ru48WucSnxuEJAkKUjDLrN0uqY/tKfX4Zy9w8Y/o+hk3QzNBVa3ZUvzDhVAmamQflvw3lXMm/JG4U=",
+          } as protocol.Finalize,
+          `${baseAddress}/finalize/${orderId}`,
+          client.location!,
+          client.keys), orderId);
+
+        assert.strictEqual(resp2.status, 403);
+        const error = resp.json<protocol.Error>();
+        assert.strictEqual(error.type, ErrorType.badCSR);
+        assert(error.subproblems);
+        assert.strictEqual(error.subproblems.length, 2);
+      });
+
+      it.only("CSR with multiple DNS", async () => {
+        // Create new account
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+
+        // create order
+        const resp = await controller.createOrder(await createPostRequest(
+          {
+            identifiers: [
+              { type: "dns", value: "some.com" },
+              { type: "dns", value: "info.some.com" },
+            ],
+          } as protocol.OrderCreateParams,
+          `${baseAddress}/new-order`,
+          client.location!,
+          client.keys));
+
+        assert.strictEqual(resp.status, 201);
+        const order = resp.json<protocol.Order>();
+        const orderId = getId(resp.headers.location);
+
+        await changeAuthzStatus(order.authorizations[0], "valid");
+        await changeAuthzStatus(order.authorizations[1], "valid");
+
+        const keyAlg: RsaHashedKeyGenParams = {
+          name: "RSASSA-PKCS1-v1_5",
+          hash: "SHA-256",
+          publicExponent: new Uint8Array([1, 0, 1]),
+          modulusLength: 2048,
+        };
+        const keys = await crypto.subtle.generateKey(keyAlg, false, ["sign", "verify"]) as CryptoKeyPair;
+        const req = await Pkcs10CertificateRequestGenerator.create({
+          name: "DC=some.com",
+          keys,
+          signingAlgorithm: { name: "RSASSA-PKCS1-v1_5" },
+          extensions: [
+            new Extension(id_ce_subjectAltName, false, AsnConvert.serialize(new SubjectAlternativeName([
+              new GeneralName({ dNSName: "info.some.com" }),
+            ])))
+          ]
+        });
+
+        const resp2 = await controller.finalizeOrder(await createPostRequest(
+          {
+            csr: Convert.ToBase64Url(req.rawData),
+          } as protocol.Finalize,
+          `${baseAddress}/finalize/${orderId}`,
+          client.location!,
+          client.keys), orderId);
+
+        assert.strictEqual(resp2.status, 403);
+        const error = resp.json<protocol.Error>();
+        assert.strictEqual(error.type, ErrorType.badCSR);
+        assert(error.subproblems);
+        assert.strictEqual(error.subproblems.length, 2);
       });
 
     });
