@@ -32,3 +32,17 @@ export interface Authorization {
    */
   wildcard?: boolean;
 }
+
+export interface AuthorizationCreateParams {
+  /**
+   * An array of identifier objects that the order pertains to
+   */
+  identifier: Identifier;
+}
+
+export interface AuthorizationUpdateParams {
+  /**
+   * The status of this authorization.
+   */
+  status: AuthorizationStatus;
+}

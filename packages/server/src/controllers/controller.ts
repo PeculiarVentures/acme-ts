@@ -417,13 +417,44 @@ export class AcmeController extends BaseService {
   //#endregion
 
   //#region Authorization
-  public async postAuthorization(request: core.Request, authId: Key) {
+  public async createAuthorization(request: core.Request) {
     return this.wrapAction(async (response) => {
+      const token = this.getToken(request);
+      // get account
       const account = await this.getAccount(request);
 
-      const auth = await this.authorizationService.getById(account.id, authId);
+      // get params
+      const params = token.getPayload<protocol.AuthorizationCreateParams>();
 
-      response.content = new core.Content(await this.convertService.toAuthorization(auth));
+      // get authorization
+      let authz = await this.authorizationService.getActual(account.id, params.identifier);
+      if (!authz) {
+        // create order
+        authz = await this.authorizationService.create(account.id, params.identifier);
+        response.status = 201; // Created
+      }
+
+      // add headers
+      response.headers.location = `${this.options.baseAddress}/authz/${authz.id}`;
+
+      // convert to JSON
+      response.content = new core.Content(await this.convertService.toAuthorization(authz), this.options.formattedResponse);
+    }, request);
+  }
+
+  public async postAuthorization(request: core.Request, authzId: Key) {
+    return this.wrapAction(async (response) => {
+      const token = this.getToken(request);
+      const params = token.getPayload<protocol.AuthorizationUpdateParams>();
+      const account = await this.getAccount(request);
+
+      let authz = await this.authorizationService.getById(account.id, authzId);
+
+      if (params && params.status === "deactivated") {
+        authz = await this.authorizationService.deactivate(authz.id);
+      }
+
+      response.content = new core.Content(await this.convertService.toAuthorization(authz));
     }, request);
   }
   //#endregion

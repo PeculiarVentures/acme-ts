@@ -104,4 +104,23 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
       auth.expires = date;
     }
   }
+
+  public async deactivate(id: Key): Promise<IAuthorization> {
+    const authz = await this.authorizationRepository.findById(id);
+
+    if (!authz) {
+      throw new MalformedError("Authorization doesn't exist");
+    }
+    if (authz.status !== "pending") {
+      throw new MalformedError("Cannot deactivate status cause it's not active")
+    }
+
+    authz.status = "deactivated";
+
+    const resp = await this.authorizationRepository.update(authz);
+
+    this.logger.info(`Authorization ${resp.id} deactivated`);
+
+    return resp;
+  }
 }

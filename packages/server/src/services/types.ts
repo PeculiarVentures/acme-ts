@@ -139,6 +139,12 @@ export interface IAuthorizationService {
    * @param IAuthorization Authorization
    */
   refreshStatus(item: data.IAuthorization): Promise<data.IAuthorization>;
+
+  /**
+   * Deactivate an Authorization
+   * @param id Authorization identifier
+   */
+  deactivate(id: data.Key): Promise<data.IAuthorization>;
 }
 
 export const diCertificateEnrollmentService = "ACME.CertificateEnrollmentService";

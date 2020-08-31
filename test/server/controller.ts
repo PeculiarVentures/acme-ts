@@ -1,11 +1,13 @@
 import { ContentType, ErrorType, Request, Response } from "@peculiar/acme-core";
 import * as data from "@peculiar/acme-data";
+import { IAccountRepository, IAuthorizationRepository } from "@peculiar/acme-data";
 import * as dataMemory from "@peculiar/acme-data-memory";
 import * as protocol from "@peculiar/acme-protocol";
 import { AcmeController, diAcmeController, DependencyInjection } from "@peculiar/acme-server";
 import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
 import { Crypto } from "@peculiar/webcrypto";
 import * as assert from "assert";
+import { authorization } from "packages/server/src/services/model_fabric";
 import { container } from "tsyringe";
 
 const baseAddress = "http://localhost";
@@ -1042,6 +1044,225 @@ context.only("Server", () => {
           assert(order2.error);
         });
 
+      });
+
+    });
+
+  });
+
+  context("authorization", () => {
+
+    it("create new", async () => {
+      // Create new account
+      const client = await createAccount({}, (resp) => {
+        assert.strictEqual(resp.status, 201);
+      });
+
+      const resp = await controller.createAuthorization(await createPostRequest(
+        {
+          identifier: { type: "dns", value: "some.com" },
+        } as protocol.AuthorizationCreateParams,
+        `${baseAddress}/new-authz`,
+        client.location!,
+        client.keys));
+
+      assert.strictEqual(resp.status, 201);
+      assert.strictEqual(/http:\/\/localhost\/authz\/\d+/.test(resp.headers.location!), true, "Authorization response wrong Location header");
+
+      const json = resp.json<protocol.Authorization>();
+      assert.strictEqual(json.status, "pending");
+      assert.deepStrictEqual(json.identifier, { type: "dns", value: "some.com" });
+      assert.deepStrictEqual(json.challenges.length, 1);
+    });
+
+    context("status", () => {
+
+      async function changeChallengeStatus(location: string, status: protocol.ChallengeStatus) {
+        const challengeRepo = container.resolve<data.IChallengeRepository>(data.diChallengeRepository);
+        const challenge = await challengeRepo.findById(getId(location));
+        assert(challenge);
+        challenge.status = status;
+        challengeRepo.update(challenge);
+      }
+
+      async function testAuthzStatus(challengeStatus: protocol.ChallengeStatus, authzStatus: protocol.AuthorizationStatus) {
+        // Create new account
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+
+        const resp = await controller.createAuthorization(await createPostRequest(
+          {
+            identifier: { type: "dns", value: "some.com" },
+          } as protocol.AuthorizationCreateParams,
+          `${baseAddress}/new-authz`,
+          client.location!,
+          client.keys));
+
+        assert.strictEqual(resp.status, 201);
+
+        const authz = resp.json<protocol.Authorization>();
+        const authzId = getId(resp.headers.location);
+        await changeChallengeStatus(authz.challenges[0].url, challengeStatus);
+
+        const resp2 = await controller.postAuthorization(await createPostRequest(
+          {} as protocol.AuthorizationCreateParams,
+          `${baseAddress}/authz/${authzId}`,
+          client.location!,
+          client.keys), authzId);
+
+        assert.strictEqual(resp2.status, 200);
+
+        const authz2 = resp2.json<protocol.Authorization>();
+        assert.strictEqual(authz2.status, authzStatus);
+      }
+
+      it("valid", async () => {
+        await testAuthzStatus("valid", "valid");
+      });
+
+      it("invalid", async () => {
+        await testAuthzStatus("invalid", "invalid");
+      });
+
+      it("pending", async () => {
+        await testAuthzStatus("pending", "pending");
+      });
+
+      it("expired", async () => {
+        // Create new account
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+
+        const resp = await controller.createAuthorization(await createPostRequest(
+          {
+            identifier: { type: "dns", value: "some.com" },
+          } as protocol.AuthorizationCreateParams,
+          `${baseAddress}/new-authz`,
+          client.location!,
+          client.keys));
+
+        assert.strictEqual(resp.status, 201);
+
+        const authzId = getId(resp.headers.location);
+
+        // Update expiration time
+        const authzRepo = container.resolve<IAuthorizationRepository>(data.diAuthorizationRepository);
+        const authzItem = await authzRepo.findById(authzId);
+        assert(authzItem);
+        authzItem.expires = new Date("2019/01/01");
+        await authzRepo.update(authzItem);
+
+        const resp2 = await controller.postAuthorization(await createPostRequest(
+          {} as protocol.AuthorizationCreateParams,
+          `${baseAddress}/authz/${authzId}`,
+          client.location!,
+          client.keys), authzId);
+
+        assert.strictEqual(resp2.status, 200);
+
+        const authz = resp2.json<protocol.Authorization>();
+        assert.strictEqual(authz.status, "expired");
+      });
+
+    });
+
+    context("POST authz", () => {
+
+      it("deactivate", async () => {
+        // Create new account
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+
+        const resp = await controller.createOrder(await createPostRequest({
+          identifiers: [{ type: "dns", value: "some.com" }],
+        } as protocol.OrderCreateParams,
+          `${baseAddress}/new-order`,
+          client.location!,
+          client.keys));
+
+        assert.strictEqual(resp.status, 201);
+        assert(resp.headers.location);
+
+        const order = resp.json<protocol.Order>();
+        const orderId = getId(resp.headers.location);
+        const authzLocation = order.authorizations[0];
+        const authzId = getId(authzLocation);
+
+
+        const resp2 = await controller.postAuthorization(await createPostRequest(
+          {
+            status: "deactivated",
+          } as protocol.AuthorizationUpdateParams,
+          authzLocation,
+          client.location!,
+          client.keys), authzId);
+
+        assert.strictEqual(resp2.status, 200);
+
+        const authz = resp2.json<protocol.Authorization>();
+        assert.strictEqual(authz.status, "deactivated");
+
+        // validate order status
+        const resp3 = await controller.postOrder(await createPostRequest(
+          {},
+          resp.headers.location,
+          client.location!,
+          client.keys), orderId);
+
+        assert.strictEqual(resp.status, 201);
+
+        const order2 = resp3.json<protocol.Order>();
+        assert.strictEqual(order2.status, "invalid");
+      });
+
+      it("deactivate inactive authz", async () => {
+        // Create new account
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+
+        // create order
+        const resp = await controller.createOrder(await createPostRequest({
+          identifiers: [{ type: "dns", value: "some.com" }],
+        } as protocol.OrderCreateParams,
+          `${baseAddress}/new-order`,
+          client.location!,
+          client.keys));
+
+        assert.strictEqual(resp.status, 201);
+        assert(resp.headers.location);
+
+        const order = resp.json<protocol.Order>();
+        const authzLocation = order.authorizations[0];
+        const authzId = getId(authzLocation);
+
+        // deactivate authz
+        const resp2 = await controller.postAuthorization(await createPostRequest(
+          {
+            status: "deactivated",
+          } as protocol.AuthorizationUpdateParams,
+          authzLocation,
+          client.location!,
+          client.keys), authzId);
+
+        assert.strictEqual(resp2.status, 200);
+
+        // deactivate authz again
+        const resp3 = await controller.postAuthorization(await createPostRequest(
+          {
+            status: "deactivated",
+          } as protocol.AuthorizationUpdateParams,
+          authzLocation,
+          client.location!,
+          client.keys), authzId);
+
+        assert.strictEqual(resp3.status, 403);
+
+        const error = resp3.json<protocol.Error>();
+        assert.strictEqual(error.type, ErrorType.malformed);
       });
 
     });
