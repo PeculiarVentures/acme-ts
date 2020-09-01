@@ -1,6 +1,6 @@
 import { ContentType, ErrorType, Extension, Request, Response } from "@peculiar/acme-core";
 import * as data from "@peculiar/acme-data";
-import { IAccountRepository, IAuthorizationRepository } from "@peculiar/acme-data";
+import { IAuthorizationRepository } from "@peculiar/acme-data";
 import * as dataMemory from "@peculiar/acme-data-memory";
 import * as protocol from "@peculiar/acme-protocol";
 import { AcmeController, diAcmeController, DependencyInjection } from "@peculiar/acme-server";
@@ -10,7 +10,6 @@ import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
 import { Crypto } from "@peculiar/webcrypto";
 import * as assert from "assert";
 import { Pkcs10CertificateRequestGenerator } from "packages/core/src/crypto/pkcs10_cert_req_generator";
-import { authorization } from "packages/server/src/services/model_fabric";
 import { Convert } from "pvtsutils";
 import { container } from "tsyringe";
 
@@ -1129,7 +1128,7 @@ context.only("Server", () => {
         assert.strictEqual(error.subproblems.length, 2);
       });
 
-      it.only("CSR with multiple DNS", async () => {
+      it("CSR with multiple DNS", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
           assert.strictEqual(resp.status, 201);
