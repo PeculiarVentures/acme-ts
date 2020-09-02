@@ -2,6 +2,7 @@ import { CertificationRequest } from "@peculiar/asn1-csr";
 import { id_sha1WithRSAEncryption, id_sha256WithRSAEncryption, id_sha384WithRSAEncryption, id_sha512WithRSAEncryption } from "@peculiar/asn1-rsa";
 import { id_ecdsaWithSHA1, id_ecdsaWithSHA256, id_ecdsaWithSHA384, id_ecdsaWithSHA512 } from "@peculiar/asn1-ecc";
 import { AsnConvert } from "@peculiar/asn1-schema";
+import { id_pkcs9_at_extensionRequest } from "@peculiar/asn1-pkcs9";
 import { AlgorithmIdentifier, Extensions } from "@peculiar/asn1-x509";
 import { Name } from "./name";
 import { cryptoProvider } from "./provider";
@@ -11,15 +12,6 @@ import { AsnData } from "./asn_data";
 import { Attribute } from "./attribute";
 import { Extension } from "./extension";
 import { PublicKey } from "./public_key";
-
-/**
- * ```
- * pkcs-9 OBJECT IDENTIFIER ::= {iso(1) member-body(2) us(840)
- *                               rsadsi(113549) pkcs(1) 9}
- * ```
- */
-const id_pkcs9 = "1.2.840.113549.1.9";
-const id_pkcs9_at_extensionRequest = `${id_pkcs9}.14`;
 
 export class Pkcs10CertificateRequest extends AsnData<CertificationRequest> {
 

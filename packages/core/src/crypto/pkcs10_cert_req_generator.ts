@@ -1,5 +1,6 @@
 import { CertificationRequest, CertificationRequestInfo } from "@peculiar/asn1-csr";
 import { id_ecdsaWithSHA1, id_ecdsaWithSHA256, id_ecdsaWithSHA384, id_ecdsaWithSHA512 } from "@peculiar/asn1-ecc";
+import { id_pkcs9_at_extensionRequest } from "@peculiar/asn1-pkcs9";
 import { id_sha1WithRSAEncryption, id_sha256WithRSAEncryption, id_sha384WithRSAEncryption, id_sha512WithRSAEncryption } from "@peculiar/asn1-rsa";
 import { AsnConvert } from "@peculiar/asn1-schema";
 import { Name as AsnName, Extension as AsnExtension, SubjectPublicKeyInfo, Extensions, Attribute  as AsnAttribute } from "@peculiar/asn1-x509";
@@ -38,7 +39,7 @@ export class Pkcs10CertificateRequestGenerator {
     }
 
     if (params.extensions && params.extensions.length) {
-      const attr = new AsnAttribute({ type: "1.3.6.1.4.1.311.2.1.14"})
+      const attr = new AsnAttribute({ type: id_pkcs9_at_extensionRequest})
       const extensions = new Extensions();
       for (const o of params.extensions) {
         extensions.push(AsnConvert.parse(o.rawData, AsnExtension));

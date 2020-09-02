@@ -915,6 +915,17 @@
     asn1js "^2.0.26"
     tslib "^2.0.1"
 
+"@peculiar/asn1-cms@^2.0.20":
+  version "2.0.20"
+  resolved "https://registry.yarnpkg.com/@peculiar/asn1-cms/-/asn1-cms-2.0.20.tgz#64d552eea5ad358b10328f8227efcab51314b3e5"
+  integrity sha512-8NnH1Nj623rAlwPsgTJ97WTCMOTCmDx0KefOnoOcR9QR94Nk/UhCktboS024rmp7oOagdxIZIhnSMSQd6WPZdQ==
+  dependencies:
+    "@peculiar/asn1-schema" "^2.0.17"
+    "@peculiar/asn1-x509" "^2.0.20"
+    "@peculiar/asn1-x509-attr" "^2.0.20"
+    asn1js "^2.0.26"
+    tslib "^2.0.1"
+
 "@peculiar/asn1-csr@^2.0.1", "@peculiar/asn1-csr@^2.0.3":
   version "2.0.17"
   resolved "https://registry.yarnpkg.com/@peculiar/asn1-csr/-/asn1-csr-2.0.17.tgz#89695ccd80153669d73f14abb8919f87be566c97"
@@ -934,6 +945,42 @@
     asn1js "^2.0.26"
     tslib "^2.0.1"
 
+"@peculiar/asn1-pfx@^2.0.20":
+  version "2.0.20"
+  resolved "https://registry.yarnpkg.com/@peculiar/asn1-pfx/-/asn1-pfx-2.0.20.tgz#15005d07ad6ca91f58303f002ec5724470a76bf2"
+  integrity sha512-JPXhHFnjExCepvyeMMMUV7CtWKCSKPm+d1yaLgmTbO7+1orcFkP1CFrHnA3sAXHw09yWMreIjzO1pbNC/RrkVg==
+  dependencies:
+    "@peculiar/asn1-cms" "^2.0.20"
+    "@peculiar/asn1-pkcs8" "^2.0.20"
+    "@peculiar/asn1-rsa" "^2.0.20"
+    "@peculiar/asn1-schema" "^2.0.17"
+    asn1js "^2.0.26"
+    tslib "^2.0.1"
+
+"@peculiar/asn1-pkcs8@^2.0.20":
+  version "2.0.20"
+  resolved "https://registry.yarnpkg.com/@peculiar/asn1-pkcs8/-/asn1-pkcs8-2.0.20.tgz#d3e61722960d2f3b995007847de5169e23b05ffa"
+  integrity sha512-+5gCZjtiji/z3UqM0FadNCnx1ssdqSn2pdnh/USG43Zl0gPmHaMJqSZ3Kjp3m6TWgVUbanjv92WeFXQ0YcMXQQ==
+  dependencies:
+    "@peculiar/asn1-schema" "^2.0.17"
+    "@peculiar/asn1-x509" "^2.0.20"
+    asn1js "^2.0.26"
+    tslib "^2.0.1"
+
+"@peculiar/asn1-pkcs9@^2.0.20":
+  version "2.0.20"
+  resolved "https://registry.yarnpkg.com/@peculiar/asn1-pkcs9/-/asn1-pkcs9-2.0.20.tgz#6e7e74b347227564e82cb133bb963714208bca21"
+  integrity sha512-UD3MBP5rmWeug14uw+3Lwtz4Odj8Dc7Pdbvp3UQvyhVhUGjsgMB7BZ/NZdgrse6zs+Rauu7S3Ub8Zzy1XAHyWQ==
+  dependencies:
+    "@peculiar/asn1-cms" "^2.0.20"
+    "@peculiar/asn1-pfx" "^2.0.20"
+    "@peculiar/asn1-pkcs8" "^2.0.20"
+    "@peculiar/asn1-schema" "^2.0.17"
+    "@peculiar/asn1-x509" "^2.0.20"
+    "@peculiar/asn1-x509-attr" "^2.0.20"
+    asn1js "^2.0.26"
+    tslib "^2.0.1"
+
 "@peculiar/asn1-rsa@^2.0.1", "@peculiar/asn1-rsa@^2.0.3":
   version "2.0.17"
   resolved "https://registry.yarnpkg.com/@peculiar/asn1-rsa/-/asn1-rsa-2.0.17.tgz#84cab263cebb089dc3a7d3aea59fd6db66bd6d07"
@@ -941,6 +988,16 @@
   dependencies:
     "@peculiar/asn1-schema" "^2.0.17"
     "@peculiar/asn1-x509" "^2.0.17"
+    asn1js "^2.0.26"
+    tslib "^2.0.1"
+
+"@peculiar/asn1-rsa@^2.0.20":
+  version "2.0.20"
+  resolved "https://registry.yarnpkg.com/@peculiar/asn1-rsa/-/asn1-rsa-2.0.20.tgz#df230586d75d88feadf7de3face20e6fa59cafc3"
+  integrity sha512-+/oXgIABeAVf8ii+VaqGo6ekc7eC1qpE0sUTHy3V3YAgUGWS1K1t4Prr9M8tIMZPzmHygx+yLCqEsJ6G/32CMA==
+  dependencies:
+    "@peculiar/asn1-schema" "^2.0.17"
+    "@peculiar/asn1-x509" "^2.0.20"
     asn1js "^2.0.26"
     tslib "^2.0.1"
 
@@ -964,10 +1021,31 @@
     asn1js "^2.0.26"
     tslib "^2.0.1"
 
+"@peculiar/asn1-x509-attr@^2.0.20":
+  version "2.0.20"
+  resolved "https://registry.yarnpkg.com/@peculiar/asn1-x509-attr/-/asn1-x509-attr-2.0.20.tgz#fd4252b75ebd4973850a4a8bc2065eed4055a97e"
+  integrity sha512-ergA9SxQwSuKG3CLMj/SaGpYnjrPrvFWQnk5ZiYWk+ATW7u2UI9s1f0Ai5yZa6Hhj+nhtvjlFDG2YKGQGHf9nA==
+  dependencies:
+    "@peculiar/asn1-schema" "^2.0.17"
+    "@peculiar/asn1-x509" "^2.0.20"
+    asn1js "^2.0.26"
+    tslib "^2.0.1"
+
 "@peculiar/asn1-x509@^2.0.1", "@peculiar/asn1-x509@^2.0.17", "@peculiar/asn1-x509@^2.0.2", "@peculiar/asn1-x509@^2.0.3":
   version "2.0.17"
   resolved "https://registry.yarnpkg.com/@peculiar/asn1-x509/-/asn1-x509-2.0.17.tgz#5fdf3b7572309f60643ce364d34ff8cb84d7fca4"
   integrity sha512-kNIrDNEp1sY6aMkSQRr4DP/SS54NERs7lDY4TJpPNkOYuXDpaBBeuCezq4v8f+AdW6xlnlowWLv/KvgaIHsAWg==
+  dependencies:
+    "@peculiar/asn1-schema" "^2.0.17"
+    asn1js "^2.0.26"
+    ipaddr.js "^1.9.1"
+    pvtsutils "^1.0.11"
+    tslib "^2.0.1"
+
+"@peculiar/asn1-x509@^2.0.20":
+  version "2.0.20"
+  resolved "https://registry.yarnpkg.com/@peculiar/asn1-x509/-/asn1-x509-2.0.20.tgz#34a1bba3a1d8c4fb93a2a1571f5dcb08bebb1f03"
+  integrity sha512-90kIO8JZEhtwlmG0tM23Up3i9sE3YUpsbCrIjuQGIi5W0yMhixs9dz+KM37kwy75C2nkrStT/WJQK27OVhxAwg==
   dependencies:
     "@peculiar/asn1-schema" "^2.0.17"
     asn1js "^2.0.26"
