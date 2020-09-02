@@ -1128,7 +1128,7 @@ context("Server", () => {
         assert.strictEqual(error.subproblems.length, 2);
       });
 
-      it.only("CSR with multiple DNS", async () => {
+      it("CSR with multiple DNS", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
           assert.strictEqual(resp.status, 201);
@@ -1161,16 +1161,16 @@ context("Server", () => {
         };
         const keys = await crypto.subtle.generateKey(keyAlg, false, ["sign", "verify"]) as CryptoKeyPair;
         const req = await Pkcs10CertificateRequestGenerator.create({
-          name: "DC=some.com",
+          name: "CN=some.com",
           keys,
           signingAlgorithm: { name: "RSASSA-PKCS1-v1_5" },
           extensions: [
             new Extension(id_ce_subjectAltName, false, AsnConvert.serialize(new SubjectAlternativeName([
               new GeneralName({ dNSName: "info.some.com" }),
+              new GeneralName({ dNSName: "*.some.com" }),
             ])))
           ]
         });
-        console.log(Convert.ToHex(req.rawData));
         const resp2 = await controller.finalizeOrder(await createPostRequest(
           {
             csr: Convert.ToBase64Url(req.rawData),
