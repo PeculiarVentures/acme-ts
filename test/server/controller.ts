@@ -1052,7 +1052,7 @@ context("Server", () => {
 
     });
 
-    context.only("finalize", () => {
+    context("finalize", () => {
 
       it("wrong CSR message", async () => {
         // Create new account
@@ -1128,7 +1128,7 @@ context("Server", () => {
         assert.strictEqual(error.subproblems.length, 2);
       });
 
-      it("CSR with multiple DNS", async () => {
+      it.only("CSR with multiple DNS", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
           assert.strictEqual(resp.status, 201);
@@ -1170,7 +1170,7 @@ context("Server", () => {
             ])))
           ]
         });
-
+        console.log(Convert.ToHex(req.rawData));
         const resp2 = await controller.finalizeOrder(await createPostRequest(
           {
             csr: Convert.ToBase64Url(req.rawData),

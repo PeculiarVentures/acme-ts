@@ -1,7 +1,7 @@
 import * as protocol from "@peculiar/acme-protocol";
 import * as data from "@peculiar/acme-data";
 import { JsonWebSignature, JsonWebKey } from "@peculiar/jose";
-import { Pkcs10CertificateRequest, QueryParams, X509Certificates } from "@peculiar/acme-core";
+import { AcmeError, Pkcs10CertificateRequest, QueryParams, X509Certificates } from "@peculiar/acme-core";
 
 export const diConvertService = "ACME.ConvertService";
 
@@ -266,5 +266,5 @@ export interface IIdentifierService {
   challengesCreate(auth: data.IAuthorization): Promise<data.IChallenge[]>;
   challengeValidate(challenge: data.IChallenge): Promise<void>;
   identifierValidate(identifier: data.IIdentifier): Promise<void>;
-  csrValidate(identifiers: data.IIdentifier[], csr: Pkcs10CertificateRequest): Promise<void>;
+  csrValidate(identifiers: data.IIdentifier[], csr: Pkcs10CertificateRequest): Promise<AcmeError[]>;
 }

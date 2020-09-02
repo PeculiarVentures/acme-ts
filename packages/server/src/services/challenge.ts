@@ -2,7 +2,7 @@ import { injectable, inject, container } from "tsyringe";
 import { BaseService, IServerOptions, diServerOptions } from "./base";
 import { diIdentifierService, IChallengeService, IIdentifierService } from "./types";
 import * as data from "@peculiar/acme-data";
-import { MalformedError, diLogger, ILogger, UnsupportedIdentifierError, Pkcs10CertificateRequest, BadCSRError } from "@peculiar/acme-core";
+import * as core from "@peculiar/acme-core";
 import { IAuthorization, IIdentifier } from "@peculiar/acme-data";
 import * as pvtsutils from "pvtsutils";
 
@@ -10,7 +10,7 @@ import * as pvtsutils from "pvtsutils";
 export class ChallengeService extends BaseService implements IChallengeService {
   public constructor(
     @inject(data.diChallengeRepository) protected challengeRepository: data.IChallengeRepository,
-    @inject(diLogger) logger: ILogger,
+    @inject(core.diLogger) logger: core.ILogger,
     @inject(diServerOptions) options: IServerOptions) {
     super(options, logger);
   }
@@ -22,7 +22,7 @@ export class ChallengeService extends BaseService implements IChallengeService {
   public async getById(id: data.Key): Promise<data.IChallenge> {
     const challenge = await this.challengeRepository.findById(id);
     if (!challenge) {
-      throw new MalformedError("Challenge does not exist");
+      throw new core.MalformedError("Challenge does not exist");
     }
     return challenge;
   }
@@ -38,26 +38,32 @@ export class ChallengeService extends BaseService implements IChallengeService {
   }
 
   public async csrValidate(identifiers: data.IIdentifier[], csrStr: string): Promise<void> {
-    let csr: Pkcs10CertificateRequest;
+    let csr: core.Pkcs10CertificateRequest;
     try {
-      csr = new Pkcs10CertificateRequest(pvtsutils.Convert.FromBase64(csrStr));
+      csr = new core.Pkcs10CertificateRequest(pvtsutils.Convert.FromBase64(csrStr));
     } catch (error) {
-      throw new BadCSRError();
+      throw new core.BadCSRError();
     }
-
+    const err = new core.BadCSRError();
     const validators = this.getValidatorAll();
     await Promise.all(validators.map(async o => {
       const items = identifiers.filter(i => i.type === o.type);
-      if (items) {
-        await o.csrValidate(items, csr);
+      if (items.length) {
+        const problems = await o.csrValidate(items, csr);
+        if (problems.length) {
+          err.subproblems = problems;
+        }
       }
     }));
+    if (err.subproblems) {
+      throw err;
+    }
   }
 
   public async getByAuthorization(id: data.Key): Promise<data.IChallenge[]> {
     const challenge = await this.challengeRepository.findByAuthorization(id);
     if (!challenge) {
-      throw new MalformedError("Challenge does not exist");
+      throw new core.MalformedError("Challenge does not exist");
     }
     return challenge;
   }
@@ -76,7 +82,7 @@ export class ChallengeService extends BaseService implements IChallengeService {
     }
     const validator = validators.find(o => o.type === type);
     if (!validator) {
-      throw new UnsupportedIdentifierError();
+      throw new core.UnsupportedIdentifierError();
     }
     return validator;
   }

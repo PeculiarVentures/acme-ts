@@ -7,7 +7,7 @@ import { inject, injectable } from "tsyringe";
 import { BaseService, diServerOptions, IServerOptions } from "../base";
 import { JsonWebKey } from "@peculiar/jose";
 import { IChallenge } from "@peculiar/acme-data";
-import { BadCSRError, MalformedError, Name } from "@peculiar/acme-core";
+import { AcmeError, BadCSRError, MalformedError, Name } from "@peculiar/acme-core";
 import { id_ce_subjectAltName, SubjectAlternativeName } from "@peculiar/asn1-x509";
 import { AsnConvert } from "@peculiar/asn1-schema";
 
@@ -23,18 +23,23 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
     @inject(diServerOptions) options: IServerOptions) {
     super(options, logger);
   }
-  public async csrValidate(identifiers: data.IIdentifier[], csr: core.Pkcs10CertificateRequest): Promise<void> {
+  public async csrValidate(identifiers: data.IIdentifier[], csr: core.Pkcs10CertificateRequest): Promise<AcmeError[]> {
     const identifiersCsr = this.getDomainNames(csr);
+    const problems: AcmeError[] = [];
 
-    if (identifiersCsr.length !== identifiers.length) {
-      throw new BadCSRError();
-    }
-
-    await Promise.all(await identifiersCsr.map(async i => {
-      if(!identifiers.find(o => o.value.toLowerCase() === i.toLowerCase())){
-        throw new BadCSRError();
+    identifiers.forEach(i => {
+      if (!identifiersCsr.find(o => i.value.toLowerCase() === o.toLowerCase())) {
+        problems.push(new MalformedError(`DNS name '${i.value}' from order not found in CSR`));
       }
-    }));
+    });
+
+    identifiersCsr.forEach(i => {
+      if (!identifiers.find(o => o.value.toLowerCase() === i.toLowerCase())) {
+        problems.push(new MalformedError(`DNS name '${i}' from CSR not found in order`));
+      }
+    });
+
+    return problems;
   }
 
   private getDomainNames(csr: core.Pkcs10CertificateRequest) {
@@ -57,7 +62,7 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
         if (o.dNSName) {
           names.push(o.dNSName);
         }
-      })
+      });
     }
 
     return names;
