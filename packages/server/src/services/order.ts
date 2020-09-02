@@ -7,7 +7,6 @@ import * as core from "@peculiar/acme-core";
 import { JsonWebKey } from "@peculiar/jose";
 import * as ModelFabric from "./model_fabric";
 import * as pvtsutils from "pvtsutils";
-import { ErrorType } from "@peculiar/acme-core";
 
 export interface ICertificateEnrollParams {
   /**
@@ -38,6 +37,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     @inject(data.diOrderRepository) protected orderRepository: data.IOrderRepository,
     @inject(types.diAccountService) protected accountService: types.IAccountService,
     @inject(types.diAuthorizationService) protected authorizationService: types.IAuthorizationService,
+    @inject(types.diChallengeService) protected challengeService: types.IChallengeService,
     @inject(data.diOrderAuthorizationRepository) protected orderAuthorizationRepository: data.IOrderAuthorizationRepository,
     @inject(types.diCertificateEnrollmentService) protected certificateEnrollmentService: types.ICertificateEnrollmentService,
     @inject(core.diLogger) logger: core.ILogger,
@@ -180,7 +180,7 @@ export class OrderService extends BaseService implements types.IOrderService {
             || o.status === "valid"))) {
             order.status = "invalid";
             order.error = ModelFabric.error();
-            order.error.type = ErrorType.malformed;
+            order.error.type = core.ErrorType.malformed;
             order.error.detail = "One of order authorizations has wrong status";
             await this.orderRepository.update(order);
           } else if (authorizations.every(o => o.status === "valid")) {
@@ -246,11 +246,12 @@ export class OrderService extends BaseService implements types.IOrderService {
   }
 
   public async enrollCertificate(accountId: data.Key, orderId: data.Key, params: protocol.Finalize) {
-    if (!params) {
+    if (!params.csr) {
       throw new core.ArgumentNullError();
     }
-
     const order = await this.getById(accountId, orderId);
+    const identifiers = await this.getIdentifiers(order);
+    await this.challengeService.csrValidate(identifiers, params.csr);
 
     // Check status ready
     if (order.status !== "ready") {
@@ -420,5 +421,18 @@ export class OrderService extends BaseService implements types.IOrderService {
   protected async onGetActualCheckBefore(params: protocol.OrderCreateParams, accountId: data.Key): Promise<data.IOrder | null> {
     // Gets order from repository
     return await this.lastByIdentifiers(accountId, params.identifiers);
+  }
+
+  public async getIdentifiers(order: data.IOrder): Promise<data.IIdentifier[]> {
+    const orderAuthzs = await this.orderAuthorizationRepository.findByOrder(order.id);
+    if (!orderAuthzs) {
+      throw new core.MalformedError(`Order authorization '${order.id}' not exist`);
+    }
+    const accountId = order.accountId;
+    if (!accountId) {
+      throw new core.MalformedError();
+    }
+    const authzs = await Promise.all(orderAuthzs.map(async o => await this.authorizationService.getById(accountId, o.authorizationId)));
+    return authzs.map(o => { return { ...o.identifier }; });
   }
 }

@@ -7,7 +7,9 @@ import { inject, injectable } from "tsyringe";
 import { BaseService, diServerOptions, IServerOptions } from "../base";
 import { JsonWebKey } from "@peculiar/jose";
 import { IChallenge } from "@peculiar/acme-data";
-import { MalformedError } from "@peculiar/acme-core";
+import { BadCSRError, MalformedError, Name } from "@peculiar/acme-core";
+import { id_ce_subjectAltName, SubjectAlternativeName } from "@peculiar/asn1-x509";
+import { AsnConvert } from "@peculiar/asn1-schema";
 
 @injectable()
 export class DnsChallengeService extends BaseService implements types.IIdentifierService {
@@ -20,6 +22,45 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
     @inject(core.diLogger) logger: core.ILogger,
     @inject(diServerOptions) options: IServerOptions) {
     super(options, logger);
+  }
+  public async csrValidate(identifiers: data.IIdentifier[], csr: core.Pkcs10CertificateRequest): Promise<void> {
+    const identifiersCsr = this.getDomainNames(csr);
+
+    if (identifiersCsr.length !== identifiers.length) {
+      throw new BadCSRError();
+    }
+
+    await Promise.all(await identifiersCsr.map(async i => {
+      if(!identifiers.find(o => o.value.toLowerCase() === i.toLowerCase())){
+        throw new BadCSRError();
+      }
+    }));
+  }
+
+  private getDomainNames(csr: core.Pkcs10CertificateRequest) {
+    const names: string[] = [];
+
+    const name = new Name(csr.subject);
+    name.toJSON().forEach(o => {
+      const dns = o["DC"];
+      if (dns && dns.length) {
+        for (const o2 of dns) {
+          names.push(o2);
+        }
+      }
+    });
+
+    const ext = csr.getExtension(id_ce_subjectAltName);
+    if (ext) {
+      const san = AsnConvert.parse(ext.value, SubjectAlternativeName);
+      san.forEach(o => {
+        if (o.dNSName) {
+          names.push(o.dNSName);
+        }
+      })
+    }
+
+    return names;
   }
 
   public async identifierValidate(identifier: data.IIdentifier): Promise<void> {

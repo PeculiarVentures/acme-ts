@@ -2,8 +2,9 @@ import { injectable, inject, container } from "tsyringe";
 import { BaseService, IServerOptions, diServerOptions } from "./base";
 import { diIdentifierService, IChallengeService, IIdentifierService } from "./types";
 import * as data from "@peculiar/acme-data";
-import { MalformedError, diLogger, ILogger, UnsupportedIdentifierError } from "@peculiar/acme-core";
+import { MalformedError, diLogger, ILogger, UnsupportedIdentifierError, Pkcs10CertificateRequest, BadCSRError } from "@peculiar/acme-core";
 import { IAuthorization, IIdentifier } from "@peculiar/acme-data";
+import * as pvtsutils from "pvtsutils";
 
 @injectable()
 export class ChallengeService extends BaseService implements IChallengeService {
@@ -36,6 +37,23 @@ export class ChallengeService extends BaseService implements IChallengeService {
     await service.challengeValidate(challenge);
   }
 
+  public async csrValidate(identifiers: data.IIdentifier[], csrStr: string): Promise<void> {
+    let csr: Pkcs10CertificateRequest;
+    try {
+      csr = new Pkcs10CertificateRequest(pvtsutils.Convert.FromBase64(csrStr));
+    } catch (error) {
+      throw new BadCSRError();
+    }
+
+    const validators = this.getValidatorAll();
+    await Promise.all(validators.map(async o => {
+      const items = identifiers.filter(i => i.type === o.type);
+      if (items) {
+        await o.csrValidate(items, csr);
+      }
+    }));
+  }
+
   public async getByAuthorization(id: data.Key): Promise<data.IChallenge[]> {
     const challenge = await this.challengeRepository.findByAuthorization(id);
     if (!challenge) {
@@ -44,8 +62,12 @@ export class ChallengeService extends BaseService implements IChallengeService {
     return challenge;
   }
 
-  protected async getValidator(identifier: IIdentifier | string): Promise<IIdentifierService> {
-    const validators = container.resolveAll<IIdentifierService>(diIdentifierService);
+  protected getValidatorAll(): IIdentifierService[] {
+    return container.resolveAll<IIdentifierService>(diIdentifierService);
+  }
+
+  protected getValidator(identifier: IIdentifier | string): IIdentifierService {
+    const validators = this.getValidatorAll();
     let type: string;
     if (typeof (identifier) === "string") {
       type = identifier;

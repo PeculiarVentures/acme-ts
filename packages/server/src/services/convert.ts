@@ -49,13 +49,7 @@ export class ConvertService extends BaseService implements IConvertService {
     }));
 
     const order: protocol.Order = {
-      identifiers: authzs.map(o => {
-        const identifier: data.IIdentifier = {
-          type: o.identifier.type,
-          value: o.identifier.value,
-        };
-        return identifier;
-      }),
+      identifiers: authzs.map(o => { return { ...o.identifier }; }),
       authorizations: authzs.map(o => `${this.options.baseAddress}/authz/${o.id}`),
       status: data.status,
       notBefore: data.notBefore?.toUTCString(),

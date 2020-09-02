@@ -15,7 +15,7 @@ import { container } from "tsyringe";
 
 const baseAddress = "http://localhost";
 
-context.only("Server", () => {
+context("Server", () => {
 
   const crypto = new Crypto();
 
@@ -1052,7 +1052,7 @@ context.only("Server", () => {
 
     });
 
-    context("finalize", () => {
+    context.only("finalize", () => {
 
       it("wrong CSR message", async () => {
         // Create new account
@@ -1084,7 +1084,7 @@ context.only("Server", () => {
           client.keys), orderId);
 
         assert.strictEqual(resp2.status, 403);
-        const error = resp.json<protocol.Error>();
+        const error = resp2.json<protocol.Error>();
         assert.strictEqual(error.type, ErrorType.badCSR);
       });
 
@@ -1122,7 +1122,7 @@ context.only("Server", () => {
           client.keys), orderId);
 
         assert.strictEqual(resp2.status, 403);
-        const error = resp.json<protocol.Error>();
+        const error = resp2.json<protocol.Error>();
         assert.strictEqual(error.type, ErrorType.badCSR);
         assert(error.subproblems);
         assert.strictEqual(error.subproblems.length, 2);
@@ -1180,7 +1180,7 @@ context.only("Server", () => {
           client.keys), orderId);
 
         assert.strictEqual(resp2.status, 403);
-        const error = resp.json<protocol.Error>();
+        const error = resp2.json<protocol.Error>();
         assert.strictEqual(error.type, ErrorType.badCSR);
         assert(error.subproblems);
         assert.strictEqual(error.subproblems.length, 2);
