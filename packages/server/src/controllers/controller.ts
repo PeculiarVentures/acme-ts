@@ -105,6 +105,7 @@ export class AcmeController extends BaseService {
 
         this.logger.error(e.message);
       } else if (e) {
+        console.log(e);
         response.status = core.HttpStatusCode.internalServerError;
         const error = new core.AcmeError(core.ErrorType.serverInternal, `Unexpected server error exception. ${e.message || e}`, core.HttpStatusCode.internalServerError, e);
         response.content = new core.Content(error, this.options.formattedResponse);
@@ -370,10 +371,10 @@ export class AcmeController extends BaseService {
         page = Number.parseInt(params.cursor.find(o => o) || "0", 10);
       }
       if (page > 0) {
-        response.headers.link?.push(`<${link}?cursor=${page - 1}${addingString}; rel=previous"`);
+        response.headers.setLink(`<${link}?cursor=${page - 1}${addingString}>;rel="previous"`);
       }
       if (orderList.next) {
-        response.headers.link?.push(`<${link}?cursor=${page + 1}${addingString}>; rel="next";`);
+        response.headers.setLink(`<${link}?cursor=${page + 1}${addingString}>;rel="next"`);
       }
 
       response.content = new core.Content(await this.convertService.toOrderList(orderList.items), this.options.formattedResponse);
