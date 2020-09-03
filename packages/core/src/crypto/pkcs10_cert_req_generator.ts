@@ -1,10 +1,10 @@
 import { CertificationRequest, CertificationRequestInfo } from "@peculiar/asn1-csr";
-import { id_ecdsaWithSHA1, id_ecdsaWithSHA256, id_ecdsaWithSHA384, id_ecdsaWithSHA512 } from "@peculiar/asn1-ecc";
 import { id_pkcs9_at_extensionRequest } from "@peculiar/asn1-pkcs9";
-import { id_sha1WithRSAEncryption, id_sha256WithRSAEncryption, id_sha384WithRSAEncryption, id_sha512WithRSAEncryption } from "@peculiar/asn1-rsa";
 import { AsnConvert } from "@peculiar/asn1-schema";
 import { Name as AsnName, Extension as AsnExtension, SubjectPublicKeyInfo, Extensions, Attribute  as AsnAttribute } from "@peculiar/asn1-x509";
+import { container } from "tsyringe";
 import { cryptoProvider } from "../crypto/provider";
+import { AlgorithmProvider, diAlgorithmProvider } from "./algorithm";
 import { Attribute } from "./attribute";
 import { Extension } from "./extension";
 import { JsonName, Name } from "./name";
@@ -49,50 +49,8 @@ export class Pkcs10CertificateRequestGenerator {
     }
 
     const signingAlgorithm = { ...params.signingAlgorithm, ...params.keys.privateKey.algorithm } as HashedAlgorithm;
-    const algName = signingAlgorithm.name.toLowerCase();
-    const hashName = typeof signingAlgorithm.hash === "string" ? signingAlgorithm.hash : signingAlgorithm.hash.name.toLowerCase();
-    const asnSpki = asnReq.signatureAlgorithm;
-    asnSpki.parameters = null;
-    switch (algName) {
-      case "rsassa-pkcs1-v1_5":
-        switch (hashName) {
-          case "sha-1":
-            asnSpki.algorithm = id_sha1WithRSAEncryption;
-            break;
-          case "sha-256":
-            asnSpki.algorithm = id_sha256WithRSAEncryption;
-            break;
-          case "sha-384":
-            asnSpki.algorithm = id_sha384WithRSAEncryption;
-            break;
-          case "sha-512":
-            asnSpki.algorithm = id_sha512WithRSAEncryption;
-            break;
-          default:
-            throw new Error(`Unsupported hash algorithm`);
-        }
-        break;
-      case "ecdsa":
-        switch (hashName) {
-          case "sha-1":
-            asnSpki.algorithm = id_ecdsaWithSHA1;
-            break;
-          case "sha-256":
-            asnSpki.algorithm = id_ecdsaWithSHA256;
-            break;
-          case "sha-384":
-            asnSpki.algorithm = id_ecdsaWithSHA384;
-            break;
-          case "sha-512":
-            asnSpki.algorithm = id_ecdsaWithSHA512;
-            break;
-          default:
-            throw new Error(`Unsupported hash algorithm`);
-        }
-        break;
-      default:
-        throw new Error(`Unsupported algorithm`);
-    }
+    const algProv = container.resolve<AlgorithmProvider>(diAlgorithmProvider);
+    asnReq.signatureAlgorithm = algProv.toAsnAlgorithm(signingAlgorithm);
 
     const tbs = AsnConvert.serialize(asnReq.certificationRequestInfo);
     const signature = await crypto.subtle.sign(signingAlgorithm, params.keys.privateKey, tbs);

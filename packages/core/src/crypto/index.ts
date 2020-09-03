@@ -1,4 +1,7 @@
 export * from "./extensions";
+export * from "./algorithm";
+export * from "./rsa_algorithm";
+export * from "./ec_algorithm";
 export * from "./asn_data";
 export * from "./attribute";
 export * from "./extension";
