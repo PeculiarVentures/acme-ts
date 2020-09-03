@@ -4,17 +4,38 @@ import { BufferSourceConverter, Convert } from "pvtsutils";
 import { Extension } from "../extension";
 import { cryptoProvider } from "../provider";
 
+/**
+ * Represents the Key Usage certificate extension
+ */
 export class SubjectKeyIdentifierExtension extends Extension {
 
+  /**
+   * Creates subject key identifier extension from CryptoKey
+   * @param publicKey Public CryptoKey
+   * @param critical Indicates where extension is critical. Default is `false`
+   * @param crypto WebCrypto provider. Default is from CryptoProvider
+   */
   public static async create(publicKey: CryptoKey, critical = false, crypto = cryptoProvider.get()) {
     const spki = await crypto.subtle.exportKey("spki", publicKey);
     const ski = await crypto.subtle.digest("SHA-1", spki);
     return new SubjectKeyIdentifierExtension(Convert.ToHex(ski), critical);
   }
 
+  /**
+   * Gets hexadecimal representation of key identifier
+   */
   public readonly identifier: string;
 
+  /**
+   * Creates a new instance from DER encoded buffer
+   * @param raw DER encoded buffer
+   */
   public constructor(raw: BufferSource);
+  /**
+   * Creates a new instance
+   * @param identifier Hexadecimal representation of key identifier
+   * @param critical Indicates where extension is critical. Default is `false`
+   */
   public constructor(identifier: string, critical?: boolean);
   public constructor(...args: any[]) {
     if (BufferSourceConverter.isBufferSource(args[0])) {

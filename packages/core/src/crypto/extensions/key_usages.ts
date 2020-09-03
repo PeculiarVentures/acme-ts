@@ -3,6 +3,9 @@ import { id_ce_keyUsage, KeyUsage } from "@peculiar/asn1-x509";
 import { BufferSourceConverter } from "pvtsutils";
 import { Extension } from "../extension";
 
+/**
+ * X509 key usages flags
+ */
 export enum KeyUsageFlags {
   digitalSignature = 1,
   nonRepudiation = 2,
@@ -15,10 +18,26 @@ export enum KeyUsageFlags {
   decipherOnly = 256
 }
 
+/**
+ * Represents the Key Usage certificate extension
+ */
 export class KeyUsagesExtension extends Extension {
+
+  /**
+   * Gets a key usages flag
+   */
   public readonly usages: KeyUsageFlags;
 
+  /**
+   * Creates a new instance from DER encoded buffer
+   * @param raw DER encoded buffer
+   */
   public constructor(raw: BufferSource);
+  /**
+   * Creates a new instance
+   * @param usages
+   * @param critical
+   */
   public constructor(usages: KeyUsageFlags, critical?: boolean);
   public constructor(...args: any[]) {
     if (BufferSourceConverter.isBufferSource(args[0])) {
