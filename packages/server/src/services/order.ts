@@ -367,6 +367,10 @@ export class OrderService extends BaseService implements types.IOrderService {
   }
 
   private async _revokeCertificate(order: data.IOrder, reason: protocol.RevokeReason): Promise<void> {
+    if(order.certificate?.status === "revoked"){
+      throw new core.AlreadyRevokedError();
+    }
+
     // revoke
     await this.certificateEnrollmentService.revoke(order, reason);
 

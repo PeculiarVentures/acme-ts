@@ -18,9 +18,8 @@ export class DirectoryService extends BaseService implements IDirectoryService {
     const directory: Directory = {
       newNonce: `${url}/new-nonce`,
       newAccount: `${url}/new-acct`,
-      newAuth: `${url}/new-authz`,
-      newOrder: `${url}/new-order`,
       newAuthz: `${url}/new-authz`,
+      newOrder: `${url}/new-order`,
       revokeCert: `${url}/revoke`,
       keyChange: `${url}/key-change`,
     };

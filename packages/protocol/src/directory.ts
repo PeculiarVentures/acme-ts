@@ -53,11 +53,6 @@ export interface Directory {
   newOrder: string;
 
   /**
-   * New authorization
-   */
-  newAuth: string;
-
-  /**
    * Revoke certificate
    */
   revokeCert: string;

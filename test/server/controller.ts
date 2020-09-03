@@ -3,13 +3,14 @@ import * as data from "@peculiar/acme-data";
 import { IAuthorizationRepository } from "@peculiar/acme-data";
 import * as dataMemory from "@peculiar/acme-data-memory";
 import * as protocol from "@peculiar/acme-protocol";
-import { AcmeController, diAcmeController, DependencyInjection } from "@peculiar/acme-server";
+import { AcmeController, diAcmeController, DependencyInjection, diCertificateEnrollmentService } from "@peculiar/acme-server";
 import { AsnConvert } from "@peculiar/asn1-schema";
 import { GeneralName, id_ce_subjectAltName, SubjectAlternativeName } from "@peculiar/asn1-x509";
 import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
 import { Crypto } from "@peculiar/webcrypto";
 import * as assert from "assert";
 import { Pkcs10CertificateRequestGenerator } from "packages/core/src/crypto/pkcs10_cert_req_generator";
+import { CertificateEnrollmentService } from "packages/test-server/src/services";
 import { Convert } from "pvtsutils";
 import { container } from "tsyringe";
 
@@ -30,6 +31,7 @@ context("Server", () => {
     ordersPageSize: 10,
     formattedResponse: true,
   });
+  container.register(diCertificateEnrollmentService, CertificateEnrollmentService);
   dataMemory.DependencyInjection.register(container);
   const controller = container.resolve<AcmeController>(diAcmeController);
 
@@ -131,7 +133,7 @@ context("Server", () => {
     const json: protocol.Directory = resp.json();
     assert.strictEqual(json.keyChange, `${baseAddress}/key-change`);
     assert.strictEqual(json.newAccount, `${baseAddress}/new-acct`);
-    assert.strictEqual(json.newAuth, `${baseAddress}/new-authz`);
+    assert.strictEqual(json.newAuthz, `${baseAddress}/new-authz`);
     assert.strictEqual(json.newNonce, `${baseAddress}/new-nonce`);
     assert.strictEqual(json.newOrder, `${baseAddress}/new-order`);
     assert.strictEqual(json.revokeCert, `${baseAddress}/revoke`);
@@ -1409,4 +1411,178 @@ context("Server", () => {
 
   });
 
+  context("certificate", () => {
+
+    async function changeAuthzStatus(location: string, status: protocol.AuthorizationStatus) {
+      const authzRepo = container.resolve<data.IAuthorizationRepository>(data.diAuthorizationRepository);
+      const authz = await authzRepo.findById(getId(location));
+      assert(authz);
+      authz.status = status;
+      authzRepo.update(authz);
+    }
+
+    context.only("revoke", () => {
+
+      before(() => {
+        controller.options.downloadCertificateFormat = "PkixCert";
+      });
+      after(() => {
+        controller.options.downloadCertificateFormat = "PemCertificateChain";
+      });
+
+      async function enrollCertificate(client: any) {
+        // create order
+        const resp = await controller.createOrder(await createPostRequest(
+          {
+            identifiers: [
+              { type: "dns", value: "some.com" },
+            ],
+          } as protocol.OrderCreateParams,
+          `${baseAddress}/new-order`,
+          client.location!,
+          client.keys));
+
+        const order = resp.json<protocol.Order>();
+        const orderId = getId(resp.headers.location);
+
+        await changeAuthzStatus(order.authorizations[0], "valid");
+
+        const keyAlg: RsaHashedKeyGenParams = {
+          name: "RSASSA-PKCS1-v1_5",
+          hash: "SHA-256",
+          publicExponent: new Uint8Array([1, 0, 1]),
+          modulusLength: 2048,
+        };
+        const keys = await crypto.subtle.generateKey(keyAlg, false, ["sign", "verify"]) as CryptoKeyPair;
+        const req = await Pkcs10CertificateRequestGenerator.create({
+          name: "DC=some.com",
+          keys,
+          signingAlgorithm: { name: "RSASSA-PKCS1-v1_5" },
+          extensions: [
+            new Extension(id_ce_subjectAltName, false, AsnConvert.serialize(new SubjectAlternativeName([
+              new GeneralName({ dNSName: "some.com" }),
+            ])))
+          ]
+        });
+        const resp2 = await controller.finalizeOrder(await createPostRequest(
+          {
+            csr: Convert.ToBase64Url(req.rawData),
+          } as protocol.Finalize,
+          `${baseAddress}/finalize/${orderId}`,
+          client.location!,
+          client.keys), orderId);
+        const order2 = resp2.json<protocol.Order>();
+
+        assert(order2.certificate);
+        const thumbprint = getId(order2.certificate);
+        const resp3 = await controller.getCertificate(await createPostRequest(
+          {
+            csr: Convert.ToBase64Url(req.rawData),
+          } as protocol.Finalize,
+          order2.certificate,
+          client.location!,
+          client.keys), thumbprint);
+        return resp3;
+      }
+
+      it("success", async () => {
+        // Create new account
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+
+        const resp = await enrollCertificate(client);
+
+        const cert = resp.content!.content;
+        assert(cert);
+
+        const resp2 = await controller.revokeCertificate(await createPostRequest({
+          certificate: Convert.ToBase64Url(cert),
+          reason: 0,
+        },
+          `${baseAddress}/revoke`,
+          client.location!,
+          client.keys));
+
+        assert.strictEqual(resp2.status, 204);
+      });
+
+      it("revoke without reason", async () => {
+        // Create new account
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+
+        const resp = await enrollCertificate(client);
+
+        const cert = resp.content!.content;
+        assert(cert);
+
+        const resp2 = await controller.revokeCertificate(await createPostRequest({
+          certificate: Convert.ToBase64Url(cert),
+        },
+          `${baseAddress}/revoke`,
+          client.location!,
+          client.keys));
+
+        assert.strictEqual(resp2.status, 204);
+      });
+
+      it("Error: already revoked", async () => {
+        // Create new account
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+
+        const resp = await enrollCertificate(client);
+
+        const cert = resp.content!.content;
+        assert(cert);
+
+        const resp2 = await controller.revokeCertificate(await createPostRequest({
+          certificate: Convert.ToBase64Url(cert),
+        },
+          `${baseAddress}/revoke`,
+          client.location!,
+          client.keys));
+        const resp3 = await controller.revokeCertificate(await createPostRequest({
+          certificate: Convert.ToBase64Url(cert),
+        },
+          `${baseAddress}/revoke`,
+          client.location!,
+          client.keys));
+
+        assert.strictEqual(resp3.status, 400);
+        const error = resp3.json<protocol.Error>();
+        assert.strictEqual(error.type, ErrorType.alreadyRevoked);
+      });
+
+      it("Error: access denied", async () => {
+        // Create new account
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+        // Create new account
+        const client2 = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+
+        const resp = await enrollCertificate(client);
+
+        const cert = resp.content!.content;
+        assert(cert);
+
+        const resp2 = await controller.revokeCertificate(await createPostRequest({
+          certificate: Convert.ToBase64Url(cert),
+        },
+          `${baseAddress}/revoke`,
+          client.location!,
+          client2.keys));
+
+        assert.strictEqual(resp2.status, 401);
+        const error = resp2.json<protocol.Error>();
+        assert.strictEqual(error.type, ErrorType.unauthorized);
+      });
+    });
+  });
 });
