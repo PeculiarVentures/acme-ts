@@ -51,6 +51,16 @@ export class Headers extends Map<string, string> {
     return null;
   }
 
+  public setLink(value: string) {
+    let link = this.get(Headers.LINK);
+    if (link) {
+      link += `,${value}`;
+    } else {
+      link = value;
+    }
+    this.set(Headers.LINK, link);
+  }
+
   /**
    * Gets Replay-Nonce header
    */

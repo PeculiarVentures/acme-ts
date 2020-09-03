@@ -1,4 +1,4 @@
-import { ContentType, ErrorType, Extension, Request, Response } from "@peculiar/acme-core";
+import { ContentType, ErrorType, Extension, QueryParams, Request, Response } from "@peculiar/acme-core";
 import * as data from "@peculiar/acme-data";
 import { IAuthorizationRepository } from "@peculiar/acme-data";
 import * as dataMemory from "@peculiar/acme-data-memory";
@@ -55,7 +55,7 @@ context("Server", () => {
     return await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as CryptoKeyPair;
   }
 
-  async function createPostRequest(params: any, url: string, kid: string, keys: CryptoKeyPair) {
+  async function createPostRequest(params: any, url: string, kid: string, keys: CryptoKeyPair, queryParams: QueryParams = {}) {
     const jws = new JsonWebSignature({
       payload: params,
       protected: {
@@ -70,6 +70,7 @@ context("Server", () => {
     return new Request({
       path: url,
       method: "POST",
+      queryParams,
       body: jws.toJSON(),
     });
   }
@@ -1186,6 +1187,118 @@ context("Server", () => {
         assert.strictEqual(error.type, ErrorType.badCSR);
         assert(error.subproblems);
         assert.strictEqual(error.subproblems.length, 2);
+      });
+
+    });
+
+    context("list", () => {
+
+      it("pagination", async () => {
+        // Create new account
+        const client = await createAccount({}, (resp) => {
+          assert.strictEqual(resp.status, 201);
+        });
+
+        async function createOrder(dns: string, status: protocol.OrderStatus = "pending") {
+          const resp = await controller.createOrder(await createPostRequest(
+            {
+              identifiers: [{ type: "dns", value: dns }],
+            } as protocol.OrderCreateParams,
+            `${baseAddress}/new-order`,
+            client.location!,
+            client.keys));
+          assert.strictEqual(resp.status, 201);
+
+          const id = getId(resp.headers.location);
+
+          if (status !== "pending") {
+            const orderRepo = container.resolve<data.IOrderRepository>(data.diOrderRepository);
+            const order = await orderRepo.findById(id);
+            assert(order);
+
+            order.status = status;
+
+            await orderRepo.update(order);
+          }
+
+          return id;
+
+        }
+
+        const id01 = await createOrder("some1.com");
+        const id02 = await createOrder("some2.com", "valid");
+        const id03 = await createOrder("some3.com", "processing");
+        const id04 = await createOrder("some4.com", "ready");
+        await createOrder("some5.com", "invalid");
+        const id06 = await createOrder("some6.com");
+        const id07 = await createOrder("some7.com");
+        const id08 = await createOrder("some8.com");
+        const id09 = await createOrder("some9.com");
+        const id10 = await createOrder("some10.com");
+        const id11 = await createOrder("some11.com");
+        const id12 = await createOrder("some12.com");
+        const id13 = await createOrder("some13.com");
+        const id14 = await createOrder("some14.com");
+        const id15 = await createOrder("some15.com");
+        const id16 = await createOrder("some16.com");
+        const id17 = await createOrder("some17.com");
+        const id18 = await createOrder("some18.com");
+        const id19 = await createOrder("some19.com");
+        const id20 = await createOrder("some20.com");
+        const id21 = await createOrder("some21.com");
+        await createOrder("some22.com");
+        await createOrder("some23.com");
+
+        const resp = await controller.postOrders(await createPostRequest(
+          "",
+          `${baseAddress}/orders`,
+          client.location!,
+          client.keys));
+        assert.strictEqual(resp.status, 200);
+
+        assert.deepStrictEqual(resp.json(), {
+          orders: [
+            `${baseAddress}/order/${id01}`,
+            `${baseAddress}/order/${id02}`,
+            `${baseAddress}/order/${id03}`,
+            `${baseAddress}/order/${id04}`,
+            `${baseAddress}/order/${id06}`,
+            `${baseAddress}/order/${id07}`,
+            `${baseAddress}/order/${id08}`,
+            `${baseAddress}/order/${id09}`,
+            `${baseAddress}/order/${id10}`,
+            `${baseAddress}/order/${id11}`,
+          ]
+        });
+        assert.deepStrictEqual(resp.headers.link, [
+          `<${baseAddress}/orders?cursor=1>;rel="next"`,
+        ]);
+
+        const resp2 = await controller.postOrders(await createPostRequest(
+          "",
+          `${baseAddress}/orders?cursor=1`,
+          client.location!,
+          client.keys,
+          { cursor: ["1"] }));
+        assert.strictEqual(resp2.status, 200);
+        assert.deepStrictEqual(resp2.headers.link, [
+          `<${baseAddress}/orders?cursor=0>;rel="previous"`,
+          `<${baseAddress}/orders?cursor=2>;rel="next"`,
+        ]);
+        assert.deepStrictEqual(resp2.json(), {
+          orders: [
+            `${baseAddress}/order/${id12}`,
+            `${baseAddress}/order/${id13}`,
+            `${baseAddress}/order/${id14}`,
+            `${baseAddress}/order/${id15}`,
+            `${baseAddress}/order/${id16}`,
+            `${baseAddress}/order/${id17}`,
+            `${baseAddress}/order/${id18}`,
+            `${baseAddress}/order/${id19}`,
+            `${baseAddress}/order/${id20}`,
+            `${baseAddress}/order/${id21}`,
+          ]
+        });
       });
 
     });

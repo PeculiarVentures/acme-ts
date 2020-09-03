@@ -1,9 +1,7 @@
 import { CertificationRequest } from "@peculiar/asn1-csr";
-import { id_sha1WithRSAEncryption, id_sha256WithRSAEncryption, id_sha384WithRSAEncryption, id_sha512WithRSAEncryption } from "@peculiar/asn1-rsa";
-import { id_ecdsaWithSHA1, id_ecdsaWithSHA256, id_ecdsaWithSHA384, id_ecdsaWithSHA512 } from "@peculiar/asn1-ecc";
 import { AsnConvert } from "@peculiar/asn1-schema";
 import { id_pkcs9_at_extensionRequest } from "@peculiar/asn1-pkcs9";
-import { AlgorithmIdentifier, Extensions } from "@peculiar/asn1-x509";
+import { Extensions } from "@peculiar/asn1-x509";
 import { Name } from "./name";
 import { cryptoProvider } from "./provider";
 import { HashedAlgorithm } from "./types";
@@ -12,6 +10,8 @@ import { AsnData } from "./asn_data";
 import { Attribute } from "./attribute";
 import { Extension } from "./extension";
 import { PublicKey } from "./public_key";
+import { container } from "tsyringe";
+import { AlgorithmProvider, diAlgorithmProvider } from "./algorithm";
 
 export class Pkcs10CertificateRequest extends AsnData<CertificationRequest> {
 
@@ -36,7 +36,8 @@ export class Pkcs10CertificateRequest extends AsnData<CertificationRequest> {
   protected onInit(asn: CertificationRequest): void {
     this.tbs = AsnConvert.serialize(asn.certificationRequestInfo);
     this.publicKey = new PublicKey(asn.certificationRequestInfo.subjectPKInfo);
-    this.signatureAlgorithm = this.getSignatureAlgorithm(asn.signatureAlgorithm);
+    const algProv = container.resolve<AlgorithmProvider>(diAlgorithmProvider);
+    this.signatureAlgorithm = algProv.toWebAlgorithm(asn.signatureAlgorithm) as HashedAlgorithm;
     this.signature = asn.signature;
 
     this.attributes = asn.certificationRequestInfo.attributes
@@ -74,29 +75,6 @@ export class Pkcs10CertificateRequest extends AsnData<CertificationRequest> {
 
   public getExtensions(type: string) {
     return this.extensions.filter(o => o.type === type);
-  }
-
-  public getSignatureAlgorithm(asn: AlgorithmIdentifier): HashedAlgorithm {
-    switch (asn.algorithm) {
-      case id_sha1WithRSAEncryption:
-        return { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-1" } };
-      case id_sha256WithRSAEncryption:
-        return { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-256" } };
-      case id_sha384WithRSAEncryption:
-        return { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-384" } };
-      case id_sha512WithRSAEncryption:
-        return { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-512" } };
-      case id_ecdsaWithSHA1:
-        return { name: "ECDSA", hash: { name: "SHA-1" } };
-      case id_ecdsaWithSHA256:
-        return { name: "ECDSA", hash: { name: "SHA-256" } };
-      case id_ecdsaWithSHA384:
-        return { name: "ECDSA", hash: { name: "SHA-384" } };
-      case id_ecdsaWithSHA512:
-        return { name: "ECDSA", hash: { name: "SHA-512" } };
-      default:
-        throw new Error(`Unsupported algorithm identifier '${asn.algorithm}'`);
-    }
   }
 
   public async verify(crypto = cryptoProvider.get()) {
