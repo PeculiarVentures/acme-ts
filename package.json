@@ -23,11 +23,11 @@
     "typescript": "^4.0.2"
   },
   "dependencies": {
-    "@peculiar/asn1-csr": "^2.0.3",
+    "@peculiar/asn1-csr": "^2.0.21",
     "@peculiar/asn1-ecc": "^2.0.3",
-    "@peculiar/asn1-rsa": "^2.0.3",
+    "@peculiar/asn1-rsa": "^2.0.21",
     "@peculiar/asn1-schema": "^2.0.17",
-    "@peculiar/asn1-x509": "^2.0.3",
+    "@peculiar/asn1-x509": "^2.0.21",
     "@peculiar/webcrypto": "^1.1.3",
     "node-fetch": "^2.6.0",
     "pvtsutils": "^1.0.10",
