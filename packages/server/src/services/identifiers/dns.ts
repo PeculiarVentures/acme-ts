@@ -7,7 +7,7 @@ import { inject, injectable } from "tsyringe";
 import { BaseService, diServerOptions, IServerOptions } from "../base";
 import { JsonWebKey } from "@peculiar/jose";
 import { IChallenge } from "@peculiar/acme-data";
-import { AcmeError, BadCSRError, MalformedError, Name } from "@peculiar/acme-core";
+import { AcmeError, MalformedError, Name } from "@peculiar/acme-core";
 import { id_ce_subjectAltName, SubjectAlternativeName } from "@peculiar/asn1-x509";
 import { AsnConvert } from "@peculiar/asn1-schema";
 

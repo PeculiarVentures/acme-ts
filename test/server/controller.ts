@@ -1,4 +1,4 @@
-import { ContentType, ErrorType, Extension, QueryParams, Request, Response } from "@peculiar/acme-core";
+import { ContentType, ErrorType, Extension, Pkcs10CertificateRequestGenerator, QueryParams, Request, Response } from "@peculiar/acme-core";
 import * as data from "@peculiar/acme-data";
 import { IAuthorizationRepository } from "@peculiar/acme-data";
 import * as dataMemory from "@peculiar/acme-data-memory";
@@ -9,7 +9,6 @@ import { GeneralName, id_ce_subjectAltName, SubjectAlternativeName } from "@pecu
 import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
 import { Crypto } from "@peculiar/webcrypto";
 import * as assert from "assert";
-import { Pkcs10CertificateRequestGenerator } from "packages/core/src/crypto/pkcs10_cert_req_generator";
 import { CertificateEnrollmentService } from "packages/test-server/src/services";
 import { Convert } from "pvtsutils";
 import { container } from "tsyringe";
@@ -1658,6 +1657,8 @@ context("Server", () => {
           `${baseAddress}/revoke`,
           client.location!,
           client.keys));
+        assert.strictEqual(resp2.status, 204);
+
         const resp3 = await controller.revokeCertificate(await createPostRequest({
           certificate: Convert.ToBase64Url(cert),
         },

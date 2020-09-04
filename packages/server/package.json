@@ -44,7 +44,7 @@
     "@peculiar/webcrypto": "^1.1.3",
     "node-fetch": "^2.6.0",
     "normalize-url": "^5.1.0",
-    "pvtsutils": "^1.0.11",
+    "pvtsutils": "1.0.12",
     "tsyringe": "^4.2.0"
   }
 }

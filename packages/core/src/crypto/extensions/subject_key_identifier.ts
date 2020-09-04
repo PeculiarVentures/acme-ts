@@ -5,7 +5,7 @@ import { Extension } from "../extension";
 import { cryptoProvider } from "../provider";
 
 /**
- * Represents the Key Usage certificate extension
+ * Represents the Subject Key Identifier certificate extension
  */
 export class SubjectKeyIdentifierExtension extends Extension {
 
@@ -24,7 +24,7 @@ export class SubjectKeyIdentifierExtension extends Extension {
   /**
    * Gets hexadecimal representation of key identifier
    */
-  public readonly identifier: string;
+  public readonly keyId: string;
 
   /**
    * Creates a new instance from DER encoded buffer
@@ -33,24 +33,24 @@ export class SubjectKeyIdentifierExtension extends Extension {
   public constructor(raw: BufferSource);
   /**
    * Creates a new instance
-   * @param identifier Hexadecimal representation of key identifier
+   * @param keyId Hexadecimal representation of key identifier
    * @param critical Indicates where extension is critical. Default is `false`
    */
-  public constructor(identifier: string, critical?: boolean);
+  public constructor(keyId: string, critical?: boolean);
   public constructor(...args: any[]) {
     if (BufferSourceConverter.isBufferSource(args[0])) {
       super(args[0]);
 
       const value = AsnConvert.parse(this.value, SubjectKeyIdentifier);
-      this.identifier = Convert.ToHex(value);
+      this.keyId = Convert.ToHex(value);
     } else {
       const identifier = typeof args[0] === "string"
         ? Convert.FromHex(args[0])
         : args[0];
-      const value = new SubjectKeyIdentifier(BufferSourceConverter.toArrayBuffer(identifier));
+      const value = new SubjectKeyIdentifier(identifier);
       super(id_ce_subjectKeyIdentifier, args[1], AsnConvert.serialize(value));
 
-      this.identifier = Convert.ToHex(identifier);
+      this.keyId = Convert.ToHex(identifier);
     }
   }
 }

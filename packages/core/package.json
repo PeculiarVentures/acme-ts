@@ -44,7 +44,7 @@
     "@peculiar/asn1-schema": "^2.0.1",
     "@peculiar/asn1-x509": "^2.0.1",
     "@peculiar/jose": "^1.0.0",
-    "pvtsutils": "^1.0.10",
+    "pvtsutils": "1.0.12",
     "reflect-metadata": "^0.1.13",
     "tsyringe": "^4.2.0"
   }

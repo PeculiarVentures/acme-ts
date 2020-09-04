@@ -17,6 +17,7 @@ import { AlgorithmProvider, diAlgorithmProvider } from "./algorithm";
 export interface X509CertificateVerifyParams {
   date?: Date;
   publicKey?: CryptoKey;
+  signatureOnly?: boolean;
 }
 
 /**
@@ -128,10 +129,10 @@ export class X509Certificate extends AsnData<Certificate> {
    * @param type Extension identifier
    * @returns Extension or null
    */
-  public getExtension(type: string) {
+  public getExtension<T extends Extension>(type: string): T | null {
     for (const ext of this.extensions) {
       if (ext.type === type) {
-        return ext;
+        return ext as T;
       }
     }
     return null;
@@ -141,8 +142,8 @@ export class X509Certificate extends AsnData<Certificate> {
    * Returns a list of extensions of specified type
    * @param type Extension identifier
    */
-  public getExtensions(type: string) {
-    return this.extensions.filter(o => o.type === type);
+  public getExtensions<T extends Extension>(type: string): T[] {
+    return this.extensions.filter(o => o.type === type) as T[];
   }
 
   /**
@@ -156,8 +157,12 @@ export class X509Certificate extends AsnData<Certificate> {
     const publicKey = params.publicKey || await this.publicKey.export(keyAlgorithm, ["verify"], crypto);
 
     const ok = await crypto.subtle.verify(this.signatureAlgorithm, publicKey, this.signature, this.tbs);
-    const time = date.getTime();
-    return ok && this.notBefore.getTime() < time && time < this.notAfter.getTime();
+    if (params.signatureOnly) {
+      return ok;
+    } else {
+      const time = date.getTime();
+      return ok && this.notBefore.getTime() < time && time < this.notAfter.getTime();
+    }
   }
 
   /**
@@ -182,5 +187,9 @@ export class X509Certificate extends AsnData<Certificate> {
       crypto = args[0] || crypto;
     }
     return await crypto.subtle.digest(algorithm, this.rawData);
+  }
+
+  public async isSelfSigned() {
+    return this.subject === this.issuer && await this.verify({ signatureOnly: true });
   }
 }

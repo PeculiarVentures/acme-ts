@@ -5038,6 +5038,13 @@ punycode@^2.1.0, punycode@^2.1.1:
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
 
+pvtsutils@1.0.12:
+  version "1.0.12"
+  resolved "https://registry.yarnpkg.com/pvtsutils/-/pvtsutils-1.0.12.tgz#44f2902ae802012946bdc800fcfe46cb3a63820e"
+  integrity sha512-fudCcWFUE7WPHMRVdlEDdeaeLf+8hvZFvfJJ+p8GZlwrrdoiVfv7WZaPt6k7k/NZjMxR8yUbbH51hpwlSmLHiQ==
+  dependencies:
+    tslib "^2.0.1"
+
 pvtsutils@^1.0.10, pvtsutils@^1.0.11:
   version "1.0.11"
   resolved "https://registry.yarnpkg.com/pvtsutils/-/pvtsutils-1.0.11.tgz#bc23b765b1e0e57217ab26885775edc03a85e124"

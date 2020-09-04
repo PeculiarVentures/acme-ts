@@ -12,9 +12,8 @@
   "publishConfig": {
     "access": "public"
   },
-
   "dependencies": {
-    "pvtsutils": "^1.0.11"
+    "pvtsutils": "1.0.12"
   },
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1",

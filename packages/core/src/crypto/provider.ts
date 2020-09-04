@@ -13,6 +13,10 @@ export class CryptoProvider extends Map<string, Crypto> {
     return data && data.privateKey && data.publicKey;
   }
 
+  public static isCryptoKey(data: any): data is CryptoKey {
+    return data && data.usages && data.type && data.algorithm && data.extractable !== undefined;
+  }
+
   /**
    * Creates a new instance
    */

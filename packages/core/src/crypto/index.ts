@@ -12,6 +12,7 @@ export * from "./provider";
 export * from "./public_key";
 export * from "./types";
 export * from "./x509_cert";
+export * from "./x509_chain_builder";
 export * from "./x509_cert_generator";
 export * from "./x509_certs";
 
@@ -23,3 +24,4 @@ extensions.ExtensionFactory.register(asnX509.id_ce_basicConstraints, extensions.
 extensions.ExtensionFactory.register(asnX509.id_ce_extKeyUsage, extensions.ExtendedKeyUsageExtension);
 extensions.ExtensionFactory.register(asnX509.id_ce_keyUsage, extensions.KeyUsagesExtension);
 extensions.ExtensionFactory.register(asnX509.id_ce_subjectKeyIdentifier, extensions.SubjectKeyIdentifierExtension);
+extensions.ExtensionFactory.register(asnX509.id_ce_authorityKeyIdentifier, extensions.AuthorityKeyIdentifierExtension);
