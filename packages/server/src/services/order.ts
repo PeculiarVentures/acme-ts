@@ -58,21 +58,24 @@ export class OrderService extends BaseService implements types.IOrderService {
       throw new core.ArgumentNullError();
     }
 
+    await this.challengeService.identifierValidate(params.identifiers);
+
     // create order
     let order = container.resolve<data.IOrder>(data.diOrder);
-
     // fill params
     this.onCreateParams(order, params, accountId);
+
+    // create authorization
+    const authorizations = await this.onCreateAuth(order, params);
+    order.identifier = await this.computeIdentifier(params.identifiers);
 
     // save order
     order = await this.orderRepository.add(order);
 
-    // create authorization
-    await this.onCreateAuth(order, params);
-    order.identifier = await this.computerIdentifier(params.identifiers);
-
-    // update order
-    order = await this.orderRepository.update(order);
+    // create order authorization
+    for (const auth of authorizations) {
+      await this.onCreateOrderAuth(order, auth);
+    }
 
     this.logger.info(`Order ${order.id} created`);
 
@@ -102,7 +105,7 @@ export class OrderService extends BaseService implements types.IOrderService {
    * Returns hash
    * @param identifiers
    */
-  protected async computerIdentifier(identifiers: protocol.Identifier[]) {
+  protected async computeIdentifier(identifiers: protocol.Identifier[]) {
     const strIdentifiers = identifiers
       .map(o => `${o.type}:${o.value}`.toLowerCase())
       .sort()
@@ -122,6 +125,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     if (!order.accountId) {
       throw new core.ArgumentNullError();
     }
+    const authorizations: data.IAuthorization[] = [];
     for (const identifier of params.identifiers) {
       // get actual or create new authorization
       let auth = await this.authorizationService.getActual(order.accountId, identifier);
@@ -129,11 +133,7 @@ export class OrderService extends BaseService implements types.IOrderService {
         auth = await this.authorizationService.create(order.accountId, identifier);
       }
 
-      // create order authorization
-      const orderAuth = ModelFabric.orderAuthorization();
-      orderAuth.orderId = order.id;
-      orderAuth.authorizationId = auth.id;
-      await this.orderAuthorizationRepository.add(orderAuth);
+      authorizations.push(auth);
 
       // check expires
       if (auth.expires) {
@@ -142,6 +142,14 @@ export class OrderService extends BaseService implements types.IOrderService {
     }
     // set min expiration date from authorizations
     order.expires = listDate.sort()[0];
+    return authorizations;
+  }
+
+  protected async onCreateOrderAuth(order: data.IOrder, auth: data.IAuthorization) {
+    const orderAuth = ModelFabric.orderAuthorization();
+    orderAuth.orderId = order.id;
+    orderAuth.authorizationId = auth.id;
+    await this.orderAuthorizationRepository.add(orderAuth);
   }
 
   public async getList(accountId: data.Key, query: core.QueryParams) {
@@ -193,7 +201,7 @@ export class OrderService extends BaseService implements types.IOrderService {
   }
 
   public async lastByIdentifiers(accountId: data.Key, identifiers: data.IIdentifier[]): Promise<data.IOrder | null> {
-    const identifier = await this.computerIdentifier(identifiers);
+    const identifier = await this.computeIdentifier(identifiers);
     const order = await this.orderRepository.lastByIdentifier(accountId, identifier);
     return order;
   }
@@ -367,7 +375,7 @@ export class OrderService extends BaseService implements types.IOrderService {
   }
 
   private async _revokeCertificate(order: data.IOrder, reason: protocol.RevokeReason): Promise<void> {
-    if(order.certificate?.status === "revoked"){
+    if (order.certificate?.status === "revoked") {
       throw new core.AlreadyRevokedError();
     }
 

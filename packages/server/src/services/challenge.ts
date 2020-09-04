@@ -15,8 +15,12 @@ export class ChallengeService extends BaseService implements IChallengeService {
     super(options, logger);
   }
   public async create(auth: IAuthorization, type: string): Promise<data.IChallenge[]> {
-    const service = await this.getValidator(type);
-    return await service.challengesCreate(auth);
+    const services = await this.getValidator(type);
+    let challenges: data.IChallenge[] = [];
+    for (const service of services) {
+      challenges = [...challenges, ...await service.challengesCreate(auth)]
+    }
+    return challenges;
   }
 
   public async getById(id: data.Key): Promise<data.IChallenge> {
@@ -27,14 +31,31 @@ export class ChallengeService extends BaseService implements IChallengeService {
     return challenge;
   }
 
-  public async identifierValidate(identifier: data.IIdentifier): Promise<void> {
-    const service = await this.getValidator(identifier.type);
-    await service.identifierValidate(identifier);
+  public async identifierValidate(identifier: data.IIdentifier | data.IIdentifier[]): Promise<void> {
+    const err = new core.MalformedError();
+    const identifiers = Array.isArray(identifier) ? identifier : [identifier];
+    for (const o of identifiers) {
+      const services = await this.getValidator(o.type);
+      let problems: core.AcmeError[] = [];
+      for (const i of services) {
+        const errors = await i.identifierValidate(o);
+        if (errors.length) {
+          problems = problems.concat(errors);
+        }
+      }
+      if (problems.length) {
+        err.subproblems = [...err.subproblems || [], ...problems];
+      }
+    }
+
+    if (err.subproblems?.length) {
+      throw err;
+    }
   }
 
   public async challengeValidate(challenge: data.IChallenge, type: string): Promise<void> {
-    const service = await this.getValidator(type);
-    await service.challengeValidate(challenge);
+    const services = await this.getValidator(type);
+    await Promise.all(services.map(async o => await o.challengeValidate(challenge)));
   }
 
   public async csrValidate(identifiers: data.IIdentifier[], csrStr: string): Promise<void> {
@@ -51,7 +72,7 @@ export class ChallengeService extends BaseService implements IChallengeService {
       if (items.length) {
         const problems = await o.csrValidate(items, csr);
         if (problems.length) {
-          err.subproblems = problems;
+          err.subproblems = [...err.subproblems || [], ...problems];
         }
       }
     }));
@@ -72,7 +93,7 @@ export class ChallengeService extends BaseService implements IChallengeService {
     return container.resolveAll<IIdentifierService>(diIdentifierService);
   }
 
-  protected getValidator(identifier: IIdentifier | string): IIdentifierService {
+  protected getValidator(identifier: IIdentifier | string): IIdentifierService[] {
     const validators = this.getValidatorAll();
     let type: string;
     if (typeof (identifier) === "string") {
@@ -80,9 +101,9 @@ export class ChallengeService extends BaseService implements IChallengeService {
     } else {
       type = identifier.type;
     }
-    const validator = validators.find(o => o.type === type);
-    if (!validator) {
-      throw new core.UnsupportedIdentifierError();
+    const validator = validators.filter(o => o.type === type);
+    if (!validator.length) {
+      throw new core.UnsupportedIdentifierError(`Unsupported identifier type '${type}'`);
     }
     return validator;
   }

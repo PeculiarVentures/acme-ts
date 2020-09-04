@@ -68,11 +68,13 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
     return names;
   }
 
-  public async identifierValidate(identifier: data.IIdentifier): Promise<void> {
+  public async identifierValidate(identifier: data.IIdentifier): Promise<AcmeError[]> {
     const pattern = /^(?:[-A-Za-zА-Яа-я0-9]+\.)+[A-Za-zА-Яа-я]{2,6}$/g;
+    const problems: AcmeError[] = [];
     if (!pattern.test(identifier.value)) {
-      throw new MalformedError();
+      problems.push(new MalformedError(`Identifier '${identifier.value}' is not domain name`));
     }
+    return problems;
   }
 
   public async challengesCreate(auth: data.IAuthorization): Promise<IChallenge[]> {

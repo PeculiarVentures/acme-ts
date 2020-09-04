@@ -235,7 +235,7 @@ export interface IChallengeService {
    * Validates a identifier
    * @param identifier Identifier
    */
-  identifierValidate(identifier: data.IIdentifier): Promise<void>;
+  identifierValidate(identifier: data.IIdentifier | data.IIdentifier[]): Promise<void>;
 
   /**
    * Validates a challenge
@@ -265,6 +265,6 @@ export interface IIdentifierService {
   type: string;
   challengesCreate(auth: data.IAuthorization): Promise<data.IChallenge[]>;
   challengeValidate(challenge: data.IChallenge): Promise<void>;
-  identifierValidate(identifier: data.IIdentifier): Promise<void>;
+  identifierValidate(identifier: data.IIdentifier): Promise<AcmeError[]>;
   csrValidate(identifiers: data.IIdentifier[], csr: Pkcs10CertificateRequest): Promise<AcmeError[]>;
 }
