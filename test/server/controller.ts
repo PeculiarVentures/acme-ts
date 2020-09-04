@@ -1534,7 +1534,7 @@ context("Server", () => {
       authzRepo.update(authz);
     }
 
-    context.only("revoke", () => {
+    context("revoke", () => {
 
       before(() => {
         controller.options.downloadCertificateFormat = "PkixCert";
