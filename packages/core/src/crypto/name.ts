@@ -34,9 +34,16 @@ names.register("I", "2.5.4.43");
 names.register("SN", "2.5.4.4");
 names.register("T", "2.5.4.12");
 
+/**
+ * JSON representation of Attribute and Value
+ */
 export interface JsonAttributeAndValue {
   [type: string]: string[];
 }
+
+/**
+ * JSON array of Attribute and Value
+ */
 export type JsonName = Array<JsonAttributeAndValue>;
 
 const special = [",", "+", "\"", "\\", "<", ">", ";", "#", " "];
@@ -67,8 +74,15 @@ enum ValueType {
  */
 export class Name {
 
+  /**
+   * ASN.1 Name
+   */
   private asn = new AsnName();
 
+  /**
+   * Creates a new instance
+   * @param data
+   */
   public constructor(data: BufferSource | AsnName | string | JsonName) {
     if (typeof data === "string") {
       this.asn = this.fromString(data);
@@ -105,6 +119,9 @@ export class Name {
       .join(", ");
   }
 
+  /**
+   * Returns a JSON representation of the Name
+   */
   public toJSON() {
     const json: JsonName = [];
 
@@ -220,6 +237,10 @@ export class Name {
     return asn;
   }
 
+  /**
+   * Creates AsnName from JSON
+   * @param data
+   */
   private fromJSON(data: JsonName): AsnName {
     const asn = new AsnName();
 

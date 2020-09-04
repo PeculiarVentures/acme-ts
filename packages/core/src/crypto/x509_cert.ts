@@ -11,25 +11,83 @@ import { PublicKey } from "./public_key";
 import { container } from "tsyringe";
 import { AlgorithmProvider, diAlgorithmProvider } from "./algorithm";
 
+/**
+ * Verification params of X509 certificate
+ */
 export interface X509CertificateVerifyParams {
   date?: Date;
   publicKey?: CryptoKey;
 }
 
+/**
+ * Representation of X509 certificate
+ */
 export class X509Certificate extends AsnData<Certificate> {
+
+  /**
+   * ToBeSigned block of certificate
+   */
   private tbs!: ArrayBuffer;
+
+  /**
+   * Gets a hexadecimal string of the serial number
+   */
   public serialNumber!: string;
+
+  /**
+   * Gets a string subject name
+   */
   public subject!: string;
+
+  /**
+   * Gets a string issuer name
+   */
   public issuer!: string;
+
+  /**
+   * Gets a date before which certificate can't be used
+   */
   public notBefore!: Date;
+
+  /**
+   * Gets a date after which certificate can't be used
+   */
   public notAfter!: Date;
+
+  /**
+   * Gets a signature algorithm
+   */
   public signatureAlgorithm!: HashedAlgorithm;
+
+  /**
+   * Gets a signature
+   */
   public signature!: ArrayBuffer;
+
+  /**
+   * Gts a list of certificate extensions
+   */
   public extensions!: Extension[];
+
+  /**
+   * Gets a private key of the certificate
+   */
   public privateKey?: CryptoKey;
+
+  /**
+   * Gets a public key of the certificate
+   */
   public publicKey!: PublicKey;
 
+  /**
+   * Creates a new instance from ASN.1 Certificate object
+   * @param asn ASN.1 Certificate object
+   */
   public constructor(asn: Certificate);
+  /**
+   * Creates a new instance from DER encoded buffer
+   * @param raw DER encoded buffer
+   */
   public constructor(raw: BufferSource);
   public constructor(param: BufferSource | Certificate) {
     if (BufferSourceConverter.isBufferSource(param)) {
@@ -65,6 +123,11 @@ export class X509Certificate extends AsnData<Certificate> {
     this.publicKey = new PublicKey(tbs.subjectPublicKeyInfo);
   }
 
+  /**
+   * Returns an extension of specified type
+   * @param type Extension identifier
+   * @returns Extension or null
+   */
   public getExtension(type: string) {
     for (const ext of this.extensions) {
       if (ext.type === type) {
@@ -74,10 +137,19 @@ export class X509Certificate extends AsnData<Certificate> {
     return null;
   }
 
+  /**
+   * Returns a list of extensions of specified type
+   * @param type Extension identifier
+   */
   public getExtensions(type: string) {
     return this.extensions.filter(o => o.type === type);
   }
 
+  /**
+   * Validates a certificate signature
+   * @param params Verification parameters
+   * @param crypto Crypto provider. Default is from CryptoProvider
+   */
   public async verify(params: X509CertificateVerifyParams, crypto = cryptoProvider.get()) {
     const date = params.date || new Date();
     const keyAlgorithm = { ...this.publicKey.algorithm, ...this.signatureAlgorithm };
@@ -88,7 +160,16 @@ export class X509Certificate extends AsnData<Certificate> {
     return ok && this.notBefore.getTime() < time && time < this.notAfter.getTime();
   }
 
+  /**
+   * Returns a SHA-1 certificate thumbprint
+   * @param crypto Crypto provider. Default is from CryptoProvider
+   */
   public async getThumbprint(crypto?: Crypto): Promise<ArrayBuffer>;
+  /**
+   * Returns a certificate thumbprint for specified mechanism
+   * @param algorithm Hash algorithm
+   * @param crypto Crypto provider. Default is from CryptoProvider
+   */
   public async getThumbprint(algorithm: globalThis.AlgorithmIdentifier, crypto?: Crypto): Promise<ArrayBuffer>;
   public async getThumbprint(...args: any[]) {
     let crypto = cryptoProvider.get();
