@@ -1,5 +1,5 @@
 import { AsnConvert } from "@peculiar/asn1-schema";
-import { Certificate, TBSCertificate, Validity, Name as AsnName, Extension as AsnExtension, SubjectPublicKeyInfo, Extensions } from "@peculiar/asn1-x509";
+import * as asn1X509 from "@peculiar/asn1-x509";
 import { Convert } from "pvtsutils";
 import { container } from "tsyringe";
 import { cryptoProvider } from "../crypto/provider";
@@ -86,17 +86,18 @@ export class X509CertificateGenerator {
    */
   public static async create(params: X509CertificateCreateParams, crypto = cryptoProvider.get()) {
     const spki = await crypto.subtle.exportKey("spki", params.publicKey);
-    const asnX509 = new Certificate({
-      tbsCertificate: new TBSCertificate({
+    const asnX509 = new asn1X509.Certificate({
+      tbsCertificate: new asn1X509.TBSCertificate({
+        version: asn1X509.Version.v3,
         serialNumber: Convert.FromHex(params.serialNumber),
-        validity: new Validity({
+        validity: new asn1X509.Validity({
           notBefore: params.notBefore,
           notAfter: params.notAfter,
         }),
-        subject: AsnConvert.parse(new Name(params.subject).toArrayBuffer(), AsnName),
-        issuer: AsnConvert.parse(new Name(params.issuer).toArrayBuffer(), AsnName),
-        extensions: new Extensions(params.extensions?.map(o => AsnConvert.parse(o.rawData, AsnExtension)) || []),
-        subjectPublicKeyInfo: AsnConvert.parse(spki, SubjectPublicKeyInfo),
+        subject: AsnConvert.parse(new Name(params.subject).toArrayBuffer(), asn1X509.Name),
+        issuer: AsnConvert.parse(new Name(params.issuer).toArrayBuffer(), asn1X509.Name),
+        extensions: new asn1X509.Extensions(params.extensions?.map(o => AsnConvert.parse(o.rawData, asn1X509.Extension)) || []),
+        subjectPublicKeyInfo: AsnConvert.parse(spki, asn1X509.SubjectPublicKeyInfo),
       }),
     });
 
