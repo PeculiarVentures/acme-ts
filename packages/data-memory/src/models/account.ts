@@ -6,6 +6,7 @@ import { JsonWebKey } from "@peculiar/jose";
 export class Account extends BaseObject implements IAccount {
   public status: AccountStatus = "valid";
   public key!: JsonWebKey;
+  public thumbprint!: string;
   public termsOfServiceAgreed = true;
   public externalAccountId?: number;
   public contacts: string[] = [];

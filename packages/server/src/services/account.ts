@@ -24,7 +24,7 @@ export class AccountService extends BaseService implements IAccountService {
 
     // Creates account
     let account = container.resolve<IAccount>(diAccount);
-    this.onCreate(account, key, params);
+    await this.onCreate(account, key, params);
 
     // TODO
     // if (Options.ExternalAccountOptions.Type != ExternalAccountType.None) {
@@ -53,9 +53,10 @@ export class AccountService extends BaseService implements IAccountService {
     return account;
   }
 
-  protected onCreate(account: IAccount, key: JsonWebKey, params: AccountCreateParams) {
+  protected async onCreate(account: IAccount, key: JsonWebKey, params: AccountCreateParams) {
     account.status = "valid";
     account.key = key;
+    account.thumbprint = await key.getThumbprint();
     account.contacts = params.contact;
     account.termsOfServiceAgreed = params.termsOfServiceAgreed;
   }
@@ -182,6 +183,7 @@ export class AccountService extends BaseService implements IAccountService {
 
     // Change key
     account.key = key;
+    account.thumbprint = await key.getThumbprint();
 
     // Save changes
     account = await this.accountRepository.update(account);
