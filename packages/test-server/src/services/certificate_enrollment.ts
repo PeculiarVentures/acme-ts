@@ -21,35 +21,13 @@ export class CertificateEnrollmentService extends BaseService implements ICertif
     publicExponent: new Uint8Array([1, 0, 1]),
     modulusLength: 2048,
   };
-  public caCert?: X509Certificate;
-
-  public async getCaCert() {
-    if (!this.caCert) {
-      // Create new CA cert
-      const notBefore = new Date();
-      const notAfter = new Date();
-      notAfter.setUTCFullYear(notAfter.getUTCFullYear() + 1);
-      const name = "CN=ACME demo CA, O=PeculiarVentures LLC";
-      const keys = await this.getCrypto().subtle.generateKey(CertificateEnrollmentService.signingAlgorithm, false, ["sign", "verify"]) as CryptoKeyPair;
-
-      this.caCert = await X509CertificateGenerator.create({
-        serialNumber: "01",
-        subject: name,
-        issuer: name,
-        notBefore,
-        notAfter,
-        signingAlgorithm: CertificateEnrollmentService.signingAlgorithm,
-        publicKey: keys.publicKey,
-        signingKey: keys.privateKey,
-      }, this.getCrypto());
-      this.caCert.privateKey = keys.privateKey;
-    }
-    return this.caCert;
-  }
 
   public async enroll(order: IOrder, request: ArrayBuffer): Promise<ArrayBuffer> {
     const req = new Pkcs10CertificateRequest(request);
-    const ca =  await this.getCaCert();
+    const ca: X509Certificate =  (this.options as any).caCertificate;
+    if (!ca) {
+      throw new Error("Cannot get CA certificate");
+    }
 
     // validity
     const notBefore = new Date();
@@ -59,7 +37,7 @@ export class CertificateEnrollmentService extends BaseService implements ICertif
     const cert = await X509CertificateGenerator.create({
       serialNumber: Convert.ToHex(this.getCrypto().getRandomValues(new Uint8Array(10))),
       subject: req.subject,
-      issuer: ca.issuer,
+      issuer: ca.subject,
       notBefore,
       notAfter,
       signingAlgorithm: CertificateEnrollmentService.signingAlgorithm,

@@ -1,19 +1,68 @@
-import express = require("express");
-import { diLogger, ConsoleLogger } from "@peculiar/acme-core";
+import * as express from "express";
+import { diLogger, ConsoleLogger, cryptoProvider, X509CertificateGenerator } from "@peculiar/acme-core";
 import { AcmeExpress } from "@peculiar/acme-express";
+import { DependencyInjection as diData } from "@peculiar/acme-data-memory";
 import { diCertificateEnrollmentService } from "@peculiar/acme-server";
+import { Crypto } from "@peculiar/webcrypto";
 import { container, Lifecycle } from "tsyringe";
 import { CertificateEnrollmentService } from "./services";
-import { DependencyInjection as diData} from "@peculiar/acme-data-memory";
+import { ITestServerOptions2 } from "./services/options";
 
-const app = express();
+async function main() {
+  const app = express();
 
-// before AcmeExpress because this logger need for logs in setup moment
-container.register(diLogger, ConsoleLogger)
+  const crypto = new Crypto();
+  cryptoProvider.set(crypto);
 
-AcmeExpress.register(app, {baseAddress: "http://localhost:4000/acme", levelLogger: "info", debugMode: true});
+  // before AcmeExpress because this logger need for logs in setup moment
+  container.register(diLogger, ConsoleLogger);
 
-container.register(diCertificateEnrollmentService, CertificateEnrollmentService, {lifecycle: Lifecycle.Singleton});
-diData.register(container);
+  // Create new CA cert
+  const notBefore = new Date();
+  const notAfter = new Date();
+  notAfter.setUTCFullYear(notAfter.getUTCFullYear() + 1);
+  const rootName = "CN=ACME demo root CA, O=PeculiarVentures LLC";
+  const caName = "CN=ACME demo CA, O=PeculiarVentures LLC";
+  const rootKeys = await crypto.subtle.generateKey(CertificateEnrollmentService.signingAlgorithm, false, ["sign", "verify"]) as CryptoKeyPair;
+  const caKeys = await crypto.subtle.generateKey(CertificateEnrollmentService.signingAlgorithm, false, ["sign", "verify"]) as CryptoKeyPair;
 
-app.listen(4000, () => { console.log(`Server is running`); });
+  const rootCert = await X509CertificateGenerator.create({
+    serialNumber: "01",
+    subject: rootName,
+    issuer: rootName,
+    notBefore,
+    notAfter,
+    signingAlgorithm: CertificateEnrollmentService.signingAlgorithm,
+    publicKey: rootKeys.publicKey,
+    signingKey: rootKeys.privateKey,
+  });
+  rootCert.privateKey = rootKeys.privateKey;
+  const caCert = await X509CertificateGenerator.create({
+    serialNumber: "01",
+    subject: caName,
+    issuer: rootName,
+    notBefore,
+    notAfter,
+    signingAlgorithm: CertificateEnrollmentService.signingAlgorithm,
+    publicKey: caKeys.publicKey,
+    signingKey: rootKeys.privateKey,
+  });
+  caCert.privateKey = caKeys.privateKey;
+
+  AcmeExpress.register(app, {
+    baseAddress: "http://localhost:4000/acme",
+    levelLogger: "info",
+    cryptoProvider: crypto,
+    debugMode: true,
+    caCertificate: caCert,
+    extraCertificateStorage: [rootCert, caCert],
+  } as Partial<ITestServerOptions2>);
+
+  container.register(diCertificateEnrollmentService, CertificateEnrollmentService, { lifecycle: Lifecycle.Singleton });
+  diData.register(container);
+
+  app.listen(4000, () => { console.log(`Server is running`); });
+
+}
+
+main().catch(e => console.error(e));
