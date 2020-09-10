@@ -52,13 +52,24 @@ export class ConvertService extends BaseService implements IConvertService {
       identifiers: authzs.map(o => { return { ...o.identifier }; }),
       authorizations: authzs.map(o => `${this.options.baseAddress}/authz/${o.id}`),
       status: data.status,
-      notBefore: data.notBefore?.toUTCString(),
-      notAfter: data.notAfter?.toUTCString(),
-      expires: data.expires?.toUTCString(),
-      error: data.error ? await this.toError(data.error) : undefined,
       finalize: `${this.options.baseAddress}/finalize/${data.id}`,
-      certificate: data.certificate && data.certificate.rawData ? `${this.options.baseAddress}/cert/${data.certificate.thumbprint}` : undefined,
     };
+    if (data.notBefore) {
+      order.notBefore = data.notBefore.toISOString();
+    }
+    if (data.notAfter) {
+      order.notAfter = data.notAfter.toISOString();
+    }
+    if (data.expires) {
+      order.expires = data.expires.toISOString();
+    }
+    if (data.error) {
+      order.error = await this.toError(data.error);
+    }
+    if (data.certificate) {
+      order.certificate = `${this.options.baseAddress}/cert/${data.certificate.thumbprint}`;
+    }
+
     return order;
   }
 
@@ -72,40 +83,48 @@ export class ConvertService extends BaseService implements IConvertService {
       value: data.identifier.value,
     };
 
-    const auth: protocol.Authorization = {
-      expires: data.expires?.toUTCString(),
+    const authz: protocol.Authorization = {
       identifier,
       status: data.status,
       wildcard: data.wildcard,
       challenges: await Promise.all(challenges.map(o => this.toChallenge(o))),
     };
-    return auth;
+    if (data.expires) {
+      authz.expires = data.expires.toISOString();
+    }
+
+    return authz;
   }
 
   public async toChallenge(data: data.IChallenge): Promise<protocol.Challenge> {
     const challenge: protocol.Challenge = {
       status: data.status,
       type: data.type,
-      validated: data.validated?.toUTCString(),
-      error: data.error ? await this.toError(data.error) : undefined,
       token: data.token,
       url: `${this.options.baseAddress}/challenge/${data.id}`,
     };
+    if (data.validated) {
+      challenge.validated = data.validated.toISOString();
+    }
+    if (data.error) {
+      challenge.error = await this.toError(data.error);
+    }
+
     return challenge;
   }
 
-  public async toError(data: data.IError): Promise<protocol.Error> {
+  public async toError(data: data.IError | data.ISubProblem): Promise<protocol.Error> {
     const err: protocol.Error = {
       detail: data.detail,
       type: data.type,
-      subproblems: data.subproblems ? data.subproblems.map(o => {
-        const subError: protocol.Error = {
-          detail: o.detail,
-          type: o.type,
-        };
-        return subError;
-      }) : undefined,
     };
+
+    if ("subproblems" in data) {
+      if (data.subproblems && data.subproblems.length) {
+        err.subproblems = await Promise.all(data.subproblems.map(o => this.toError(o)));
+      }
+    }
+
     return err;
   }
 
