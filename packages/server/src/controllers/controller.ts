@@ -256,13 +256,13 @@ export class AcmeController extends BaseService {
   }
 
   public getIdFromLink(url: string) {
-    const pattern = /\/(\d+)$/g;
+    const pattern = /\/([^/]+)$/g;
     const match = pattern.exec(url);
     if (!match) {
       throw new core.MalformedError(`Cannot get Id from link ${url}`);
     }
 
-    return +match[1];
+    return match[1];
   }
 
   public assertAccountStatus(account: IAccount) {
