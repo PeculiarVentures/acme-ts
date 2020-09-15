@@ -10,6 +10,4 @@ export class OrderAuthorizationRepository extends BaseRepository<IOrderAuthoriza
   public async findByAuthorization(authId: number) {
     return this.items.filter(o => o.authorizationId === authId) || null;
   }
-
-
 }
