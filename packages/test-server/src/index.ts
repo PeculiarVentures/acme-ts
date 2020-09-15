@@ -4,7 +4,7 @@ import { AcmeExpress } from "@peculiar/acme-express";
 import { diCertificateEnrollmentService } from "@peculiar/acme-server";
 import { container, Lifecycle } from "tsyringe";
 import { CertificateEnrollmentService } from "./services";
-import { DependencyInjection as diData} from "@peculiar/acme-data-memory";
+import { DependencyInjection as diData} from "@peculiar/acme-data-dynamodb";
 
 const app = express();
 
