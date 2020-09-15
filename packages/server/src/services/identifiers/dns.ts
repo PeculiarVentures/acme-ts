@@ -151,8 +151,9 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
       else {
         throw new Error("Response status is not 200(OK)");
       }
+    } else {
+      this.logger.warn("HTTP challenge validation is disabled fo DEBUG mode");
     }
-    this.logger.warn("HTTP challenge validation is disabled fo DEBUG mode");
   }
 
   private async _create(authId: data.Key, type: string): Promise<data.IChallenge> {
