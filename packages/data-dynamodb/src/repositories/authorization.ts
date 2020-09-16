@@ -8,6 +8,7 @@ export class AuthorizationRepository extends BaseRepository<Authorization> imple
   protected className = acmeData.diAuthorization;
 
   public async findByIdentifier(accountId: acmeData.Key, identifier: Identifier) {
-    return await this.findByIndex(accountId.toString(), `authz#${await Authorization.getHashIdentifier(identifier)}`);
+    const index = `authz#${await Authorization.getHashIdentifier(identifier)}`;
+    return await this.findByIndex(accountId.toString(), index);
   }
 }
