@@ -55,12 +55,6 @@ context("Server", () => {
     } as ITestServerOptions2);
     container.register(diCertificateEnrollmentService, CertificateEnrollmentService);
     dataMemory.DependencyInjection.register(container);
-    // dataMemory.DependencyInjection.register(container, {
-    //   accessKeyId: "12345678",
-    //   secretAccessKey: "12345678",
-    //   region: "local",
-    //   endpoint: "http://localhost:8000",
-    // });
     controller = container.resolve<AcmeController>(diAcmeController);
   });
 
