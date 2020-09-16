@@ -1,7 +1,7 @@
 import { ContentType, ErrorType, Extension, Pkcs10CertificateRequestGenerator, QueryParams, Request, Response, X509CertificateGenerator } from "@peculiar/acme-core";
 import * as data from "@peculiar/acme-data";
 import { IAuthorizationRepository } from "@peculiar/acme-data";
-import * as dataMemory from "@peculiar/acme-data-dynamodb";
+import * as dataMemory from "@peculiar/acme-data-memory";
 import * as protocol from "@peculiar/acme-protocol";
 import { AcmeController, diAcmeController, DependencyInjection, diCertificateEnrollmentService } from "@peculiar/acme-server";
 import { AsnConvert } from "@peculiar/asn1-schema";
@@ -54,12 +54,13 @@ context("Server", () => {
       extraCertificateStorage: [rootCert],
     } as ITestServerOptions2);
     container.register(diCertificateEnrollmentService, CertificateEnrollmentService);
-    dataMemory.DependencyInjection.register(container, {
-      accessKeyId: "12345678",
-      secretAccessKey: "12345678",
-      region: "local",
-      endpoint: "http://localhost:8000",
-    });
+    dataMemory.DependencyInjection.register(container);
+    // dataMemory.DependencyInjection.register(container, {
+    //   accessKeyId: "12345678",
+    //   secretAccessKey: "12345678",
+    //   region: "local",
+    //   endpoint: "http://localhost:8000",
+    // });
     controller = container.resolve<AcmeController>(diAcmeController);
   });
 
