@@ -1,8 +1,8 @@
-import { IOrder, IError, ICertificate, Key, CertificateStatus } from "@peculiar/acme-data";
+import { IOrder, IError, ICertificate, Key } from "@peculiar/acme-data";
 import { OrderStatus } from "@peculiar/acme-protocol";
 import { BaseObject, IBaseDynamoObject } from "./base";
 import { Convert } from "pvtsutils";
-import { CRLReason } from "@peculiar/asn1-x509";
+import { ICertificateDynamo } from ".";
 
 export interface IOrderDynamo extends IBaseDynamoObject {
   status: OrderStatus;
@@ -12,14 +12,6 @@ export interface IOrderDynamo extends IBaseDynamoObject {
   notAfter?: string;
   error?: IError;
   certificate?: ICertificateDynamo;
-}
-
-export interface ICertificateDynamo {
-  id: Key;
-  reason?: CRLReason;
-  status: CertificateStatus;
-  thumbprint: string;
-  rawData: string;
 }
 
 export class Order extends BaseObject implements IOrder {
@@ -39,7 +31,6 @@ export class Order extends BaseObject implements IOrder {
     this.identifier ??= "";
   }
 
-  //accountId#hashIdentifier#data
   public async toDynamo() {
     const dynamo: IOrderDynamo = {
       id: this.id,

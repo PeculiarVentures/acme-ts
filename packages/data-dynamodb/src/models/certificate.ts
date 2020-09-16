@@ -1,6 +1,14 @@
-import { ICertificate, CertificateStatus } from "@peculiar/acme-data";
+import { ICertificate, CertificateStatus, Key } from "@peculiar/acme-data";
 import { BaseObject, IBaseDynamoObject } from "./base";
 import { CRLReason } from "@peculiar/asn1-x509";
+
+export interface ICertificateDynamo {
+  id: Key;
+  reason?: CRLReason;
+  status: CertificateStatus;
+  thumbprint: string;
+  rawData: string;
+}
 
 export class Certificate extends BaseObject implements ICertificate {
   public fromDynamo(data: IBaseDynamoObject): void {

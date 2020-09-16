@@ -35,7 +35,6 @@ export class Authorization extends BaseObject implements IAuthorization {
     this.status ??= "pending";
   }
 
-  //accountId#hashIdentifier#data
   public async toDynamo() {
     const hashIdentifier = await Authorization.getHashIdentifier(this.identifier);
     const dynamo: IAuthorizationDynamo = {
