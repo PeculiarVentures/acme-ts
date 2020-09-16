@@ -1,7 +1,7 @@
-import { ContentType, ErrorType, Extension, Pkcs10CertificateRequestGenerator, QueryParams, Request, Response } from "@peculiar/acme-core";
+import { ContentType, ErrorType, Extension, Pkcs10CertificateRequestGenerator, QueryParams, Request, Response, X509CertificateGenerator } from "@peculiar/acme-core";
 import * as data from "@peculiar/acme-data";
 import { IAuthorizationRepository } from "@peculiar/acme-data";
-import * as dataMemory from "@peculiar/acme-data-memory";
+import * as dataMemory from "@peculiar/acme-data-dynamodb";
 import * as protocol from "@peculiar/acme-protocol";
 import { AcmeController, diAcmeController, DependencyInjection, diCertificateEnrollmentService } from "@peculiar/acme-server";
 import { AsnConvert } from "@peculiar/asn1-schema";
@@ -10,6 +10,7 @@ import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
 import { Crypto } from "@peculiar/webcrypto";
 import * as assert from "assert";
 import { CertificateEnrollmentService } from "packages/test-server/src/services";
+import { ITestServerOptions2 } from "packages/test-server/src/services/options";
 import { Convert } from "pvtsutils";
 import { container } from "tsyringe";
 
@@ -18,21 +19,49 @@ const baseAddress = "http://localhost";
 context("Server", () => {
 
   const crypto = new Crypto();
+  let controller: AcmeController;
+  before(async () => {
+    const notBefore = new Date();
+    const notAfter = new Date();
+    notAfter.setUTCFullYear(notAfter.getUTCFullYear() + 1);
 
-  DependencyInjection.register(container, {
-    baseAddress,
+    const rootName = "CN=ACME demo root CA, O=PeculiarVentures LLC";
+    const rootKeys = await crypto.subtle.generateKey(CertificateEnrollmentService.signingAlgorithm, false, ["sign", "verify"]) as CryptoKeyPair;
 
-    debugMode: true,
-    downloadCertificateFormat: "PemCertificateChain",
-    hashAlgorithm: "SHA-256",
-    expireAuthorizationDays: 1,
-    levelLogger: "error",
-    ordersPageSize: 10,
-    formattedResponse: true,
+    const rootCert = await X509CertificateGenerator.create({
+      serialNumber: "01",
+      subject: rootName,
+      issuer: rootName,
+      notBefore,
+      notAfter,
+      signingAlgorithm: CertificateEnrollmentService.signingAlgorithm,
+      publicKey: rootKeys.publicKey,
+      signingKey: rootKeys.privateKey,
+    });
+    rootCert.privateKey = rootKeys.privateKey;
+    DependencyInjection.register(container, {
+      baseAddress,
+
+      debugMode: true,
+      downloadCertificateFormat: "PemCertificateChain",
+      hashAlgorithm: "SHA-256",
+      expireAuthorizationDays: 1,
+      levelLogger: "error",
+      ordersPageSize: 10,
+      formattedResponse: true,
+
+      caCertificate: rootCert,
+      extraCertificateStorage: [rootCert],
+    } as ITestServerOptions2);
+    container.register(diCertificateEnrollmentService, CertificateEnrollmentService);
+    dataMemory.DependencyInjection.register(container, {
+      accessKeyId: "12345678",
+      secretAccessKey: "12345678",
+      region: "local",
+      endpoint: "http://localhost:8000",
+    });
+    controller = container.resolve<AcmeController>(diAcmeController);
   });
-  container.register(diCertificateEnrollmentService, CertificateEnrollmentService);
-  dataMemory.DependencyInjection.register(container);
-  const controller = container.resolve<AcmeController>(diAcmeController);
 
   //#region Helpers
   async function getNonce() {
@@ -686,12 +715,12 @@ context("Server", () => {
           client.keys));
 
         assert.strictEqual(resp.status, 201);
-        assert.strictEqual(/http:\/\/localhost\/order\/\d+/.test(resp.headers.location!), true, "Order response wrong Location header");
+        assert.strictEqual(/http:\/\/localhost\/order\/[^/]/.test(resp.headers.location!), true, "Order response wrong Location header");
 
         const json = resp.json<protocol.Order>();
         assert.strictEqual(json.status, "pending");
-        assert.strictEqual(/http:\/\/localhost\/finalize\/\d+/.test(json.finalize), true, "Order response wrong 'finalize' value");
-        assert.strictEqual(/http:\/\/localhost\/authz\/\d+/.test(json.authorizations[0]), true, "Order response wrong authorizations link");
+        assert.strictEqual(/http:\/\/localhost\/finalize\/[^/]/.test(json.finalize), true, "Order response wrong 'finalize' value");
+        assert.strictEqual(/http:\/\/localhost\/authz\/[^/]/.test(json.authorizations[0]), true, "Order response wrong authorizations link");
         assert.deepStrictEqual(json.identifiers, [{ type: "dns", value: "some.com" }]);
       });
 
@@ -1245,8 +1274,8 @@ context("Server", () => {
         const id19 = await createOrder("some19.com");
         const id20 = await createOrder("some20.com");
         const id21 = await createOrder("some21.com");
-        await createOrder("some22.com");
-        await createOrder("some23.com");
+        const id22 = await createOrder("some22.com");
+        const id23 = await createOrder("some23.com");
 
         const resp = await controller.postOrders(await createPostRequest(
           "",
@@ -1255,8 +1284,55 @@ context("Server", () => {
           client.keys));
         assert.strictEqual(resp.status, 200);
 
-        assert.deepStrictEqual(resp.json(), {
-          orders: [
+        if (resp.headers.link) {
+
+          assert.deepStrictEqual(resp.json(), {
+            orders: [
+              `${baseAddress}/order/${id01}`,
+              `${baseAddress}/order/${id02}`,
+              `${baseAddress}/order/${id03}`,
+              `${baseAddress}/order/${id04}`,
+              `${baseAddress}/order/${id06}`,
+              `${baseAddress}/order/${id07}`,
+              `${baseAddress}/order/${id08}`,
+              `${baseAddress}/order/${id09}`,
+              `${baseAddress}/order/${id10}`,
+              `${baseAddress}/order/${id11}`,
+            ]
+          });
+          assert.deepStrictEqual(resp.headers.link, [
+            `<${baseAddress}/orders?cursor=1>;rel="next"`,
+          ]);
+
+          const resp2 = await controller.postOrders(await createPostRequest(
+            "",
+            `${baseAddress}/orders?cursor=1`,
+            client.location!,
+            client.keys,
+            { cursor: ["1"] }));
+          assert.strictEqual(resp2.status, 200);
+          assert.deepStrictEqual(resp2.headers.link, [
+            `<${baseAddress}/orders?cursor=0>;rel="previous"`,
+            `<${baseAddress}/orders?cursor=2>;rel="next"`,
+          ]);
+          assert.deepStrictEqual(resp2.json(), {
+            orders: [
+              `${baseAddress}/order/${id12}`,
+              `${baseAddress}/order/${id13}`,
+              `${baseAddress}/order/${id14}`,
+              `${baseAddress}/order/${id15}`,
+              `${baseAddress}/order/${id16}`,
+              `${baseAddress}/order/${id17}`,
+              `${baseAddress}/order/${id18}`,
+              `${baseAddress}/order/${id19}`,
+              `${baseAddress}/order/${id20}`,
+              `${baseAddress}/order/${id21}`,
+            ]
+          });
+        } else {
+          const j = resp.json();
+          // assert.deepStrictEqual(j, {});
+          const ar = [
             `${baseAddress}/order/${id01}`,
             `${baseAddress}/order/${id02}`,
             `${baseAddress}/order/${id03}`,
@@ -1267,25 +1343,6 @@ context("Server", () => {
             `${baseAddress}/order/${id09}`,
             `${baseAddress}/order/${id10}`,
             `${baseAddress}/order/${id11}`,
-          ]
-        });
-        assert.deepStrictEqual(resp.headers.link, [
-          `<${baseAddress}/orders?cursor=1>;rel="next"`,
-        ]);
-
-        const resp2 = await controller.postOrders(await createPostRequest(
-          "",
-          `${baseAddress}/orders?cursor=1`,
-          client.location!,
-          client.keys,
-          { cursor: ["1"] }));
-        assert.strictEqual(resp2.status, 200);
-        assert.deepStrictEqual(resp2.headers.link, [
-          `<${baseAddress}/orders?cursor=0>;rel="previous"`,
-          `<${baseAddress}/orders?cursor=2>;rel="next"`,
-        ]);
-        assert.deepStrictEqual(resp2.json(), {
-          orders: [
             `${baseAddress}/order/${id12}`,
             `${baseAddress}/order/${id13}`,
             `${baseAddress}/order/${id14}`,
@@ -1296,8 +1353,14 @@ context("Server", () => {
             `${baseAddress}/order/${id19}`,
             `${baseAddress}/order/${id20}`,
             `${baseAddress}/order/${id21}`,
-          ]
-        });
+            `${baseAddress}/order/${id22}`,
+            `${baseAddress}/order/${id23}`,
+          ];
+          assert.strictEqual(j.orders.length, ar.length);
+          j.orders.forEach((order: string) => {
+            assert(ar.find(o => o === order));
+          });
+        }
       });
 
     });
@@ -1321,7 +1384,7 @@ context("Server", () => {
         client.keys));
 
       assert.strictEqual(resp.status, 201);
-      assert.strictEqual(/http:\/\/localhost\/authz\/\d+/.test(resp.headers.location!), true, "Authorization response wrong Location header");
+      assert.strictEqual(/http:\/\/localhost\/authz\/[^/]/.test(resp.headers.location!), true, "Authorization response wrong Location header");
 
       const json = resp.json<protocol.Authorization>();
       assert.strictEqual(json.status, "pending");
