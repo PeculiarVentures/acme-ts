@@ -33,7 +33,6 @@ export abstract class BaseRepository<T extends BaseObject> implements IBaseRepos
         rangeKey: "index",
       }
     },
-    expires: Date,
   }, {
     saveUnknown: true,
   });
@@ -47,17 +46,17 @@ export abstract class BaseRepository<T extends BaseObject> implements IBaseRepos
   }
 
   public async add(item: T) {
-    await item.toDynamo();
+    const dynamo = await item.toDynamo();
     const Model = this.getModel();
-    const model = new Model(item);
+    const model = new Model(dynamo);
     const data = await model.save();
     return this.fromDocument(data);
   }
 
   public async update(item: T) {
-    await item.toDynamo();
+    const dynamo = await item.toDynamo();
     const Model = this.getModel();
-    const data = await Model.update({ ...item });
+    const data = await Model.update(dynamo);
     return this.fromDocument(data);
   }
 
@@ -111,11 +110,11 @@ export abstract class BaseRepository<T extends BaseObject> implements IBaseRepos
   }
 
   protected fromDocument(data: Document) {
-    // const json = data.toJSON();
+    const json = data.toJSON();
     const item = this.getValidator();
+    item.id = json.id;
     //@ts-ignore
-    item.id = data.id;
-    item.fromDynamo(data);
+    item.fromDynamo(json);
     return item;
   }
 }

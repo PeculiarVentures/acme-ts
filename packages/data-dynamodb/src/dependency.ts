@@ -11,7 +11,7 @@ export class DependencyInjection {
       .register(data.diAuthorization, models.Authorization)
       .register(data.diCertificate, models.Certificate)
       .register(data.diChallenge, models.Challenge)
-      .register(data.diError, models.Error)
+      .register(data.diError, models.DynamoError)
       .register(data.diExternalAccount, models.ExternalAccount)
       .register(data.diOrderAuthorization, models.OrderAuthorization)
       .register(data.diOrder, models.Order)

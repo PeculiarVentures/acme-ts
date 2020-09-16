@@ -1,19 +1,20 @@
 import { IError, ISubProblem } from "@peculiar/acme-data";
-import { BaseObject } from "./base";
+import { BaseObject, IBaseDynamoObject } from "./base";
 import { ErrorType } from "@peculiar/acme-core";
 
-export class Error extends BaseObject implements IError {
-  public fromDynamo(data: any): void {
-    // Empty
+export class DynamoError extends BaseObject implements IError {
+  public fromDynamo(data: IBaseDynamoObject): void {
+    throw new Error("Method not implemented.");
   }
-  public async toDynamo(): Promise<void> {
-    // Empty
+  public toDynamo(): Promise<IBaseDynamoObject> {
+    throw new Error("Method not implemented.");
   }
+
   public subproblems?: ISubProblem[] | undefined;
   public type: ErrorType;
   public detail: string;
 
-  public constructor(params: Partial<Error> = {}) {
+  public constructor(params: Partial<DynamoError> = {}) {
     super(params);
 
     this.type ??= ErrorType.serverInternal;

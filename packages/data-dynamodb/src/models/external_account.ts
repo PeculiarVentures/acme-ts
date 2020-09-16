@@ -1,10 +1,16 @@
 import { IExternalAccount, ExternalAccountStatus } from "@peculiar/acme-data";
-import { BaseObject } from "./base";
+import { BaseObject, IBaseDynamoObject } from "./base";
+
+export interface IExternalAccountDynamo extends IBaseDynamoObject {
+  expires?: string;
+  account: any;
+  status: ExternalAccountStatus;
+}
 
 export class ExternalAccount extends BaseObject implements IExternalAccount {
 
   public key: string;
-  public expires?: Date | undefined;
+  public expires?: Date;
   public account: any;
   public status: ExternalAccountStatus;
 
@@ -16,15 +22,24 @@ export class ExternalAccount extends BaseObject implements IExternalAccount {
     this.status ??= "pending";
   }
 
-  public async toDynamo(): Promise<void> {
-    this.index = "extAccount#";
-    this.parentId = this.key;
+  public async toDynamo() {
+    const dynamo: IExternalAccountDynamo = {
+      id: this.id,
+      index: "extAccount#",
+      parentId: this.key,
+      account: this.account,
+      status: this.status,
+    };
+    if (this.expires) {
+      dynamo.expires = this.fromDate(this.expires);
+    }
+    return dynamo;
   }
 
-  public fromDynamo(data: any): void {
-    this.key = data.key;
+  public fromDynamo(data: IExternalAccountDynamo) {
+    this.key = data.parentId;
     if (data.expires) {
-      this.expires = data.expires;
+      this.expires = this.toDate(data.expires);
     }
     this.account = data.account;
     this.status = data.status;

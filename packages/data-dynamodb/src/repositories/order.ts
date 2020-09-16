@@ -12,8 +12,8 @@ export class OrderRepository extends BaseRepository<Order> implements IOrderRepo
       const model = new Model({ id: item.certificate.thumbprint, parentId: item.id, index: "cert#" });
       await model.save();
     }
-    await item.toDynamo();
-    const data = await Model.update({ ...item });
+    const dynamo = await item.toDynamo();
+    const data = await Model.update(dynamo);
     return this.fromDocument(data);
   }
 

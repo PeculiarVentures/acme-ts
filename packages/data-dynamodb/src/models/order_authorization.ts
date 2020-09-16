@@ -1,7 +1,13 @@
 import { IOrderAuthorization, Key } from "@peculiar/acme-data";
-import { BaseObject } from "./base";
+import { BaseObject, IBaseDynamoObject } from "./base";
 
 export class OrderAuthorization extends BaseObject implements IOrderAuthorization {
+  public fromDynamo(data: IBaseDynamoObject): void {
+    throw new Error("Method not implemented.");
+  }
+  public toDynamo(): Promise<IBaseDynamoObject> {
+    throw new Error("Method not implemented.");
+  }
 
   public authorizationId: Key;
   public orderId: Key;
@@ -11,13 +17,5 @@ export class OrderAuthorization extends BaseObject implements IOrderAuthorizatio
 
     this.authorizationId ??= "";
     this.orderId ??= "";
-  }
-
-  public async toDynamo(): Promise<void> {
-    // Empty
-  }
-
-  public fromDynamo(data: any): void {
-    // Empty
   }
 }

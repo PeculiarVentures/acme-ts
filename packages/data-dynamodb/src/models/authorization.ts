@@ -1,8 +1,15 @@
-import { IAuthorization, IIdentifier } from "@peculiar/acme-data";
+import { IAuthorization, IIdentifier, Key } from "@peculiar/acme-data";
 import { AuthorizationStatus } from "@peculiar/acme-protocol";
-import { BaseObject } from "./base";
+import { BaseObject, IBaseDynamoObject } from "./base";
 import { cryptoProvider } from "@peculiar/acme-core";
 import * as pvtsutils from "pvtsutils";
+
+export interface IAuthorizationDynamo extends IBaseDynamoObject {
+  identifier: IIdentifier;
+  expires?: string;
+  wildcard?: boolean;
+  status: AuthorizationStatus;
+}
 
 export class Authorization extends BaseObject implements IAuthorization {
 
@@ -16,7 +23,7 @@ export class Authorization extends BaseObject implements IAuthorization {
   public identifier: IIdentifier;
   public expires?: Date;
   public wildcard?: boolean;
-  public accountId;
+  public accountId: Key;
   public status: AuthorizationStatus;
 
   public constructor(params: Partial<Authorization> = {}) {
@@ -30,20 +37,31 @@ export class Authorization extends BaseObject implements IAuthorization {
   //accountId#hashIdentifier#data
   public async toDynamo() {
     const hashIdentifier = await Authorization.getHashIdentifier(this.identifier);
-    this.index = `authz#${pvtsutils.Convert.ToHex(hashIdentifier)}#${new Date().valueOf()}`;
-    this.parentId = this.accountId.toString();
+    const dynamo: IAuthorizationDynamo = {
+      id: this.id,
+      index: `authz#${pvtsutils.Convert.ToHex(hashIdentifier)}#${new Date().valueOf()}`,
+      parentId: this.accountId.toString(),
+      identifier: this.identifier,
+      status: this.status,
+    };
+    if (this.expires) {
+      dynamo.expires = this.fromDate(this.expires);
+    }
+    if (this.wildcard) {
+      dynamo.wildcard = this.wildcard;
+    }
+    return dynamo;
   }
 
-
-  public fromDynamo(data: any) {
+  public fromDynamo(data: IAuthorizationDynamo) {
     this.identifier = data.identifier;
     if (data.expires) {
-      this.expires = data.expires;
+      this.expires = this.toDate(data.expires);
     }
     if (data.wildcard) {
       this.wildcard = data.wildcard;
     }
-    this.accountId = data.accountId;
+    this.accountId = data.parentId;
     this.status = data.status;
   }
 }

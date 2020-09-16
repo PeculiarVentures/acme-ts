@@ -1,12 +1,12 @@
 import { ICertificate, CertificateStatus } from "@peculiar/acme-data";
-import { BaseObject } from "./base";
+import { BaseObject, IBaseDynamoObject } from "./base";
 import { CRLReason } from "@peculiar/asn1-x509";
 
 export class Certificate extends BaseObject implements ICertificate {
-  public fromDynamo(data: any): void {
+  public fromDynamo(data: IBaseDynamoObject): void {
     throw new Error("Method not implemented.");
   }
-  public toDynamo(): Promise<void> {
+  public toDynamo(): Promise<IBaseDynamoObject> {
     throw new Error("Method not implemented.");
   }
 
