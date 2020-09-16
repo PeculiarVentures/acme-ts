@@ -56,8 +56,8 @@ export abstract class BaseRepository<T extends BaseObject> implements IBaseRepos
   public async update(item: T) {
     const dynamo = await item.toDynamo();
     const Model = this.getModel();
-    const data = await Model.update(dynamo);
-    return this.fromDocument(data);
+    await Model.update(dynamo);
+    return item;
   }
 
   public async remove(item: T): Promise<void> {
@@ -100,7 +100,8 @@ export abstract class BaseRepository<T extends BaseObject> implements IBaseRepos
     const data: Document[] = await this.getModel().query("parentId").eq(parentId)
       .where("index").beginsWith(index)
       //@ts-ignore
-      .sort("descending").limit(1)
+      // .sort("descending").limit(1)
+      .sort("descending")
       .exec();
     if (data.length) {
       return data.map(o => this.fromDocument(o))[0];
