@@ -324,9 +324,12 @@ export class OrderService extends BaseService implements types.IOrderService {
       throw new core.MalformedError("Certificate not found");
     }
     const cert = new core.X509Certificate(order.certificate.rawData);
-    const chain = new core.X509Certificates(cert);
+    const chain = new core.X509ChainBuilder({
+      certificates: this.options.extraCertificateStorage,
+    });
 
-    return chain;
+    const res = await chain.build(cert);
+    return res;
   }
 
   /**

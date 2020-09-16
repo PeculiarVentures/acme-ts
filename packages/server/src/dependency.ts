@@ -40,6 +40,7 @@ export class DependencyInjection {
     //#endregion
 
     const serverOptions: IServerOptions = {
+      ...options,
       baseAddress,
       cryptoProvider: options.cryptoProvider,
       hashAlgorithm: options.hashAlgorithm ?? "SHA-1",

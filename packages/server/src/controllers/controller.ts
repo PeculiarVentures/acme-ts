@@ -410,6 +410,8 @@ export class AcmeController extends BaseService {
       const auth = await this.authorizationService.getById(account.id, challenge.authorizationId);
       if (token.isPayloadEmptyObject()) {
         await this.challengeService.challengeValidate(challenge, auth.identifier.type);
+
+        response.headers.setLink(`<${this.options.baseAddress}/authz/${challenge.authorizationId}>;rel="up"`)
       }
       response.content = new core.Content(await this.convertService.toChallenge(challenge));
     }, request);

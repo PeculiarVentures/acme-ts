@@ -18,7 +18,7 @@
       "internalConsoleOptions": "openOnSessionStart"
     },
     {
-      "name": "Run current TS file",
+      "name": "Run test server",
       "skipFiles": [
         "<node_internals>/**"
       ],

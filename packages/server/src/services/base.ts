@@ -1,4 +1,4 @@
-import { MalformedError, ILogger, Level, diLogger } from "@peculiar/acme-core";
+import { MalformedError, ILogger, Level, diLogger, X509Certificate } from "@peculiar/acme-core";
 import { inject } from "tsyringe";
 import { DirectoryMetadata } from "@peculiar/acme-protocol";
 
@@ -23,6 +23,7 @@ export interface IServerOptions {
   levelLogger?: Level;
   debugMode?: boolean;
   meta?: DirectoryMetadata;
+  extraCertificateStorage?: X509Certificate[];
 }
 
 export class BaseService {
