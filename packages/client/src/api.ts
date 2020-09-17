@@ -5,10 +5,23 @@ import { CRLReasons } from "@peculiar/asn1-x509";
 import * as protocol from "@peculiar/acme-protocol";
 import { BaseClient, ClientOptions, ApiResponse, RequestParams, AcmeMethod } from "./base";
 
+export interface RetryOptions {
+  /**
+   * Amount of retries. Default is 10
+   */
+  retries?: number;
+  /**
+   * Interval duration in ms. Default is 1000
+   */
+  interval?: number;
+}
+
 /**
  * Class of work with ACME servers
  */
 export class ApiClient extends BaseClient {
+  public static RETRIES = 10;
+  public static INTERVAL = 1000;
 
   private _nonce = "";
   private _accountId = "";
@@ -30,7 +43,11 @@ export class ApiClient extends BaseClient {
       this._nonce = "";
     }
 
-    return await super.fetch(url, params);
+    const resp = await super.fetch(url, params);
+
+    this.getNonce(resp);
+
+    return resp;
   }
 
   /**
@@ -185,6 +202,27 @@ export class ApiClient extends BaseClient {
     });
   }
 
+  public async retryOrder(order: ApiResponse<protocol.Order>, options?: RetryOptions): Promise<ApiResponse<protocol.Order>>;
+  public async retryOrder(url: string, options?: RetryOptions): Promise<ApiResponse<protocol.Order>>;
+  public async retryOrder(param: string | ApiResponse<protocol.Order>, options: RetryOptions = {}) {
+    let order = typeof param === "string"
+      ? await this.getOrder(param)
+      : param;
+    let retries = options.retries || ApiClient.RETRIES;
+    while (retries--) {
+      if (!order.headers.location) {
+        throw new Error("Cannot get location header from Order response");
+      }
+      order = await this.getOrder(order.headers.location);
+      if (order.content.status !== "processing") {
+        break;
+      }
+      await this.pause(options.interval || ApiClient.INTERVAL);
+    }
+
+    return order;
+  }
+
   //#endregion
 
   /**
@@ -279,6 +317,27 @@ export class ApiClient extends BaseClient {
       key: this.accountKey.privateKey,
       convert: (resp) => resp.json(),
     });
+  }
+
+  public async retryAuthorization(order: ApiResponse<protocol.Authorization>, options?: RetryOptions): Promise<ApiResponse<protocol.Authorization>>;
+  public async retryAuthorization(url: string, options?: RetryOptions): Promise<ApiResponse<protocol.Authorization>>;
+  public async retryAuthorization(param: string | ApiResponse<protocol.Authorization>, options: RetryOptions = {}) {
+    let authz = typeof param === "string"
+      ? await this.getOrder(param)
+      : param
+    let retries = options.retries || ApiClient.RETRIES;
+    while (retries--) {
+      if (!authz.headers.location) {
+        throw new Error("Cannot get location header from Authorization response");
+      }
+      authz = await this.getAuthorization(authz.headers.location);
+      if (authz.content.status !== "pending") {
+        break;
+      }
+      await this.pause(options.interval || ApiClient.INTERVAL);
+    }
+
+    return authz;
   }
 
   /**
