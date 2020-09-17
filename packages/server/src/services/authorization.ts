@@ -69,6 +69,8 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
       return item;
     }
 
+    const oldStatus = item.status;
+
     if (item.expires && item.expires < new Date()) {
       // Check Expire
       item.status = "expired";
@@ -85,7 +87,9 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
         await this.authorizationRepository.update(item);
       }
     }
-    this.logger.info(`Authorization ${item.id} status updated to ${item.status}`);
+    if(oldStatus !== item.status){
+      this.logger.info(`Authorization ${item.id} status updated to ${item.status}`);
+    }
     return item;
   }
 
@@ -115,7 +119,7 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
       throw new MalformedError("Authorization doesn't exist");
     }
     if (authz.status !== "pending") {
-      throw new MalformedError("Cannot deactivate status cause it's not active")
+      throw new MalformedError("Cannot deactivate status cause it's not active");
     }
 
     authz.status = "deactivated";

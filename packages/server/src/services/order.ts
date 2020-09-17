@@ -110,7 +110,7 @@ export class OrderService extends BaseService implements types.IOrderService {
       .map(o => `${o.type}:${o.value}`.toLowerCase())
       .sort()
       .join(";");
-    const hash = await this.getHash(pvtsutils.Convert.FromUtf8String(strIdentifiers), this.options.hashAlgorithm);
+    const hash = await this.getHash(pvtsutils.Convert.FromUtf8String(strIdentifiers));
     return pvtsutils.Convert.ToHex(hash);
   }
 

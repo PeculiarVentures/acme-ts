@@ -10,7 +10,9 @@ export class X509ChainBuilder {
   public certificates: X509Certificate[] = [];
 
   public constructor(params: Partial<X509ChainBuilder> = {}) {
-    Object.assign(this, params);
+    if (params.certificates) {
+      this.certificates = params.certificates;
+    }
   }
 
   public async build(cert: X509Certificate) {
@@ -24,7 +26,7 @@ export class X509ChainBuilder {
       for (const item of chain) {
         const thumbprint2 = await item.getThumbprint();
         if (isEqual(thumbprint, thumbprint2)) {
-          throw new Error("Cannot build a certificate chain. Circular dependency.")
+          throw new Error("Cannot build a certificate chain. Circular dependency.");
         }
       }
 

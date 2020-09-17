@@ -23,7 +23,7 @@ export class ConvertService extends BaseService implements IConvertService {
       contact: data.contacts,
       status: data.status,
       termsOfServiceAgreed: data.termsOfServiceAgreed,
-      orders: new URL("orders", new URL(this.options.baseAddress)).toString(),
+      orders: `${this.options.baseAddress}/orders`,
     };
     if (data.externalAccountId) {
       const ext = await this.externalAccountRepository.findById(data.externalAccountId);

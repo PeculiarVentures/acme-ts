@@ -10,5 +10,5 @@ export interface IAuthorizationRepository extends IBaseRepository<IAuthorization
    * @param accountId Account ID
    * @param identifier Identifier
    */
-  findByIdentifier(accountId: Key, identifier: Identifier): Promise<IAuthorization>;
+  findByIdentifier(accountId: Key, identifier: Identifier): Promise<IAuthorization | null>;
 }

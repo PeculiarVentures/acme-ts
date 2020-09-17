@@ -33,20 +33,20 @@ routers.post('/new-order', (req: Request, res: Response) => {
   container.resolve<Controllers>(diControllers).createOrder(req, res);
 });
 routers.post('/order/:id', (req: Request, res: Response) => {
-  container.resolve<Controllers>(diControllers).postOrder(req, res, +req.params.id);
+  container.resolve<Controllers>(diControllers).postOrder(req, res, req.params.id);
 });
 routers.post('/orders', (req: Request, res: Response) => {
   container.resolve<Controllers>(diControllers).postOrders(req, res);
 });
 routers.post('/finalize/:id', (req: Request, res: Response) => {
-  container.resolve<Controllers>(diControllers).finalizeOrder(req, res, +req.params.id);
+  container.resolve<Controllers>(diControllers).finalizeOrder(req, res, req.params.id);
 });
 
 routers.post('/authz/:id', (req: Request, res: Response) => {
-  container.resolve<Controllers>(diControllers).postAuthorization(req, res, +req.params.id);
+  container.resolve<Controllers>(diControllers).postAuthorization(req, res, req.params.id);
 });
 routers.post('/challenge/:id', (req: Request, res: Response) => {
-  container.resolve<Controllers>(diControllers).postChallenge(req, res, +req.params.id);
+  container.resolve<Controllers>(diControllers).postChallenge(req, res, req.params.id);
 });
 
 // Certificate
