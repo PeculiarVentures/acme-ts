@@ -456,6 +456,9 @@ export class AcmeController extends BaseService {
         authz = await this.authorizationService.deactivate(authz.id);
       }
 
+      // add headers
+      response.headers.location = `${this.options.baseAddress}/authz/${authz.id}`;
+
       response.content = new core.Content(await this.convertService.toAuthorization(authz));
     }, request);
   }
