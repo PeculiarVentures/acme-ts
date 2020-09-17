@@ -1,5 +1,5 @@
 import * as core from "@peculiar/acme-core";
-import {JsonWebSignature, JwsProtectedSetter, JsonWebKey, } from "@peculiar/jose";
+import { JsonWebSignature, JwsProtectedSetter, JsonWebKey, } from "@peculiar/jose";
 import { Error } from "@peculiar/acme-protocol";
 
 export interface ClientOptions {
@@ -18,7 +18,7 @@ export interface GetParams<T> {
 }
 export interface PostParams<T> {
   method: "POST" | "POST-as-GET";
-  body?: object;
+  body?: any;
   kid: CryptoKey | string;
   nonce: string;
   key: CryptoKey;
@@ -48,7 +48,7 @@ export class BaseClient {
 
   public constructor(options: ClientOptions = {}) {
     this.options = {
-      crypto: core.cryptoProvider.get(),
+      crypto: options.crypto || core.cryptoProvider.get(),
       debug: options.debug,
       defaultHash: "SHA-256",
       fetch: typeof fetch !== "undefined" ? fetch : undefined,
@@ -64,7 +64,9 @@ export class BaseClient {
     //Log request
     if (this.options.debug) {
       console.log(`REQUEST ${params.method} ${url}`);
-      console.log((params as PostParams<T>).body)
+      if ("body" in params) {
+        console.log("REQUEST BODY", params.body);
+      }
     }
 
     const fetch = this.options.fetch;
@@ -104,12 +106,6 @@ export class BaseClient {
       };
 
       response = await fetch(url, request);
-
-      //Log response
-      if (this.options.debug) {
-        console.log("RESPONSE", response);
-      }
-
     }
 
     // Convert to ACME response
@@ -120,16 +116,32 @@ export class BaseClient {
     acmeResp.content = new core.Content(buf, acmeResp.headers.contentType?.mediaType || core.ContentType.json);
 
     // If Error response, throw AcmeError
+    if (this.options.debug) {
+      console.log(`RESPONSE ${params.method} ${url}`);
+    }
     if (acmeResp.content && (acmeResp.status < 200 || acmeResp.status > 299)) {
       if (acmeResp.headers.contentType?.mediaType === core.ContentType.problemJson) {
         const json = acmeResp.content.toJSON() as Error;
+        if (this.options.debug) {
+          console.log("RESPONSE", json);
+        }
         throw new core.AcmeError(json.type, json.detail, acmeResp.status);
       } else {
-        throw new core.AcmeError(core.ErrorType.serverInternal, "Wrong Content-Type of ACME response. Must be application/problem+json. See inner exception for more details.", acmeResp.status, new globalThis.Error(acmeResp.content.toString()));
+        const text = acmeResp.content.toString();
+        if (this.options.debug) {
+          console.log("RESPONSE", text);
+        }
+        throw new core.AcmeError(core.ErrorType.serverInternal, "Wrong Content-Type of ACME response. Must be application/problem+json. See inner exception for more details.", acmeResp.status, new globalThis.Error(text));
       }
     }
 
-    return BaseClient.createResponse(acmeResp, params.convert(acmeResp));
+    const res = BaseClient.createResponse(acmeResp, params.convert(acmeResp));
+
+    if (this.options.debug) {
+      console.log("RESPONSE", res);
+    }
+
+    return res;
   }
 
   protected getCrypto() {
