@@ -1,4 +1,4 @@
-import { IChallenge } from "@peculiar/acme-data";
+import { IChallenge, IError } from "@peculiar/acme-data";
 import { ChallengeStatus } from "@peculiar/acme-protocol";
 import { BaseObject, IBaseDynamoObject } from "./base";
 
@@ -6,7 +6,7 @@ export interface IChallengeDynamo extends IBaseDynamoObject {
   type: string;
   status: ChallengeStatus;
   validated?: string;
-  errorId: string;
+  error?: IError;
   token: string;
 }
 
@@ -14,7 +14,7 @@ export class Challenge extends BaseObject implements IChallenge {
   public type: string;
   public status: ChallengeStatus;
   public validated?: Date;
-  public errorId: string;
+  public error?: IError;
   public token: string;
   public authorizationId: string;
 
@@ -23,7 +23,7 @@ export class Challenge extends BaseObject implements IChallenge {
 
     this.type ??= "http-01";
     this.status ??= "pending";
-    this.errorId ??= "";
+    this.error;
     this.token ??= "";
     this.authorizationId ??= "";
   }
@@ -35,9 +35,12 @@ export class Challenge extends BaseObject implements IChallenge {
       parentId: this.authorizationId,
       type: this.type,
       status: this.status,
-      errorId: this.errorId,
+      error: this.error,
       token: this.token,
     };
+    if (this.error) {
+      dynamo.error = this.error;
+    }
     if (this.validated) {
       dynamo.validated = this.fromDate(this.validated);
     }
@@ -50,7 +53,9 @@ export class Challenge extends BaseObject implements IChallenge {
     if (data.validated) {
       this.validated = this.toDate(data.validated);
     }
-    this.errorId = data.errorId;
+    if (data.error) {
+      this.error = data.error;
+    }
     this.token = data.token;
     this.authorizationId = data.parentId;
   }
