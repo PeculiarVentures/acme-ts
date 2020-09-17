@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Test all files",
+      "name": "Tests",
       "type": "node",
       "request": "launch",
       "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
@@ -18,7 +18,7 @@
       "internalConsoleOptions": "openOnSessionStart"
     },
     {
-      "name": "Run test server",
+      "name": "Server",
       "skipFiles": [
         "<node_internals>/**"
       ],
@@ -37,6 +37,27 @@
       "cwd": "${workspaceRoot}",
       "protocol": "inspector",
       "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "name": "Client",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "type": "node",
+      "request": "launch",
+      "args": [
+        "${workspaceFolder}/examples/enrollment.ts"
+      ],
+      "runtimeArgs": [
+        "--require",
+        "tsconfig-paths/register",
+        "--require",
+        "ts-node/register"
+      ],
+      "outputCapture": "std",
+      "cwd": "${workspaceRoot}",
+      "protocol": "inspector",
+      "internalConsoleOptions": "openOnSessionStart",
     }
   ]
 }
