@@ -1,13 +1,27 @@
 import { Convert } from "pvtsutils";
-import { JsonWebSignature, PemConverter, Response, Content, ContentType } from "@peculiar/acme-core";
+import { PemConverter, Response, Content, ContentType } from "@peculiar/acme-core";
+import { JsonWebSignature, JsonWebKey } from "@peculiar/jose";
 import { CRLReasons } from "@peculiar/asn1-x509";
 import * as protocol from "@peculiar/acme-protocol";
 import { BaseClient, ClientOptions, ApiResponse, RequestParams, AcmeMethod } from "./base";
+
+export interface RetryOptions {
+  /**
+   * Amount of retries. Default is 10
+   */
+  retries?: number;
+  /**
+   * Interval duration in ms. Default is 1000
+   */
+  interval?: number;
+}
 
 /**
  * Class of work with ACME servers
  */
 export class ApiClient extends BaseClient {
+  public static RETRIES = 10;
+  public static INTERVAL = 1000;
 
   private _nonce = "";
   private _accountId = "";
@@ -29,7 +43,11 @@ export class ApiClient extends BaseClient {
       this._nonce = "";
     }
 
-    return await super.fetch(url, params);
+    const resp = await super.fetch(url, params);
+
+    this.getNonce(resp);
+
+    return resp;
   }
 
   /**
@@ -56,13 +74,15 @@ export class ApiClient extends BaseClient {
     return this.getNonce(response);
   }
 
+  //#region Account
+
   /**
    * Create account.
    * To create a new account, you must specify the termsOfServiceAgreed: true parameter.
    * To search for an account, you must specify the parameter onlyReturnExisting: true.
    * @param params Request parameters
    */
-  public async createAccount(params: protocol.AccountCreateParams) {
+  public async newAccount(params: protocol.AccountCreateParams) {
     const newParam: protocol.CreateAccountProtocol = {
       contact: params.contact,
       onlyReturnExisting: params.onlyReturnExisting,
@@ -103,21 +123,40 @@ export class ApiClient extends BaseClient {
   }
 
   /**
+   * Getting an account id.
+   */
+  protected getAccountId() {
+    if (!this._accountId) {
+      throw new Error("Create or Find account first");
+    }
+    return this._accountId;
+  }
+
+  /**
+   * Account deactivation.
+   * changes account status to deactivated
+   */
+  public async deactivateAccount() {
+    return this.deactivate<protocol.Account>(this.getAccountId(), (resp) => resp.json());
+  }
+
+  /**
    * Account key change
    * @param key New key
    */
   public async changeKey(key: CryptoKeyPair) {
     const kid = this.getAccountId();
+    const cryptoProvider = this.getCrypto();
     const innerToken = new JsonWebSignature({
       protected: {
         url: this.getDirectory().keyChange,
-        jwk: await this.getCrypto().subtle.exportKey("jwk", key.publicKey),
+        jwk: new JsonWebKey(cryptoProvider, await cryptoProvider.subtle.exportKey("jwk", key.publicKey)),
       },
       payload: {
         account: kid,
-        oldKey: await this.getCrypto().subtle.exportKey("jwk", this.accountKey.publicKey),
+        oldKey: new JsonWebKey(cryptoProvider, await cryptoProvider.subtle.exportKey("jwk", this.accountKey.publicKey)),
       }
-    });
+    }, this.getCrypto());
     await innerToken.sign({ hash: this.options.defaultHash, ...key.privateKey.algorithm }, key.privateKey);
 
     const response = await this.fetch<null>(this.getDirectory().keyChange, {
@@ -133,6 +172,58 @@ export class ApiClient extends BaseClient {
 
     return response;
   }
+  //#endregion
+
+  //#region Order
+
+  /**
+     * Create a new order.
+     * Returns an existing order if the identifiers parameter matches
+     * @param params
+     */
+  public async newOrder(params: protocol.OrderCreateParams) {
+    return this.fetch<protocol.Order>(this.getDirectory().newOrder, {
+      method: "POST",
+      kid: this.getAccountId(),
+      nonce: this._nonce,
+      key: this.accountKey.privateKey,
+      body: params,
+      convert: (resp) => resp.json(),
+    });
+  }
+
+  public async getOrder(orderUrl: string) {
+    return this.fetch<protocol.Order>(orderUrl, {
+      method: "POST",
+      kid: this.getAccountId(),
+      nonce: this._nonce,
+      key: this.accountKey.privateKey,
+      convert: (resp) => resp.json(),
+    });
+  }
+
+  public async retryOrder(order: ApiResponse<protocol.Order>, options?: RetryOptions): Promise<ApiResponse<protocol.Order>>;
+  public async retryOrder(url: string, options?: RetryOptions): Promise<ApiResponse<protocol.Order>>;
+  public async retryOrder(param: string | ApiResponse<protocol.Order>, options: RetryOptions = {}) {
+    let order = typeof param === "string"
+      ? await this.getOrder(param)
+      : param;
+    let retries = options.retries || ApiClient.RETRIES;
+    while (retries--) {
+      if (!order.headers.location) {
+        throw new Error("Cannot get location header from Order response");
+      }
+      order = await this.getOrder(order.headers.location);
+      if (order.content.status !== "processing") {
+        break;
+      }
+      await this.pause(options.interval || ApiClient.INTERVAL);
+    }
+
+    return order;
+  }
+
+  //#endregion
 
   /**
    * Certificate revocation.
@@ -169,35 +260,11 @@ export class ApiClient extends BaseClient {
   }
 
   /**
-   * Account deactivation.
-   * changes account status to deactivated
-   */
-  public async deactivateAccount() {
-    return this.deactivate<protocol.Account>(this.getAccountId(), (resp) => resp.json());
-  }
-
-  /**
    * Authorization deactivation.
    * changes authorization status to deactivated
    */
   public async deactivateAuthorization() {
     return this.deactivate<protocol.Authorization>(this.getAccountId(), (resp) => resp.json());
-  }
-
-  /**
-   * Create a new order.
-   * Returns an existing order if the identifiers parameter matches
-   * @param params
-   */
-  public async newOrder(params: protocol.OrderCreateParams) {
-    return this.fetch<protocol.Order>(this.getDirectory().newOrder, {
-      method: "POST",
-      kid: this.getAccountId(),
-      nonce: this._nonce,
-      key: this.accountKey.privateKey,
-      body: params,
-      convert: (resp) => resp.json(),
-    });
   }
 
   /**
@@ -252,6 +319,27 @@ export class ApiClient extends BaseClient {
     });
   }
 
+  public async retryAuthorization(order: ApiResponse<protocol.Authorization>, options?: RetryOptions): Promise<ApiResponse<protocol.Authorization>>;
+  public async retryAuthorization(url: string, options?: RetryOptions): Promise<ApiResponse<protocol.Authorization>>;
+  public async retryAuthorization(param: string | ApiResponse<protocol.Authorization>, options: RetryOptions = {}) {
+    let authz = typeof param === "string"
+      ? await this.getOrder(param)
+      : param
+    let retries = options.retries || ApiClient.RETRIES;
+    while (retries--) {
+      if (!authz.headers.location) {
+        throw new Error("Cannot get location header from Authorization response");
+      }
+      authz = await this.getAuthorization(authz.headers.location);
+      if (authz.content.status !== "pending") {
+        break;
+      }
+      await this.pause(options.interval || ApiClient.INTERVAL);
+    }
+
+    return authz;
+  }
+
   /**
    * Obtaining a certificate of a complete order
    * @param url
@@ -282,21 +370,11 @@ export class ApiClient extends BaseClient {
   }
 
   /**
-   * Getting an account id.
-   */
-  protected getAccountId() {
-    if (!this._accountId) {
-      throw new Error("Create or Find account first");
-    }
-    return this._accountId;
-  }
-
-  /**
    * Returns a list of ACME server controllers.
    */
   protected getDirectory() {
     if (!this._directory) {
-      throw new Error("Call 'getDirectory' method fist");
+      throw new Error("Call 'initialize' method fist");
     }
     return this._directory;
   }
@@ -336,7 +414,7 @@ export class ApiClient extends BaseClient {
         kid,
       },
       payload: jwk,
-    });
+    }, this.getCrypto());
     await externalAccountBinding.sign(hmac.algorithm, hmac, this.getCrypto());
     return externalAccountBinding;
   }

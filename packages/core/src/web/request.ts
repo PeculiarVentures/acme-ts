@@ -1,5 +1,3 @@
-import { JsonWebSignature } from "../jose";
-
 export type RequestMethod = "GET" | "POST" | "HEAD";
 
 export interface QueryParams {
@@ -8,8 +6,13 @@ export interface QueryParams {
 }
 
 export class Request {
+  public header: {[name: string]: string | undefined} = {};
   public method: RequestMethod = "GET";
   public path = "";
   public queryParams: QueryParams = {};
-  public body?: JsonWebSignature;
+  public body?: object;
+
+  public constructor(params: Partial<Request> = {}) {
+    Object.assign(this, params);
+  }
 }

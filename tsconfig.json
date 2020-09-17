@@ -1,14 +1,21 @@
 {
   "extends": "./tsconfig.compile.json",
   "compilerOptions": {
+    "incremental": true,
+    "importHelpers": false,
+    "target": "ES2018",
     "baseUrl": ".",
     "paths": {
       "@peculiar/acme-client": ["./packages/client/src"],
       "@peculiar/acme-core": ["./packages/core/src"],
       "@peculiar/acme-data": ["./packages/data/src"],
+      "@peculiar/acme-data-dynamodb": ["./packages/data-dynamodb/src"],
       "@peculiar/acme-data-memory": ["./packages/data-memory/src"],
       "@peculiar/acme-protocol": ["./packages/protocol/src"],
-      "@peculiar/acme-server": ["./packages/server/src"]
+      "@peculiar/acme-server": ["./packages/server/src"],
+      "@peculiar/acme-express": ["./packages/server-express/src"],
+      "@peculiar/acme-test-server": ["./packages/test-server/src"],
+      "@peculiar/jose": ["./packages/jose/src"]
     }
   },
   "exclude": [

@@ -24,3 +24,4 @@ export * from "./unauthorized";
 export * from "./unsupported_contact";
 export * from "./unsupported_identifier";
 export * from "./user_action_required";
+export * from "./argument_null";

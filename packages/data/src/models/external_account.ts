@@ -1,6 +1,6 @@
 import { IBaseObject } from "./base";
 
-export const diExternalAccount = "ACME.ExternalAccount";
+export const diExternalAccount = "ACME.Models.ExternalAccount";
 
 export type ExternalAccountStatus =
   /**

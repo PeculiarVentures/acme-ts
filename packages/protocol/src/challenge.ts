@@ -1,3 +1,5 @@
+import { Error } from "./error";
+
 export type ChallengeStatus = "pending" | "processing" | "valid" | "invalid";
 
 export interface Challenge {

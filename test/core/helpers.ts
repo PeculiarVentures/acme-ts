@@ -39,7 +39,7 @@ context("helpers", () => {
         const rawData = Convert.FromBase64(DATA);
         const rawDataArray: Array<BufferSource> = [rawData, rawData, rawData];
         const res = PemConverter.encode(rawDataArray, "certificate");
-        assert.equal(PEM, res);
+        assert.strictEqual(PEM, res);
       });
 
       it("encode", () => {
@@ -48,12 +48,12 @@ context("helpers", () => {
           "TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1\n" +
           "-----END CERTIFICATE-----";
         const res = PemConverter.encode(rawData, "certificate");
-        assert.equal(expected, res);
+        assert.strictEqual(expected, res);
       });
 
       it("decode", () => {
         const res = PemConverter.decode(PEM);
-        assert.equal(Convert.ToBase64(res[0]), DATA);
+        assert.strictEqual(Convert.ToBase64(res[0]), DATA);
       });
 
 

@@ -15,5 +15,14 @@
     "**/.DS_Store": true,
     "**/node_modules": true,
     "**/build": true
-  }
+  },
+  "npm.packageManager": "yarn",
+  "eslint.packageManager": "yarn",
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "cSpell.words": [
+    "Authz",
+    "Stepan",
+    "dynamoose",
+    "subproblems"
+  ]
 }

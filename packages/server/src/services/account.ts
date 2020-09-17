@@ -1,9 +1,10 @@
+import * as core from "@peculiar/acme-core";
+import { IAccountRepository, diAccountRepository, IAccount, Key, diAccount } from "@peculiar/acme-data";
+import { AccountCreateParams, AccountUpdateParams } from "@peculiar/acme-protocol";
+import { JsonWebKey } from "@peculiar/jose";
 import { inject, container, injectable } from "tsyringe";
 import { BaseService, diServerOptions, IServerOptions } from "./base";
-import { IAccountRepository, diAccountRepository, IAccount, Key, diAccount } from "@peculiar/acme-data";
 import { IExternalAccountService, diExternalAccountService, IAccountService } from "./types";
-import { AccountCreateParams } from "@peculiar/acme-protocol";
-import { AccountDoesNotExistError, MalformedError } from "@peculiar/acme-core";
 
 @injectable()
 export class AccountService extends BaseService implements IAccountService {
@@ -11,14 +12,19 @@ export class AccountService extends BaseService implements IAccountService {
   public constructor(
     @inject(diAccountRepository) protected accountRepository: IAccountRepository,
     @inject(diExternalAccountService) protected externalAccountService: IExternalAccountService,
+    @inject(core.diLogger) logger: core.ILogger,
     @inject(diServerOptions) options: IServerOptions) {
-    super(options);
+    super(options, logger);
   }
 
   public async create(key: JsonWebKey, params: AccountCreateParams) {
+    if (params.contact) {
+      this.validateContacts(params.contact);
+    }
+
     // Creates account
     let account = container.resolve<IAccount>(diAccount);
-    this.onCreate(account, key, params);
+    await this.onCreate(account, key, params);
 
     // TODO
     // if (Options.ExternalAccountOptions.Type != ExternalAccountType.None) {
@@ -42,15 +48,17 @@ export class AccountService extends BaseService implements IAccountService {
     // Adds account
     account = await this.accountRepository.add(account);
 
-    // TODO Logger.Info("Account {id} created", account.Id);
+    this.logger.info(`Account ${account.id} created`);
 
     return account;
   }
 
-  protected onCreate(account: IAccount, key: JsonWebKey, params: AccountCreateParams) {
+  protected async onCreate(account: IAccount, key: JsonWebKey, params: AccountCreateParams) {
+    account.status = "valid";
     account.key = key;
-    account.contacts = params.contact || [];
-    account.termsOfServiceAgreed = params.termsOfServiceAgreed || false;
+    account.thumbprint = await key.getThumbprint();
+    account.contacts = params.contact;
+    account.termsOfServiceAgreed = params.termsOfServiceAgreed;
   }
 
   public async deactivate(accountId: Key) {
@@ -63,7 +71,7 @@ export class AccountService extends BaseService implements IAccountService {
     // Save changes
     account = await this.accountRepository.update(account);
 
-    // TODO Logger.Info("Account {id} deactivated", account.Id);
+    this.logger.info(`Account ${account.id} deactivated`);
 
     // Return JSON
     return account;
@@ -72,7 +80,7 @@ export class AccountService extends BaseService implements IAccountService {
   public async getById(accountId: Key) {
     const account = await this.accountRepository.findById(accountId);
     if (!account) {
-      throw new AccountDoesNotExistError();
+      throw new core.AccountDoesNotExistError();
     }
     return account;
   }
@@ -81,7 +89,7 @@ export class AccountService extends BaseService implements IAccountService {
     const account = await this.findByPublicKey(key);
 
     if (!account) {
-      throw new AccountDoesNotExistError();
+      throw new core.AccountDoesNotExistError();
     }
 
     return account;
@@ -98,29 +106,64 @@ export class AccountService extends BaseService implements IAccountService {
     // Assign values
     account.status = "revoked";
 
-
     // Save changes
     account = await this.accountRepository.update(account);
 
-    // TODO Logger.Info("Account {id} revoked", account.Id);
+    this.logger.info(`Account ${account.id} revoked`);
 
     // Return JSON
     return account;
   }
-  public async update(accountId: Key, contacts: string[]) {
+
+  public async update(accountId: Key, params: AccountUpdateParams) {
+    if (params.contact) {
+      this.validateContacts(params.contact);
+    }
+
     // Get account
     let account = await this.getById(accountId);
 
     // Assign values
-    account.contacts = contacts;
+    this.onUpdateParams(account, params);
 
     // Save changes
     account = await this.accountRepository.update(account);
 
-    // TODO Logger.Info("Account {id} updated", account.Id);
-
     // Return JSON
     return account;
+  }
+
+  protected onUpdateParams(account: IAccount, params: AccountUpdateParams) {
+    if (params.contact) {
+      account.contacts = params.contact;
+    }
+  }
+
+  protected validateContacts(contacts: string[]) {
+    if (!contacts) {
+      throw new core.ArgumentNullError("contacts");
+    }
+
+    contacts.forEach(contact => {
+      this.onValidateContact(contact);
+    });
+  }
+
+  protected onValidateContact(contact: string) {
+    this.isMailto(contact);
+  }
+
+  protected isMailto(contact: string) {
+    const patternType = /^mailto:/g;
+    if (!patternType.test(contact)) {
+      throw new core.UnsupportedContactError();
+    }
+
+    // eslint-disable-next-line no-control-regex
+    const pattern = /^mailto:(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$/g;
+    if (!pattern.test(contact)) {
+      throw new core.InvalidContactError;
+    }
   }
 
   public async changeKey(accountId: Key, key: JsonWebKey) {
@@ -135,16 +178,17 @@ export class AccountService extends BaseService implements IAccountService {
       // If there is an existing account with the new key
       // provided, then the server SHOULD use status code 409 (Conflict) and
       // provide the URL of that account in the Location header field.
-      throw new MalformedError("Account with the same key already exists", 409);
+      throw new core.MalformedError("Account with the same key already exists", 409);
     }
 
     // Change key
     account.key = key;
+    account.thumbprint = await key.getThumbprint();
 
     // Save changes
     account = await this.accountRepository.update(account);
 
-    // TODO Logger.Info("Account {id} key changed", account.Id);
+    this.logger.info(`Account ${account.id} key changed`);
 
     // Return JSON
     return account;

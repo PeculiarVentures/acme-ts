@@ -2,6 +2,7 @@ import { ErrorType } from "./error_type";
 import { HttpStatusCode } from "../web/http_status_code";
 
 export class AcmeError extends Error {
+  public subproblems?: AcmeError[];
 
   public constructor(
     public type: string | ErrorType,

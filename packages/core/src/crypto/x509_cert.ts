@@ -1,31 +1,112 @@
 import { AsnConvert } from "@peculiar/asn1-schema";
-import { Certificate, AlgorithmIdentifier } from "@peculiar/asn1-x509";
-import { id_sha1WithRSAEncryption, id_sha256WithRSAEncryption, id_sha384WithRSAEncryption, id_sha512WithRSAEncryption } from "@peculiar/asn1-rsa";
-import { id_ecdsaWithSHA1, id_ecdsaWithSHA256, id_ecdsaWithSHA384, id_ecdsaWithSHA512 } from "@peculiar/asn1-ecc";
-import { Convert } from "pvtsutils";
+import { Certificate } from "@peculiar/asn1-x509";
+import { BufferSourceConverter, Convert } from "pvtsutils";
 import { HashedAlgorithm } from "./types";
 import { cryptoProvider } from "./provider";
 import { Name } from "./name";
 import { Extension } from "./extension";
 import { AsnData } from "./asn_data";
+import { ExtensionFactory } from "./extensions";
+import { PublicKey } from "./public_key";
+import { container } from "tsyringe";
+import { AlgorithmProvider, diAlgorithmProvider } from "./algorithm";
 
+/**
+ * Verification params of X509 certificate
+ */
+export interface X509CertificateVerifyParams {
+  date?: Date;
+  publicKey?: CryptoKey;
+  signatureOnly?: boolean;
+}
+
+/**
+ * Representation of X509 certificate
+ */
 export class X509Certificate extends AsnData<Certificate> {
-  public readonly serialNumber: string;
-  public readonly subject: string;
-  public readonly issuer: string;
-  public readonly notBefore: Date;
-  public readonly notAfter: Date;
-  public readonly signatureAlgorithm: HashedAlgorithm;
-  public readonly extensions: Extension[] = [];
 
-  public constructor(raw: BufferSource) {
-    super(raw, Certificate);
+  /**
+   * ToBeSigned block of certificate
+   */
+  private tbs!: ArrayBuffer;
 
-    const tbs = this.asn.tbsCertificate;
+  /**
+   * Gets a hexadecimal string of the serial number
+   */
+  public serialNumber!: string;
+
+  /**
+   * Gets a string subject name
+   */
+  public subject!: string;
+
+  /**
+   * Gets a string issuer name
+   */
+  public issuer!: string;
+
+  /**
+   * Gets a date before which certificate can't be used
+   */
+  public notBefore!: Date;
+
+  /**
+   * Gets a date after which certificate can't be used
+   */
+  public notAfter!: Date;
+
+  /**
+   * Gets a signature algorithm
+   */
+  public signatureAlgorithm!: HashedAlgorithm;
+
+  /**
+   * Gets a signature
+   */
+  public signature!: ArrayBuffer;
+
+  /**
+   * Gts a list of certificate extensions
+   */
+  public extensions!: Extension[];
+
+  /**
+   * Gets a private key of the certificate
+   */
+  public privateKey?: CryptoKey;
+
+  /**
+   * Gets a public key of the certificate
+   */
+  public publicKey!: PublicKey;
+
+  /**
+   * Creates a new instance from ASN.1 Certificate object
+   * @param asn ASN.1 Certificate object
+   */
+  public constructor(asn: Certificate);
+  /**
+   * Creates a new instance from DER encoded buffer
+   * @param raw DER encoded buffer
+   */
+  public constructor(raw: BufferSource);
+  public constructor(param: BufferSource | Certificate) {
+    if (BufferSourceConverter.isBufferSource(param)) {
+      super(param, Certificate);
+    } else {
+      super(param);
+    }
+  }
+
+  protected onInit(asn: Certificate) {
+    const tbs = asn.tbsCertificate;
+    this.tbs = AsnConvert.serialize(tbs);
     this.serialNumber = Convert.ToHex(tbs.serialNumber);
     this.subject = new Name(tbs.subject).toString();
     this.issuer = new Name(tbs.issuer).toString();
-    this.signatureAlgorithm = this.getSignatureAlgorithm();
+    const algProv = container.resolve<AlgorithmProvider>(diAlgorithmProvider);
+    this.signatureAlgorithm = algProv.toWebAlgorithm(asn.signatureAlgorithm) as HashedAlgorithm;
+    this.signature = asn.signatureValue;
     const notBefore = tbs.validity.notBefore.utcTime || tbs.validity.notBefore.generalTime;
     if (!notBefore) {
       throw new Error("Cannot get 'notBefore' value");
@@ -36,142 +117,64 @@ export class X509Certificate extends AsnData<Certificate> {
       throw new Error("Cannot get 'notAfter' value");
     }
     this.notAfter = notAfter;
+    this.extensions = [];
     if (tbs.extensions) {
-      this.extensions = tbs.extensions.map(o => new Extension(AsnConvert.serialize(o)));
+      this.extensions = tbs.extensions.map(o => ExtensionFactory.create(AsnConvert.serialize(o)));
     }
+    this.publicKey = new PublicKey(tbs.subjectPublicKeyInfo);
   }
 
-  public getExtension(type: string) {
+  /**
+   * Returns an extension of specified type
+   * @param type Extension identifier
+   * @returns Extension or null
+   */
+  public getExtension<T extends Extension>(type: string): T | null {
     for (const ext of this.extensions) {
       if (ext.type === type) {
-        return ext;
+        return ext as T;
       }
     }
     return null;
   }
 
-  public getExtensions(type: string) {
-    return this.extensions.filter(o => o.type === type);
+  /**
+   * Returns a list of extensions of specified type
+   * @param type Extension identifier
+   */
+  public getExtensions<T extends Extension>(type: string): T[] {
+    return this.extensions.filter(o => o.type === type) as T[];
   }
 
-  public async getPublicKey(crypto?: Crypto): Promise<CryptoKey>;
-  public async getPublicKey(algorithm: Algorithm, keyUsages: KeyUsage[], crypto?: Crypto): Promise<CryptoKey>;
-  public async getPublicKey(...args: any[]) {
-    let algorithm: Algorithm = this.getSignatureAlgorithm();
-    let keyUsages: KeyUsage[] = ["verify"];
-    let crypto = cryptoProvider.get();
-    if (args.length > 1) {
-      // alg, usages, crypto?
-      algorithm = args[0] || algorithm;
-      keyUsages = args[1] || keyUsages;
-      crypto = args[2] || crypto;
+  /**
+   * Validates a certificate signature
+   * @param params Verification parameters
+   * @param crypto Crypto provider. Default is from CryptoProvider
+   */
+  public async verify(params: X509CertificateVerifyParams, crypto = cryptoProvider.get()) {
+    const date = params.date || new Date();
+    const keyAlgorithm = { ...this.publicKey.algorithm, ...this.signatureAlgorithm };
+    const publicKey = params.publicKey || await this.publicKey.export(keyAlgorithm, ["verify"], crypto);
+
+    const ok = await crypto.subtle.verify(this.signatureAlgorithm, publicKey, this.signature, this.tbs);
+    if (params.signatureOnly) {
+      return ok;
     } else {
-      // crypto?
-      crypto = args[0] || crypto;
-    }
-
-    const spki = AsnConvert.serialize(this.asn.tbsCertificate.subjectPublicKeyInfo);
-    return crypto.subtle.importKey("spki", spki, algorithm as any, true, keyUsages);
-  }
-
-  public getSignatureAlgorithm(): HashedAlgorithm {
-    const signatureAlgorithm = this.asn.signatureAlgorithm;
-    switch (signatureAlgorithm.algorithm) {
-      case id_sha1WithRSAEncryption:
-        return { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-1" } };
-      case id_sha256WithRSAEncryption:
-        return { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-256" } };
-      case id_sha384WithRSAEncryption:
-        return { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-384" } };
-      case id_sha512WithRSAEncryption:
-        return { name: "RSASSA-PKCS1-v1_5", hash: { name: "SHA-512" } };
-      case id_ecdsaWithSHA1:
-        return { name: "ECDSA", hash: { name: "SHA-1" } };
-      case id_ecdsaWithSHA256:
-        return { name: "ECDSA", hash: { name: "SHA-256" } };
-      case id_ecdsaWithSHA384:
-        return { name: "ECDSA", hash: { name: "SHA-384" } };
-      case id_ecdsaWithSHA512:
-        return { name: "ECDSA", hash: { name: "SHA-512" } };
-      default:
-        throw new Error(`Unsupported algorithm identifier '${signatureAlgorithm}'`);
+      const time = date.getTime();
+      return ok && this.notBefore.getTime() < time && time < this.notAfter.getTime();
     }
   }
 
-  public setSignatureAlgorithm(algorithm: HashedAlgorithm) {
-    const algName = algorithm.name.toLowerCase();
-    const hashName = algorithm.hash.name.toLowerCase();
-    switch (algName) {
-      case "rsassa-pkcs1-v1_5":
-        switch (hashName) {
-          case "sha-1":
-            this.asn.signatureAlgorithm = new AlgorithmIdentifier({
-              algorithm: id_sha1WithRSAEncryption,
-              parameters: null,
-            });
-            break;
-          case "sha-256":
-            this.asn.signatureAlgorithm = new AlgorithmIdentifier({
-              algorithm: id_sha256WithRSAEncryption,
-              parameters: null,
-            });
-            break;
-          case "sha-384":
-            this.asn.signatureAlgorithm = new AlgorithmIdentifier({
-              algorithm: id_sha384WithRSAEncryption,
-              parameters: null,
-            });
-            break;
-          case "sha-512":
-            this.asn.signatureAlgorithm = new AlgorithmIdentifier({
-              algorithm: id_sha512WithRSAEncryption,
-              parameters: null,
-            });
-            break;
-        }
-        break;
-      case "ecdsa":
-        switch (hashName) {
-          case "sha-1":
-            this.asn.signatureAlgorithm = new AlgorithmIdentifier({
-              algorithm: id_ecdsaWithSHA1,
-              parameters: null,
-            });
-            break;
-          case "sha-256":
-            this.asn.signatureAlgorithm = new AlgorithmIdentifier({
-              algorithm: id_ecdsaWithSHA256,
-              parameters: null,
-            });
-            break;
-          case "sha-384":
-            this.asn.signatureAlgorithm = new AlgorithmIdentifier({
-              algorithm: id_ecdsaWithSHA384,
-              parameters: null,
-            });
-            break;
-          case "sha-512":
-            this.asn.signatureAlgorithm = new AlgorithmIdentifier({
-              algorithm: id_ecdsaWithSHA512,
-              parameters: null,
-            });
-            break;
-        }
-        break;
-      default:
-        throw new Error(`Unsupported algorithm`);
-    }
-  }
-
-  public async verify(date = new Date(), crypto = cryptoProvider.get()) {
-    const tbs = AsnConvert.serialize(this.asn.tbsCertificate);
-    const publicKey = await this.getPublicKey();
-    const ok = await crypto.subtle.verify(this.signatureAlgorithm as any, publicKey, this.asn.signatureValue, tbs);
-    const time = date.getTime();
-    return ok && this.notBefore.getTime() < time && time < this.notAfter.getTime();
-  }
-
+  /**
+   * Returns a SHA-1 certificate thumbprint
+   * @param crypto Crypto provider. Default is from CryptoProvider
+   */
   public async getThumbprint(crypto?: Crypto): Promise<ArrayBuffer>;
+  /**
+   * Returns a certificate thumbprint for specified mechanism
+   * @param algorithm Hash algorithm
+   * @param crypto Crypto provider. Default is from CryptoProvider
+   */
   public async getThumbprint(algorithm: globalThis.AlgorithmIdentifier, crypto?: Crypto): Promise<ArrayBuffer>;
   public async getThumbprint(...args: any[]) {
     let crypto = cryptoProvider.get();
@@ -184,5 +187,9 @@ export class X509Certificate extends AsnData<Certificate> {
       crypto = args[0] || crypto;
     }
     return await crypto.subtle.digest(algorithm, this.rawData);
+  }
+
+  public async isSelfSigned() {
+    return this.subject === this.issuer && await this.verify({ signatureOnly: true });
   }
 }

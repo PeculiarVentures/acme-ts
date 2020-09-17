@@ -1,6 +1,8 @@
 ﻿import { ChallengeStatus } from "@peculiar/acme-protocol";
 import { IBaseObject, Key } from "./base";
+import { IError } from "./error";
 
+export const diChallenge = "ACME.Models.Challenge";
 
 export interface IChallenge extends IBaseObject {
     /**
@@ -21,7 +23,7 @@ export interface IChallenge extends IBaseObject {
     /**
      * Error that occurred while the server was validating the challenge.
      */
-    errorId: Key;
+    error?: IError;
     token: string;
     authorizationId: Key;
 }

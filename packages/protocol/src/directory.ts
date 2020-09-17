@@ -43,14 +43,14 @@ export interface Directory {
   newAccount: string;
 
   /**
+   * New authorization
+   */
+  newAuthz?: string;
+
+  /**
    * New order.
    */
   newOrder: string;
-
-  /**
-   * New authorization
-   */
-  newAuthz: string;
 
   /**
    * Revoke certificate

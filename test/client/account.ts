@@ -15,8 +15,8 @@ context("Account Management", () => {
     ];
 
     function assertUnsupportedContact(error: AcmeError) {
-      assert.equal(contactErrors.includes(error.type), true, `ACME error has got wrong type '${error.type}. Must be one of [${contactErrors.join(", ")}]`);
-      assert.equal(error.status, 400);
+      assert.strictEqual(contactErrors.includes(error.type), true, `ACME error has got wrong type '${error.type}. Must be one of [${contactErrors.join(", ")}]`);
+      assert.strictEqual(error.status, 400);
       return true;
     }
 
@@ -31,43 +31,43 @@ context("Account Management", () => {
         // `termsOfServiceAgreed` in create account request
         return this.skip();
       }
-      await assert.rejects(client.api.createAccount({
+      await assert.rejects(client.api.newAccount({
         contact: ["mailto:microshine@mail.ru"],
         termsOfServiceAgreed: false,
       }), (err: AcmeError) => {
-        assert.equal(err.status, 400);
-        assert.equal(err.type, ErrorType.malformed);
+        assert.strictEqual(err.status, 400);
+        assert.strictEqual(err.type, ErrorType.malformed);
         return true;
       });
     });
 
     it("Error: find not exist account", async () => {
-      await assert.rejects(client.api.createAccount({
+      await assert.rejects(client.api.newAccount({
         contact: ["mailto:microshine@mail.ru"],
         onlyReturnExisting: true,
       }), (err: AcmeError) => {
-        assert.equal(err.status, 400);
-        assert.equal(err.type, ErrorType.accountDoesNotExist);
+        assert.strictEqual(err.status, 400);
+        assert.strictEqual(err.type, ErrorType.accountDoesNotExist);
         return true;
       });
     });
 
     it("Error: create account with unsupported contact", async () => {
-      await assert.rejects(client.api.createAccount({
+      await assert.rejects(client.api.newAccount({
         contact: ["mailt:microshine@mail.ru"],
         termsOfServiceAgreed: true,
       }), assertUnsupportedContact);
     });
 
     it("Error: create account with invalid contact", async () => {
-      await assert.rejects(client.api.createAccount({
+      await assert.rejects(client.api.newAccount({
         contact: ["mailto:micro shine"],
         termsOfServiceAgreed: true,
       }), assertUnsupportedContact);
     });
 
     it("create account without email", async () => {
-      const res = await client.api.createAccount({
+      const res = await client.api.newAccount({
         termsOfServiceAgreed: true,
       });
       checkHeaders(res);
@@ -75,7 +75,7 @@ context("Account Management", () => {
     });
 
     it("create account with email", async () => {
-      const res = await client.api.createAccount({
+      const res = await client.api.newAccount({
         contact: ["mailto:microshine@mail.ru"],
         termsOfServiceAgreed: true,
       });
@@ -93,7 +93,7 @@ context("Account Management", () => {
     });
 
     it("create account with the same key", async () => {
-      const res = await client.api.createAccount({
+      const res = await client.api.newAccount({
         contact: ["mailto:microshine2@mail.ru"],
         termsOfServiceAgreed: true,
       });
@@ -102,14 +102,14 @@ context("Account Management", () => {
     });
 
     it("finding an account", async () => {
-      const res = await client.api.createAccount({ onlyReturnExisting: true });
+      const res = await client.api.newAccount({ onlyReturnExisting: true });
       checkHeaders(res);
       checkResAccount(res, 200);
     });
 
     it("update account", async () => {
       const res = await client.api.updateAccount({ contact: ["mailto:testmail@mail.ru"] });
-      assert.equal(!!res.headers.link, true);
+      assert.strictEqual(!!res.headers.link, true);
       checkResAccount(res, 200);
     });
 
@@ -124,25 +124,25 @@ context("Account Management", () => {
       const crypto = new Crypto();
       cryptoProvider.set(crypto);
 
-      const newKey = await crypto.subtle.generateKey(alg, true, ["sign", "verify"]);
+      const newKey = (await crypto.subtle.generateKey(alg, true, ["sign", "verify"])) as CryptoKeyPair;
       const res = await client.api.changeKey(newKey);
-      assert.equal(!!res.headers.link, true);
+      assert.strictEqual(!!res.headers.link, true);
       checkResAccount(res, 200);
     });
 
     it("deactivate account", async () => {
       const res = await client.api.deactivateAccount();
-      assert.equal(!!res.headers.link, true);
-      assert.equal(res.status, 200);
+      assert.strictEqual(!!res.headers.link, true);
+      assert.strictEqual(res.status, 200);
 
-      await assert.rejects(client.api.createAccount({
+      await assert.rejects(client.api.newAccount({
         termsOfServiceAgreed: true,
       }), (err: AcmeError) => {
-        assert.equal([
+        assert.strictEqual([
           403, // Let's Encrypt
           401, // RFC8555
         ].includes(err.status), true, "Error status doesn't match to requirements");
-        assert.equal(err.type, ErrorType.unauthorized);
+        assert.strictEqual(err.type, ErrorType.unauthorized);
         return true;
       });
     });

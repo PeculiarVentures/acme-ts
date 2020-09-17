@@ -6,11 +6,11 @@ export abstract class BaseRepository<T extends BaseObject> implements IBaseRepos
   private lastId = 0;
   protected items: T[] = [];
 
-  public async findById(id: Key) {
-    return this.items.find(o => { return o.id === id; }) || null;
+  public async findById(id: Key): Promise<T | null> {
+    return this.items.find(o => { return o.id == id; }) || null;
   }
 
-  public async add(item: T) {
+  public async add(item: T): Promise<T> {
     if (!item.id) {
       item.id = ++this.lastId;
       this.items.push(item);
@@ -20,8 +20,8 @@ export abstract class BaseRepository<T extends BaseObject> implements IBaseRepos
     return item;
   }
 
-  public async update(item: T) {
-    const updateItem = this.items.find(o => { return o.id === item.id; });
+  public async update(item: T): Promise<T> {
+    const updateItem = this.items.find(o => { return o.id == item.id; });
     if (updateItem) {
       const index = this.items.indexOf(updateItem);
       this.items[index] = item;
@@ -31,8 +31,8 @@ export abstract class BaseRepository<T extends BaseObject> implements IBaseRepos
     return item;
   }
 
-  public async remove(item: T) {
-    const removeItem = this.items.find(o => { return o.id === item.id; });
+  public async remove(item: T): Promise<void> {
+    const removeItem = this.items.find(o => { return o.id == item.id; });
     if (removeItem) {
       const index = this.items.indexOf(item);
       if (index > -1) {

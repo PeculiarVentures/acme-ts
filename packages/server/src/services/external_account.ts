@@ -1,9 +1,10 @@
 import { IExternalAccountService } from "./types";
 import { Key, IExternalAccount, IExternalAccountRepository, diExternalAccount, diExternalAccountRepository } from "@peculiar/acme-data";
-import { JsonWebSignature, cryptoProvider, MalformedError } from "@peculiar/acme-core";
+import { cryptoProvider, MalformedError, diLogger, ILogger } from "@peculiar/acme-core";
 import { BaseService, diServerOptions, IServerOptions } from "./base";
 import { inject, container, injectable } from "tsyringe";
 import { Convert } from "pvtsutils";
+import { JsonWebSignature } from "@peculiar/jose";
 
 @injectable()
 export class ExternalAccountService extends BaseService implements IExternalAccountService {
@@ -11,19 +12,19 @@ export class ExternalAccountService extends BaseService implements IExternalAcco
   public constructor(
     @inject(diExternalAccountRepository)
     protected externalAccountRepository: IExternalAccountRepository,
-    @inject(diServerOptions) options: IServerOptions,
-  ) {
-    super(options);
+    @inject(diLogger) logger: ILogger,
+    @inject(diServerOptions) options: IServerOptions) {
+    super(options, logger);
   }
 
-  public async  create(account: any) {
+  public async create(account: any) {
     const macKey = cryptoProvider.get().getRandomValues(new Uint8Array(256 >> 3)); // TODO use service options for HMAC key length
 
     let externalAccount = container.resolve<IExternalAccount>(diExternalAccount);
     this.onCreate(externalAccount, account, macKey);
     externalAccount = await this.externalAccountRepository.add(externalAccount);
 
-    // TODO Logger.Info("External account {id} created", account.Id);
+    this.logger.info(`External account ${account.id} created`);
 
     return externalAccount;
   }
@@ -47,7 +48,7 @@ export class ExternalAccountService extends BaseService implements IExternalAcco
       externalAccount.status = "expired";
       await this.externalAccountRepository.update(externalAccount);
 
-      // TODO Logger.Info("External account {id} status updated to {status}", externalAccount.Id, externalAccount.Status);
+      this.logger.info(`External account ${externalAccount.id} status updated to ${externalAccount.status}`);
     }
     return externalAccount;
   }
@@ -78,7 +79,7 @@ export class ExternalAccountService extends BaseService implements IExternalAcco
     externalAccount.status = ok ? "valid" : "invalid";
     await this.externalAccountRepository.update(externalAccount);
 
-    // TODO Logger.Info("External account {id} status updated to {status}", externalAccount.Id, externalAccount.Status);
+    this.logger.info(`External account ${externalAccount.id} status updated to ${externalAccount.status}`);
 
     return externalAccount;
   }

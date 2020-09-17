@@ -1,5 +1,6 @@
 import { AcmeError } from "../errors";
 import { Convert, BufferSourceConverter } from "pvtsutils";
+import { Error } from "@peculiar/acme-protocol";
 
 export enum ContentType {
   json = "application/json",
@@ -40,7 +41,11 @@ export class Content {
       this.content = Convert.FromUtf8String(data);
       this.type = ContentType.pemCertificateChain;
     } else if (data instanceof AcmeError) {
-      this.content = Convert.FromUtf8String(JSON.stringify(data));
+      this.content = Convert.FromUtf8String(JSON.stringify({
+        detail: data.message,
+        type: data.type,
+        subproblems: data.subproblems,
+      } as Error));
       this.type = ContentType.problemJson;
     } else if (BufferSourceConverter.isBufferSource(data)) {
       if (!type) {
@@ -57,8 +62,8 @@ export class Content {
     }
   }
 
-  public toJSON() {
-    return JSON.parse(this.toString());
+  public toJSON<T = any>() {
+    return JSON.parse(this.toString()) as T;
   }
 
   public toString() {
