@@ -68,7 +68,7 @@ export class ExternalAccountService extends BaseService implements IExternalAcco
     // }
 
     const externalAccount = await this.getById(header.kid!);
-    if (externalAccount.status != "pending") {
+    if (externalAccount.status !== "pending") {
       throw new MalformedError("External account has wrong status"); // TODO check rfc error
     }
 

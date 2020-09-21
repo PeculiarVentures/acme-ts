@@ -49,7 +49,7 @@ export class PemConverter {
         sliced = base64.substring(offset, offset + 64);
         offset += 64;
       }
-      if (sliced.length != 0) {
+      if (sliced.length !== 0) {
         rows.push(sliced);
         if (sliced.length < 64) {
           break;
