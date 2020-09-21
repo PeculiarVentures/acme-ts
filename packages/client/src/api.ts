@@ -4,6 +4,14 @@ import { JsonWebSignature, JsonWebKey } from "@peculiar/jose";
 import { CRLReasons } from "@peculiar/asn1-x509";
 import * as protocol from "@peculiar/acme-protocol";
 import { BaseClient, ClientOptions, ApiResponse, RequestParams, AcmeMethod } from "./base";
+import { ExternalAccountBinding } from "@peculiar/acme-protocol";
+
+export interface AccountCreateParams {
+  contact?: string[];
+  termsOfServiceAgreed?: boolean;
+  externalAccountBinding?: ExternalAccountBinding;
+  onlyReturnExisting?: boolean;
+}
 
 export interface RetryOptions {
   /**
@@ -82,7 +90,7 @@ export class ApiClient extends BaseClient {
    * To search for an account, you must specify the parameter onlyReturnExisting: true.
    * @param params Request parameters
    */
-  public async newAccount(params: protocol.AccountCreateParams) {
+  public async newAccount(params: AccountCreateParams) {
     const newParam: protocol.CreateAccountProtocol = {
       contact: params.contact,
       onlyReturnExisting: params.onlyReturnExisting,
@@ -324,7 +332,7 @@ export class ApiClient extends BaseClient {
   public async retryAuthorization(param: string | ApiResponse<protocol.Authorization>, options: RetryOptions = {}) {
     let authz = typeof param === "string"
       ? await this.getOrder(param)
-      : param
+      : param;
     let retries = options.retries || ApiClient.RETRIES;
     while (retries--) {
       if (!authz.headers.location) {

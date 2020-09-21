@@ -1,3 +1,4 @@
+import { JsonWebSignature } from "@peculiar/jose";
 import { Token } from ".";
 
 
@@ -68,7 +69,7 @@ export interface AccountCreateParams {
    *
    * NOTE: This field is not updateable by the client
    */
-  externalAccountBinding?: ExternalAccountBinding;
+  externalAccountBinding?: JsonWebSignature;
 
   /**
    * If this field is present

@@ -29,7 +29,7 @@ export class AcmeController extends BaseService {
     super(options, logger);
   }
 
-  protected async wrapAction(action: (response: core.Response) => Promise<void>, request: core.Request, useJwk = false) {
+  public async wrapAction(action: (response: core.Response) => Promise<void>, request: core.Request, useJwk = false) {
     const response = new core.Response();
 
     try {
