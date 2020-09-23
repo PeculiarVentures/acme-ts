@@ -4,5 +4,10 @@
     "packages/*"
   ],
   "version": "0.0.0",
-  "useWorkspaces": true
+  "useWorkspaces": true,
+  "command": {
+    "publish": {
+      "conventionalCommits": true
+    }
+  }
 }
