@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/acme-data-dynamodb",
-  "version": "0.0.0",
+  "version": "1.1.0",
   "description": "> TODO: description",
   "author": "romashine <miroshin.ry@gmail.com>",
   "homepage": "https://github.com/PeculiarVentures/ts-acme#readme",
@@ -34,10 +34,10 @@
     "url": "https://github.com/PeculiarVentures/ts-acme/issues"
   },
   "dependencies": {
-    "@peculiar/acme-core": "^0.0.0",
-    "@peculiar/acme-data": "^0.0.0",
-    "@peculiar/acme-protocol": "^0.0.0",
-    "@peculiar/jose": "^1.0.0",
+    "@peculiar/acme-core": "^1.1.0",
+    "@peculiar/acme-data": "^1.1.0",
+    "@peculiar/acme-protocol": "^1.1.0",
+    "@peculiar/jose": "^1.1.0",
     "aws-sdk": "^2.747.0",
     "dynamoose": "^2.3.0",
     "pvtsutils": "^1.0.12"
