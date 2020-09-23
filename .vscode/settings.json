@@ -24,5 +24,17 @@
     "Stepan",
     "dynamoose",
     "subproblems"
+  ],
+
+  "conventionalCommits.scopes": [
+    "client",
+    "core",
+    "data",
+    "data-dynamodb",
+    "data-memory",
+    "jose",
+    "protocol",
+    "server"
   ]
+
 }

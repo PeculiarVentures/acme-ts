@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/acme-data-memory",
-  "version": "0.0.0",
+  "version": "1.1.0",
   "description": "",
   "keywords": [],
   "author": "microshine <microshine@mail.ru>",
@@ -35,11 +35,11 @@
   },
   "homepage": "https://github.com/PeculiarVentures/ts-acme#readme",
   "dependencies": {
-    "@peculiar/acme-core": "^0.0.0",
-    "@peculiar/acme-data": "^0.0.0",
-    "@peculiar/acme-protocol": "^0.0.0",
+    "@peculiar/acme-core": "^1.1.0",
+    "@peculiar/acme-data": "^1.1.0",
+    "@peculiar/acme-protocol": "^1.1.0",
     "@peculiar/asn1-x509": "2.0.21",
-    "@peculiar/jose": "^1.0.0",
+    "@peculiar/jose": "^1.1.0",
     "pvtsutils": "1.0.12",
     "tsyringe": "^4.2.0"
   }
