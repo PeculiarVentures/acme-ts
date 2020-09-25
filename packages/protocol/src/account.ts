@@ -1,4 +1,3 @@
-import { JsonWebSignature } from "@peculiar/jose";
 import { Token } from ".";
 
 
@@ -78,6 +77,12 @@ export interface AccountCreateParams {
    * look up an account URL based on an account key.
    */
   onlyReturnExisting?: boolean;
+}
+
+export interface JsonWebSignature {
+  protected: string;
+  payload: string;
+  signature: string;
 }
 
 export interface AccountUpdateParams {
