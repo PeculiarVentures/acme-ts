@@ -33,7 +33,7 @@ export class AccountService extends BaseService implements IAccountService {
         throw new MalformedError("externalAccountBinding is required");
       }
       const jws = new JsonWebSignature();
-      jws.fromJSON(params.externalAccountBinding)
+      jws.fromJSON(params.externalAccountBinding);
 
       const eab = await this.externalAccountService.validate(key, jws);
       if (eab.status === "invalid") {

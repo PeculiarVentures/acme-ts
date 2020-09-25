@@ -24,7 +24,7 @@ export class ExternalAccountService extends BaseService implements IExternalAcco
     this.onCreate(externalAccount, account, macKey);
     externalAccount = await this.externalAccountRepository.add(externalAccount);
 
-    this.logger.info(`External account ${account.id} created`);
+    this.logger.info(`External account ${externalAccount.id} created`);
 
     return externalAccount;
   }
@@ -66,8 +66,9 @@ export class ExternalAccountService extends BaseService implements IExternalAcco
     // if (!eabPayload.Equals(accountKey)) {
     //   throw new MalformedError("Signed content in externalAccountBinding doesn't match to requirement"); // TODO check rfc error
     // }
-
-    const externalAccount = await this.getById(header.kid!);
+    const matches = /([^/]+)$/.exec(header.kid!);
+    // TODO Add check on null
+    const externalAccount = await this.getById(matches![1]);
     if (externalAccount.status !== "pending") {
       throw new MalformedError("External account has wrong status"); // TODO check rfc error
     }
