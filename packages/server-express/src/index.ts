@@ -2,6 +2,7 @@ import express = require("express");
 import { Express } from "express";
 import { container } from "tsyringe";
 import * as url from "url";
+import * as cors from "cors";
 
 import { diLogger, ILogger } from "@peculiar/acme-core";
 import { DependencyInjection as diServer, diServerOptions, IServerOptions } from "@peculiar/acme-server";
@@ -19,6 +20,12 @@ export class AcmeExpress {
     container.register(diControllers, Controllers);
 
     const opt = container.resolve<IServerOptions>(diServerOptions);
+
+    app.use(cors({
+      methods:"GET, POST, OPTIONS, HEAD",
+      allowedHeaders: "Content-Type, Authorization, Cache-Control, Replay-Nonce",
+      exposedHeaders: "Location, Link, Replay-Nonce"
+    }));
 
     app.use(express.json({ type: "application/jose+json" }));
     app.use(url.parse(opt.baseAddress).pathname || "/", routers);
