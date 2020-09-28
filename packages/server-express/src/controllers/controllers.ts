@@ -158,7 +158,7 @@ export class Controllers {
         break;
 
       default:
-        throw new MalformedError();
+        throw new MalformedError("Method is not supported");
     }
 
     // parse query
