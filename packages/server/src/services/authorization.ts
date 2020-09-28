@@ -44,7 +44,7 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
     await this.challengeService.identifierValidate(identifier);
 
     // Fill params
-    this.onCreateParams(auth, accountId, identifier);
+    await this.onCreateParams(auth, accountId, identifier);
     // Save authorization
     const addedAuth = await this.authorizationRepository.add(auth);
     try {
@@ -95,7 +95,7 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
    * @param accountId
    * @param identifier
    */
-  protected onCreateParams(auth: IAuthorization, accountId: Key, identifier: Identifier) {
+  protected async onCreateParams(auth: IAuthorization, accountId: Key, identifier: Identifier) {
     auth.identifier.type = identifier.type;
     auth.identifier.value = identifier.value;
     auth.accountId = accountId;

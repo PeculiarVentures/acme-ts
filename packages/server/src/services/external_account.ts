@@ -15,7 +15,7 @@ protected externalAccountRepository = container.resolve<IExternalAccountReposito
     const macKey = cryptoProvider.get().getRandomValues(new Uint8Array(256 >> 3)); // TODO use service options for HMAC key length
 
     let externalAccount = container.resolve<IExternalAccount>(diExternalAccount);
-    this.onCreate(externalAccount, account, macKey);
+    await this.onCreate(externalAccount, account, macKey);
     externalAccount = await this.externalAccountRepository.add(externalAccount);
 
     this.logger.info(`External account ${externalAccount.id} created`);
@@ -23,7 +23,7 @@ protected externalAccountRepository = container.resolve<IExternalAccountReposito
     return externalAccount;
   }
 
-  protected onCreate(externalAccount: IExternalAccount, account: any, key: BufferSource) {
+  protected async onCreate(externalAccount: IExternalAccount, account: any, key: BufferSource) {
     externalAccount.key = Convert.ToBase64Url(key);
     externalAccount.account = account;
     externalAccount.status = "pending";

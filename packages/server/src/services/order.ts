@@ -58,7 +58,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     // create order
     let order = container.resolve<data.IOrder>(data.diOrder);
     // fill params
-    this.onCreateParams(order, params, accountId);
+    await this.onCreateParams(order, params, accountId);
 
     // create authorization
     const authorizations = await this.onCreateAuth(order, params);
@@ -86,7 +86,7 @@ export class OrderService extends BaseService implements types.IOrderService {
    * @param params Params to create
    * @param accountId Account identifier
    */
-  protected onCreateParams(order: data.IOrder, params: protocol.OrderCreateParams, accountId: data.Key) {
+  protected async onCreateParams(order: data.IOrder, params: protocol.OrderCreateParams, accountId: data.Key) {
     order.accountId = accountId;
     if (params.notAfter) {
       order.notAfter = params.notAfter;
@@ -410,7 +410,7 @@ export class OrderService extends BaseService implements types.IOrderService {
    * Allows add additional task before enroll certificate
    * @param certificateEnrollParams
    */
-  protected onEnrollCertificateBefore(certificateEnrollParams: ICertificateEnrollParams): ICertificateEnrollParams {
+  protected async onEnrollCertificateBefore(certificateEnrollParams: ICertificateEnrollParams): Promise<ICertificateEnrollParams> {
     return certificateEnrollParams;
   }
 

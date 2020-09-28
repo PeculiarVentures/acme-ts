@@ -152,7 +152,7 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
 
   private async _create(authId: data.Key, type: string): Promise<data.IChallenge> {
     const challenge = ModelFabric.challenge();
-    this.onCreateParams(challenge, authId, type);
+    await this.onCreateParams(challenge, authId, type);
 
     await this.challengeRepository.add(challenge);
 
@@ -167,7 +167,7 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
    * @param authId
    * @param type
    */
-  protected onCreateParams(challenge: data.IChallenge, authId: data.Key, type: string) {
+  protected async onCreateParams(challenge: data.IChallenge, authId: data.Key, type: string) {
     challenge.type = type;
     challenge.authorizationId = authId;
     challenge.status = "pending";

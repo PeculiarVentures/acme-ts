@@ -21,12 +21,12 @@ export class DirectoryService extends BaseService implements IDirectoryService {
       directory.meta = this.options.meta;
     }
 
-    this.onGetDirectory(directory);
+    await this.onGetDirectory(directory);
 
     return directory;
   }
 
-  protected onGetDirectory(directory: Directory): void {
+  protected async onGetDirectory(directory: Directory): Promise<void> {
     directory;
   }
 
