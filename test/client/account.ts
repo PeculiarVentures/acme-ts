@@ -2,7 +2,7 @@ import * as assert from "assert";
 import { createClient, checkHeaders, checkResAccount, ClientResult } from "./bootstrap";
 import { AcmeError, ErrorType } from "@peculiar/acme-core";
 import { Crypto } from "@peculiar/webcrypto";
-import { cryptoProvider } from "@peculiar/acme-core";
+import { cryptoProvider } from "@peculiar/x509";
 
 context("Account Management", () => {
   context("new account", () => {

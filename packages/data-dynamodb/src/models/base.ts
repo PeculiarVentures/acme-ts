@@ -1,5 +1,5 @@
 import { IBaseObject, Key } from "@peculiar/acme-data";
-import { cryptoProvider } from "@peculiar/acme-core";
+import { cryptoProvider } from "@peculiar/x509";
 import { Convert } from "pvtsutils";
 
 export interface IBaseDynamoObject {

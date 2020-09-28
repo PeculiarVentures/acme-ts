@@ -1,6 +1,6 @@
 import * as fetch from "node-fetch";
 import { Crypto } from "@peculiar/webcrypto";
-import { cryptoProvider } from "@peculiar/acme-core";
+import { cryptoProvider } from "@peculiar/x509";
 import { ApiClient } from "@peculiar/acme-client";
 
 context("client", () => {

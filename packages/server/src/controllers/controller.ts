@@ -1,6 +1,7 @@
 import * as core from "@peculiar/acme-core";
 import * as types from "../services/types";
 import * as protocol from "@peculiar/acme-protocol";
+import * as x509 from "@peculiar/x509";
 
 import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
 import { container, injectable } from "tsyringe";
@@ -478,7 +479,7 @@ export class AcmeController extends BaseService {
       switch (this.options.downloadCertificateFormat) {
         case "PemCertificateChain":
           {
-            const pem = core.PemConverter.encode(certs.map(o => o.rawData), "certificate");
+            const pem = x509.PemConverter.encode(certs.map(o => o.rawData), "certificate");
             response.content = new core.Content(pem);
           }
           break;
@@ -490,7 +491,7 @@ export class AcmeController extends BaseService {
           break;
         case "Pkcs7Mime":
           {
-            response.content = new core.Content(certs.export(), "application/pkcs7-mime");
+            response.content = new core.Content(certs.export("raw"), "application/pkcs7-mime");
           }
           break;
       }

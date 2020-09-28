@@ -8,6 +8,7 @@ import { BaseService } from "../base";
 import { JsonWebKey } from "@peculiar/jose";
 import { id_ce_subjectAltName, SubjectAlternativeName } from "@peculiar/asn1-x509";
 import { AsnConvert } from "@peculiar/asn1-schema";
+import * as x509 from "@peculiar/x509";
 
 @injectable()
 export class DnsChallengeService extends BaseService implements types.IIdentifierService {
@@ -17,7 +18,7 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
   protected authorizationRepository = container.resolve<data.IAuthorizationRepository>(data.diAuthorizationRepository);
   protected accountService = container.resolve<types.IAccountService>(types.diAccountService);
 
-  public async csrValidate(identifiers: data.IIdentifier[], csr: core.Pkcs10CertificateRequest): Promise<core.AcmeError[]> {
+  public async csrValidate(identifiers: data.IIdentifier[], csr: x509.Pkcs10CertificateRequest): Promise<core.AcmeError[]> {
     const identifiersCsr = this.getDomainNames(csr);
     const problems: core.AcmeError[] = [];
 
@@ -36,10 +37,10 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
     return problems;
   }
 
-  private getDomainNames(csr: core.Pkcs10CertificateRequest) {
+  private getDomainNames(csr: x509.Pkcs10CertificateRequest) {
     const names: string[] = [];
 
-    const name = new core.Name(csr.subject);
+    const name = new x509.Name(csr.subject);
     name.toJSON().forEach(o => {
       const dns = o["DC"];
       if (dns && dns.length) {

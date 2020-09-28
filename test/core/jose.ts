@@ -1,5 +1,5 @@
 import * as assert from "assert";
-import { cryptoProvider } from "@peculiar/acme-core";
+import { cryptoProvider } from "@peculiar/x509";
 import { Crypto } from "@peculiar/webcrypto";
 import { JsonWebSignature } from "@peculiar/jose";
 

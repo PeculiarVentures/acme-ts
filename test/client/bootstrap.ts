@@ -4,7 +4,7 @@ import { ApiClient } from "@peculiar/acme-client";
 import { ApiResponse } from "packages/client/src/base";
 import * as protocol from "@peculiar/acme-protocol";
 import { Crypto } from "@peculiar/webcrypto";
-import { cryptoProvider } from "@peculiar/acme-core";
+import { cryptoProvider } from "@peculiar/x509";
 import { Account } from "@peculiar/acme-protocol";
 
 export function checkHeaders(res: ApiResponse<any>) {

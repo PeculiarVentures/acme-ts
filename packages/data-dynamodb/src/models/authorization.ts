@@ -1,7 +1,7 @@
 import { IAuthorization, IIdentifier, Key } from "@peculiar/acme-data";
 import { AuthorizationStatus } from "@peculiar/acme-protocol";
 import { BaseObject, IBaseDynamoObject } from "./base";
-import { cryptoProvider } from "@peculiar/acme-core";
+import { cryptoProvider } from "@peculiar/x509";
 import * as pvtsutils from "pvtsutils";
 import { Convert } from "pvtsutils";
 
