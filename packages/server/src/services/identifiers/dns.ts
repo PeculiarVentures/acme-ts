@@ -3,11 +3,9 @@ import * as data from "@peculiar/acme-data";
 import * as ModelFabric from "../model_fabric";
 import * as pvtsutils from "pvtsutils";
 import * as types from "../types";
-import { inject, injectable } from "tsyringe";
-import { BaseService, diServerOptions, IServerOptions } from "../base";
+import { container, injectable } from "tsyringe";
+import { BaseService } from "../base";
 import { JsonWebKey } from "@peculiar/jose";
-import { IChallenge } from "@peculiar/acme-data";
-import { AcmeError, MalformedError, Name } from "@peculiar/acme-core";
 import { id_ce_subjectAltName, SubjectAlternativeName } from "@peculiar/asn1-x509";
 import { AsnConvert } from "@peculiar/asn1-schema";
 
@@ -15,27 +13,23 @@ import { AsnConvert } from "@peculiar/asn1-schema";
 export class DnsChallengeService extends BaseService implements types.IIdentifierService {
   public type = "dns";
 
-  public constructor(
-    @inject(data.diChallengeRepository) protected challengeRepository: data.IChallengeRepository,
-    @inject(data.diAuthorizationRepository) protected authorizationRepository: data.IAuthorizationRepository,
-    @inject(types.diAccountService) protected accountService: types.IAccountService,
-    @inject(core.diLogger) logger: core.ILogger,
-    @inject(diServerOptions) options: IServerOptions) {
-    super(options, logger);
-  }
-  public async csrValidate(identifiers: data.IIdentifier[], csr: core.Pkcs10CertificateRequest): Promise<AcmeError[]> {
+  protected challengeRepository = container.resolve<data.IChallengeRepository>(data.diChallengeRepository);
+  protected authorizationRepository = container.resolve<data.IAuthorizationRepository>(data.diAuthorizationRepository);
+  protected accountService = container.resolve<types.IAccountService>(types.diAccountService);
+
+  public async csrValidate(identifiers: data.IIdentifier[], csr: core.Pkcs10CertificateRequest): Promise<core.AcmeError[]> {
     const identifiersCsr = this.getDomainNames(csr);
-    const problems: AcmeError[] = [];
+    const problems: core.AcmeError[] = [];
 
     identifiers.forEach(i => {
       if (!identifiersCsr.find(o => i.value.toLowerCase() === o.toLowerCase())) {
-        problems.push(new MalformedError(`DNS name '${i.value}' from order not found in CSR`));
+        problems.push(new core.MalformedError(`DNS name '${i.value}' from order not found in CSR`));
       }
     });
 
     identifiersCsr.forEach(i => {
       if (!identifiers.find(o => o.value.toLowerCase() === i.toLowerCase())) {
-        problems.push(new MalformedError(`DNS name '${i}' from CSR not found in order`));
+        problems.push(new core.MalformedError(`DNS name '${i}' from CSR not found in order`));
       }
     });
 
@@ -45,7 +39,7 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
   private getDomainNames(csr: core.Pkcs10CertificateRequest) {
     const names: string[] = [];
 
-    const name = new Name(csr.subject);
+    const name = new core.Name(csr.subject);
     name.toJSON().forEach(o => {
       const dns = o["DC"];
       if (dns && dns.length) {
@@ -68,17 +62,17 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
     return names;
   }
 
-  public async identifierValidate(identifier: data.IIdentifier): Promise<AcmeError[]> {
+  public async identifierValidate(identifier: data.IIdentifier): Promise<core.AcmeError[]> {
     const pattern = /^(?:[-A-Za-zА-Яа-я0-9]+\.)+[A-Za-zА-Яа-я]{2,6}$/g;
-    const problems: AcmeError[] = [];
+    const problems: core.AcmeError[] = [];
     if (!pattern.test(identifier.value)) {
-      problems.push(new MalformedError(`Identifier '${identifier.value}' is not domain name`));
+      problems.push(new core.MalformedError(`Identifier '${identifier.value}' is not domain name`));
     }
     return problems;
   }
 
-  public async challengesCreate(auth: data.IAuthorization): Promise<IChallenge[]> {
-    const challenges: IChallenge[] = [];
+  public async challengesCreate(auth: data.IAuthorization): Promise<data.IChallenge[]> {
+    const challenges: data.IChallenge[] = [];
     // Add challenges
     challenges.push(await this._create(auth.id, "http-01"));
     //const tls = ChallengeService.Create(addedAuth.Id, "tls-01");
@@ -86,7 +80,7 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
     return challenges;
   }
 
-  public async challengeValidate(challenge: IChallenge): Promise<void> {
+  public async challengeValidate(challenge: data.IChallenge): Promise<void> {
     if (challenge.status === "pending") {
       challenge.status = "processing";
       await this.challengeRepository.update(challenge);

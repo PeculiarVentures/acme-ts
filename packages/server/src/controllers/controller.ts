@@ -3,9 +3,9 @@ import * as types from "../services/types";
 import * as protocol from "@peculiar/acme-protocol";
 
 import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
-import { inject, injectable } from "tsyringe";
+import { container, injectable } from "tsyringe";
 import { IAccount, Key } from "@peculiar/acme-data";
-import { BaseService, diServerOptions, IServerOptions } from "../services";
+import { BaseService } from "../services";
 
 export const diAcmeController = "ACME.AcmeController";
 /**
@@ -16,18 +16,13 @@ export const diAcmeController = "ACME.AcmeController";
 @injectable()
 export class AcmeController extends BaseService {
 
-  public constructor(
-    @inject(types.diDirectoryService) protected directoryService: types.IDirectoryService,
-    @inject(types.diNonceService) protected nonceService: types.INonceService,
-    @inject(types.diConvertService) protected convertService: types.IConvertService,
-    @inject(types.diAccountService) protected accountService: types.IAccountService,
-    @inject(types.diAuthorizationService) protected authorizationService: types.IAuthorizationService,
-    @inject(types.diChallengeService) protected challengeService: types.IChallengeService,
-    @inject(types.diOrderService) protected orderService: types.IOrderService,
-    @inject(core.diLogger) logger: core.ILogger,
-    @inject(diServerOptions) options: IServerOptions) {
-    super(options, logger);
-  }
+  protected directoryService = container.resolve<types.IDirectoryService>(types.diDirectoryService);
+  protected nonceService = container.resolve<types.INonceService>(types.diNonceService);
+  protected convertService = container.resolve<types.IConvertService>(types.diConvertService);
+  protected accountService = container.resolve<types.IAccountService>(types.diAccountService);
+  protected authorizationService = container.resolve<types.IAuthorizationService>(types.diAuthorizationService);
+  protected challengeService = container.resolve<types.IChallengeService>(types.diChallengeService);
+  protected orderService = container.resolve<types.IOrderService>(types.diOrderService);
 
   public async wrapAction(action: (response: core.Response) => Promise<void>, request: core.Request, useJwk = false) {
     const response = new core.Response();

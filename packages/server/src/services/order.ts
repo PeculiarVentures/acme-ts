@@ -1,5 +1,5 @@
-import { inject, container, injectable } from "tsyringe";
-import { BaseService, diServerOptions, IServerOptions } from "./base";
+import { container, injectable } from "tsyringe";
+import { BaseService } from "./base";
 import * as data from "@peculiar/acme-data";
 import * as protocol from "@peculiar/acme-protocol";
 import * as types from "./types";
@@ -33,17 +33,12 @@ export interface ICertificateEnrollParams {
 @injectable()
 export class OrderService extends BaseService implements types.IOrderService {
 
-  public constructor(
-    @inject(data.diOrderRepository) protected orderRepository: data.IOrderRepository,
-    @inject(types.diAccountService) protected accountService: types.IAccountService,
-    @inject(types.diAuthorizationService) protected authorizationService: types.IAuthorizationService,
-    @inject(types.diChallengeService) protected challengeService: types.IChallengeService,
-    @inject(data.diOrderAuthorizationRepository) protected orderAuthorizationRepository: data.IOrderAuthorizationRepository,
-    @inject(types.diCertificateEnrollmentService) protected certificateEnrollmentService: types.ICertificateEnrollmentService,
-    @inject(core.diLogger) logger: core.ILogger,
-    @inject(diServerOptions) options: IServerOptions) {
-    super(options, logger);
-  }
+  protected orderRepository = container.resolve<data.IOrderRepository>(data.diOrderRepository);
+  protected accountService = container.resolve<types.IAccountService>(types.diAccountService);
+  protected authorizationService = container.resolve<types.IAuthorizationService>(types.diAuthorizationService);
+  protected challengeService = container.resolve<types.IChallengeService>(types.diChallengeService);
+  protected orderAuthorizationRepository = container.resolve<data.IOrderAuthorizationRepository>(data.diOrderAuthorizationRepository);
+  protected certificateEnrollmentService = container.resolve<types.ICertificateEnrollmentService>(types.diCertificateEnrollmentService);
 
   /**
    * Returns hash
@@ -299,7 +294,7 @@ export class OrderService extends BaseService implements types.IOrderService {
         order.certificate.status = "valid";
 
         await this.orderRepository.update(order);
-        await this.onEnrollCertificateTask(certificateEnrollParams);
+        await this.onEnrollCertificateTask();
 
         if (order.status === "processing") {
           order.status = "valid";
@@ -423,7 +418,7 @@ export class OrderService extends BaseService implements types.IOrderService {
    * Allows add additional enroll certificate task
    * @param certificateEnrollParams
    */
-  protected async onEnrollCertificateTask(certificateEnrollParams: ICertificateEnrollParams): Promise<void> {
+  protected async onEnrollCertificateTask(): Promise<void> {
     // empty
   }
 

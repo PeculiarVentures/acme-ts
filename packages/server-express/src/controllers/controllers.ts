@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { inject, injectable } from "tsyringe";
+import { container, injectable } from "tsyringe";
 import { diAcmeController, AcmeController } from "@peculiar/acme-server";
 import { Request as AcmeRequest, Response as AcmeResponse, ContentType, MalformedError } from "@peculiar/acme-core";
 import { ParamsDictionary } from "express-serve-static-core";
@@ -9,9 +9,8 @@ export const diControllers = "ACME.Express.Controllers";
 
 @injectable()
 export class Controllers {
-  public constructor(
-    @inject(diAcmeController) protected acmeController: AcmeController,
-  ) { }
+
+  protected acmeController = container.resolve<AcmeController>(diAcmeController);
 
   public async getDirectory(req: Request<ParamsDictionary>, res: Response): Promise<void> {
     const request = this.getAcmeRequest(req);

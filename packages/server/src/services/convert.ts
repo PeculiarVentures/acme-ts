@@ -1,22 +1,17 @@
 import * as protocol from "@peculiar/acme-protocol";
-import { BaseService, diServerOptions, IServerOptions } from "./base";
+import { BaseService } from "./base";
 import { IConvertService } from "./types";
 import * as data from "@peculiar/acme-data";
-import { injectable, inject } from "tsyringe";
-import { MalformedError, diLogger, ILogger } from "@peculiar/acme-core";
+import { injectable, container } from "tsyringe";
+import { MalformedError } from "@peculiar/acme-core";
 
 @injectable()
 export class ConvertService extends BaseService implements IConvertService {
 
-  public constructor(
-    @inject(data.diExternalAccountRepository) public externalAccountRepository: data.IExternalAccountRepository,
-    @inject(data.diOrderAuthorizationRepository) public orderAuthorizationRepository: data.IOrderAuthorizationRepository,
-    @inject(data.diAuthorizationRepository) public authorizationRepository: data.IAuthorizationRepository,
-    @inject(data.diChallengeRepository) public challengeRepository: data.IChallengeRepository,
-    @inject(diLogger) logger: ILogger,
-    @inject(diServerOptions) options: IServerOptions) {
-    super(options, logger);
-  }
+  protected externalAccountRepository = container.resolve<data.IExternalAccountRepository>(data.diExternalAccountRepository);
+  protected orderAuthorizationRepository = container.resolve<data.IOrderAuthorizationRepository>(data.diOrderAuthorizationRepository);
+  protected authorizationRepository = container.resolve<data.IAuthorizationRepository>(data.diAuthorizationRepository);
+  protected challengeRepository = container.resolve<data.IChallengeRepository>(data.diChallengeRepository);
 
   public async toAccount(data: data.IAccount): Promise<protocol.Account> {
     const account: protocol.Account = {

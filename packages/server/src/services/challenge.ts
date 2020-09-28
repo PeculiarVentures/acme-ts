@@ -1,5 +1,5 @@
-import { injectable, inject, container } from "tsyringe";
-import { BaseService, IServerOptions, diServerOptions } from "./base";
+import { injectable, container } from "tsyringe";
+import { BaseService } from "./base";
 import { diIdentifierService, IChallengeService, IIdentifierService } from "./types";
 import * as data from "@peculiar/acme-data";
 import * as core from "@peculiar/acme-core";
@@ -8,12 +8,9 @@ import * as pvtsutils from "pvtsutils";
 
 @injectable()
 export class ChallengeService extends BaseService implements IChallengeService {
-  public constructor(
-    @inject(data.diChallengeRepository) protected challengeRepository: data.IChallengeRepository,
-    @inject(core.diLogger) logger: core.ILogger,
-    @inject(diServerOptions) options: IServerOptions) {
-    super(options, logger);
-  }
+
+  protected challengeRepository = container.resolve<data.IChallengeRepository>(data.diChallengeRepository);
+
   public async create(auth: IAuthorization, type: string): Promise<data.IChallenge[]> {
     const services = await this.getValidator(type);
     let challenges: data.IChallenge[] = [];

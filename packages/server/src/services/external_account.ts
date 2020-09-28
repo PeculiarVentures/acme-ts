@@ -1,21 +1,15 @@
 import { IExternalAccountService } from "./types";
 import { Key, IExternalAccount, IExternalAccountRepository, diExternalAccount, diExternalAccountRepository } from "@peculiar/acme-data";
-import { cryptoProvider, MalformedError, diLogger, ILogger } from "@peculiar/acme-core";
-import { BaseService, diServerOptions, IServerOptions } from "./base";
-import { inject, container, injectable } from "tsyringe";
+import { cryptoProvider, MalformedError } from "@peculiar/acme-core";
+import { BaseService } from "./base";
+import { container, injectable } from "tsyringe";
 import { Convert } from "pvtsutils";
 import { JsonWebSignature } from "@peculiar/jose";
 
 @injectable()
 export class ExternalAccountService extends BaseService implements IExternalAccountService {
 
-  public constructor(
-    @inject(diExternalAccountRepository)
-    protected externalAccountRepository: IExternalAccountRepository,
-    @inject(diLogger) logger: ILogger,
-    @inject(diServerOptions) options: IServerOptions) {
-    super(options, logger);
-  }
+protected externalAccountRepository = container.resolve<IExternalAccountRepository>(diExternalAccountRepository);
 
   public async create(account: any) {
     const macKey = cryptoProvider.get().getRandomValues(new Uint8Array(256 >> 3)); // TODO use service options for HMAC key length
