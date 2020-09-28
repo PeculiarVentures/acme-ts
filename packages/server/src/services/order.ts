@@ -445,7 +445,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     }
     const accountId = order.accountId;
     if (!accountId) {
-      throw new core.MalformedError();
+      throw new core.MalformedError("Order don't have accountId");
     }
     const authzs = await Promise.all(orderAuthzs.map(async o => await this.authorizationService.getById(accountId, o.authorizationId)));
     return authzs.map(o => { return { ...o.identifier }; });

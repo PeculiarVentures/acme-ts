@@ -44,7 +44,9 @@ export class Content {
       this.content = Convert.FromUtf8String(JSON.stringify({
         detail: data.message,
         type: data.type,
-        subproblems: data.subproblems,
+        subproblems: data.subproblems?.map(o => {
+          return { detail: o.message, type: o.type };
+        }),
       } as Error));
       this.type = ContentType.problemJson;
     } else if (BufferSourceConverter.isBufferSource(data)) {

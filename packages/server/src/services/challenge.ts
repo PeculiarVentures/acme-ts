@@ -32,7 +32,7 @@ export class ChallengeService extends BaseService implements IChallengeService {
   }
 
   public async identifierValidate(identifier: data.IIdentifier | data.IIdentifier[]): Promise<void> {
-    const err = new core.MalformedError();
+    const err = new core.MalformedError("Validate identifier failed");
     const identifiers = Array.isArray(identifier) ? identifier : [identifier];
     for (const o of identifiers) {
       const services = await this.getValidator(o.type);
@@ -63,9 +63,9 @@ export class ChallengeService extends BaseService implements IChallengeService {
     try {
       csr = new core.Pkcs10CertificateRequest(pvtsutils.Convert.FromBase64(csrStr));
     } catch (error) {
-      throw new core.BadCSRError();
+      throw new core.BadCSRError("Cannot create CSR");
     }
-    const err = new core.BadCSRError();
+    const err = new core.BadCSRError("Validate CSR failed");
     const validators = this.getValidatorAll();
     await Promise.all(validators.map(async o => {
       const items = identifiers.filter(i => i.type === o.type);
