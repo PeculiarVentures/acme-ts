@@ -29,7 +29,7 @@ export class Content {
    *
    * @param json Initialize application/json content
    */
-  public constructor(json: object, formatted?: boolean);
+  public constructor(json: any, formatted?: boolean);
   /**
    * Initialize type specified content
    * @param buffer Binary content
