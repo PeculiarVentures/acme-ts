@@ -4,7 +4,7 @@ import { diIdentifierService, IChallengeService, IIdentifierService } from "./ty
 import * as data from "@peculiar/acme-data";
 import * as core from "@peculiar/acme-core";
 import { IAuthorization, IIdentifier } from "@peculiar/acme-data";
-import * as pvtsutils from "pvtsutils";
+import * as x509 from "@peculiar/x509";
 
 @injectable()
 export class ChallengeService extends BaseService implements IChallengeService {
@@ -56,9 +56,9 @@ export class ChallengeService extends BaseService implements IChallengeService {
   }
 
   public async csrValidate(identifiers: data.IIdentifier[], csrStr: string): Promise<void> {
-    let csr: core.Pkcs10CertificateRequest;
+    let csr: x509.Pkcs10CertificateRequest;
     try {
-      csr = new core.Pkcs10CertificateRequest(pvtsutils.Convert.FromBase64(csrStr));
+      csr = new x509.Pkcs10CertificateRequest(csrStr);
     } catch (error) {
       throw new core.BadCSRError("Cannot create CSR");
     }

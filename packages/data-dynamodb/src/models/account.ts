@@ -2,7 +2,7 @@ import { IAccount } from "@peculiar/acme-data";
 import { AccountStatus } from "@peculiar/acme-protocol";
 import { BaseObject, IBaseDynamoObject } from "./base";
 import { JsonWebKey } from "@peculiar/jose";
-import { cryptoProvider } from "@peculiar/acme-core";
+import { cryptoProvider } from "@peculiar/x509";
 
 export interface IAccountDynamo extends IBaseDynamoObject {
   status: AccountStatus;

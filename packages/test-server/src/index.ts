@@ -1,5 +1,6 @@
 import * as express from "express";
-import { diLogger, ConsoleLogger, cryptoProvider, X509CertificateGenerator } from "@peculiar/acme-core";
+import { diLogger, ConsoleLogger } from "@peculiar/acme-core";
+import * as x509 from "@peculiar/x509";
 import { AcmeExpress } from "@peculiar/acme-express";
 import { DependencyInjection as diData } from "@peculiar/acme-data-memory";
 import { diCertificateEnrollmentService } from "@peculiar/acme-server";
@@ -12,7 +13,7 @@ async function main() {
   const app = express();
 
   const crypto = new Crypto();
-  cryptoProvider.set(crypto);
+  x509.cryptoProvider.set(crypto);
 
   // before AcmeExpress because this logger need for logs in setup moment
   container.register(diLogger, ConsoleLogger);
@@ -26,7 +27,7 @@ async function main() {
   const rootKeys = await crypto.subtle.generateKey(CertificateEnrollmentService.signingAlgorithm, false, ["sign", "verify"]) as CryptoKeyPair;
   const caKeys = await crypto.subtle.generateKey(CertificateEnrollmentService.signingAlgorithm, false, ["sign", "verify"]) as CryptoKeyPair;
 
-  const rootCert = await X509CertificateGenerator.create({
+  const rootCert = await x509.X509CertificateGenerator.create({
     serialNumber: "01",
     subject: rootName,
     issuer: rootName,
@@ -37,7 +38,7 @@ async function main() {
     signingKey: rootKeys.privateKey,
   });
   rootCert.privateKey = rootKeys.privateKey;
-  const caCert = await X509CertificateGenerator.create({
+  const caCert = await x509.X509CertificateGenerator.create({
     serialNumber: "01",
     subject: caName,
     issuer: rootName,

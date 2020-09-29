@@ -4,6 +4,7 @@ import * as data from "@peculiar/acme-data";
 import * as protocol from "@peculiar/acme-protocol";
 import * as types from "./types";
 import * as core from "@peculiar/acme-core";
+import * as x509 from "@peculiar/x509";
 import { JsonWebKey } from "@peculiar/jose";
 import * as ModelFabric from "./model_fabric";
 import * as pvtsutils from "pvtsutils";
@@ -317,8 +318,8 @@ export class OrderService extends BaseService implements types.IOrderService {
     if (!order.certificate) {
       throw new core.MalformedError("Certificate not found");
     }
-    const cert = new core.X509Certificate(order.certificate.rawData);
-    const chain = new core.X509ChainBuilder({
+    const cert = new x509.X509Certificate(order.certificate.rawData);
+    const chain = new x509.X509ChainBuilder({
       certificates: this.options.extraCertificateStorage,
     });
 

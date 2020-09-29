@@ -1,6 +1,6 @@
 import { Empty } from "@peculiar/acme-data";
 import { Crypto } from "@peculiar/webcrypto";
-import { cryptoProvider } from "@peculiar/acme-core";
+import { cryptoProvider } from "@peculiar/x509";
 import { DependencyContainer, RegistrationOptions } from "tsyringe";
 import { AcmeController, diAcmeController } from "./controllers";
 import { IServerOptions } from "./services";

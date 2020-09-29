@@ -1,8 +1,7 @@
 import { BaseService, ICertificateEnrollmentService } from "@peculiar/acme-server";
 import { IOrder } from "@peculiar/acme-data";
 import { RevokeReason } from "@peculiar/acme-protocol";
-import { X509Certificate, Pkcs10CertificateRequest } from "@peculiar/acme-core";
-import { X509CertificateGenerator } from "packages/core/src/crypto/x509_cert_generator";
+import * as x509 from "@peculiar/x509";
 import { Convert } from "pvtsutils";
 import { injectable } from "tsyringe";
 
@@ -17,8 +16,8 @@ export class CertificateEnrollmentService extends BaseService implements ICertif
   };
 
   public async enroll(order: IOrder, request: ArrayBuffer): Promise<ArrayBuffer> {
-    const req = new Pkcs10CertificateRequest(request);
-    const ca: X509Certificate =  (this.options as any).caCertificate;
+    const req = new x509.Pkcs10CertificateRequest(request);
+    const ca: x509.X509Certificate =  (this.options as any).caCertificate;
     if (!ca) {
       throw new Error("Cannot get CA certificate");
     }
@@ -28,7 +27,7 @@ export class CertificateEnrollmentService extends BaseService implements ICertif
     const notAfter = new Date();
     notAfter.setUTCMonth(notAfter.getUTCMonth() + 1);
 
-    const cert = await X509CertificateGenerator.create({
+    const cert = await x509.X509CertificateGenerator.create({
       serialNumber: Convert.ToHex(this.getCrypto().getRandomValues(new Uint8Array(10))),
       subject: req.subject,
       issuer: ca.subject,

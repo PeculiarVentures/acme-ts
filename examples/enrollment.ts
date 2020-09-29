@@ -1,7 +1,6 @@
 import * as assert from "assert";
-import { Convert } from "pvtsutils";
 import { ApiClient } from "@peculiar/acme-client";
-import { Pkcs10CertificateRequestGenerator } from "@peculiar/acme-core";
+import { Pkcs10CertificateRequestGenerator } from "@peculiar/x509";
 import { Crypto } from "@peculiar/webcrypto";
 import fetch from "node-fetch";
 
@@ -72,7 +71,7 @@ async function main() {
 
   // Request certificate
   await client.finalize(order.content.finalize, {
-    csr: Convert.ToBase64Url(req.rawData),
+    csr: req.toString("base64url"),
   });
 
   order = await client.retryOrder(order);

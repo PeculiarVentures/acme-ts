@@ -1,6 +1,7 @@
 import * as core from "@peculiar/acme-core";
 import { JsonWebSignature, JwsProtectedSetter, JsonWebKey, } from "@peculiar/jose";
 import { Error } from "@peculiar/acme-protocol";
+import { cryptoProvider } from "@peculiar/x509";
 
 export interface ClientOptions {
   crypto?: Crypto;
@@ -48,7 +49,7 @@ export class BaseClient {
 
   public constructor(options: ClientOptions = {}) {
     this.options = {
-      crypto: options.crypto || core.cryptoProvider.get(),
+      crypto: options.crypto || cryptoProvider.get(),
       debug: options.debug,
       defaultHash: "SHA-256",
       fetch: typeof fetch !== "undefined" ? fetch : undefined,

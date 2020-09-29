@@ -1,7 +1,8 @@
 import * as protocol from "@peculiar/acme-protocol";
 import * as data from "@peculiar/acme-data";
 import { JsonWebSignature, JsonWebKey } from "@peculiar/jose";
-import { AcmeError, Pkcs10CertificateRequest, QueryParams, X509Certificates } from "@peculiar/acme-core";
+import { AcmeError, QueryParams } from "@peculiar/acme-core";
+import { Pkcs10CertificateRequest, X509Certificates } from "@peculiar/x509";
 
 export const diConvertService = "ACME.ConvertService";
 

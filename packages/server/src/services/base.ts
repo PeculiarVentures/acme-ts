@@ -1,4 +1,5 @@
-import { MalformedError, ILogger, Level, diLogger, X509Certificate } from "@peculiar/acme-core";
+import { MalformedError, ILogger, Level, diLogger } from "@peculiar/acme-core";
+import { X509Certificate } from "@peculiar/x509";
 import { container } from "tsyringe";
 import { DirectoryMetadata } from "@peculiar/acme-protocol";
 
