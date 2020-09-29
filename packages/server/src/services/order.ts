@@ -285,8 +285,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     // check cancel
     if (!certificateEnrollParams.cancel) {
       try {
-        const requestRaw = pvtsutils.Convert.FromBase64Url(params.csr);
-        const certificate = await this.certificateEnrollmentService.enroll(order, requestRaw); // todo ? using certEnrollParams
+        const certificate = await this.certificateEnrollmentService.enroll(order, params); // todo ? using certEnrollParams
 
         order.certificate = ModelFabric.certificate();
         order.certificate.rawData = certificate;

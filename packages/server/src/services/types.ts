@@ -155,7 +155,7 @@ export interface ICertificateEnrollmentService {
    * @param order Order
    * @param request PKCS10 request
    */
-  enroll(order: data.IOrder, request: ArrayBuffer): Promise<ArrayBuffer>;
+  enroll(order: data.IOrder, request: protocol.Finalize): Promise<ArrayBuffer>;
 
   /**
    * Revokes certificate
