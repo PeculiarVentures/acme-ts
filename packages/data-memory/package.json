@@ -40,7 +40,7 @@
     "@peculiar/acme-protocol": "^0.0.0",
     "@peculiar/asn1-x509": "2.0.22",
     "@peculiar/jose": "^1.0.0",
-    "pvtsutils": "1.0.13",
+    "pvtsutils": "1.0.14",
     "tsyringe": "^4.2.0"
   }
 }

@@ -30,7 +30,7 @@
     "@peculiar/asn1-x509": "^2.0.22",
     "@peculiar/webcrypto": "^1.1.3",
     "node-fetch": "^2.6.1",
-    "pvtsutils": "^1.0.13",
+    "pvtsutils": "^1.0.14",
     "reflect-metadata": "^0.1.13",
     "tslib": "^2.0.1",
     "tsyringe": "^4.2.0"
