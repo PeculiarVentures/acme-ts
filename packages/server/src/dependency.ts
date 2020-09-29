@@ -39,7 +39,7 @@ export class DependencyInjection {
     }
     //#endregion
 
-    const serverOptions: IServerOptions = {
+    const serverOptions = {
       ...options,
       baseAddress,
       cryptoProvider: options.cryptoProvider,
@@ -49,7 +49,7 @@ export class DependencyInjection {
       downloadCertificateFormat: options.downloadCertificateFormat ?? "PemCertificateChain",
       debugMode: options.debugMode ?? false,
       levelLogger: options.levelLogger,
-    };
+    } as IServerOptions;
 
     if (!container.isRegistered(data.diAccountRepository)) {
       data.DependencyInjection.register(container);
