@@ -10,6 +10,9 @@ import { DependencyInjection as diServer, diServerOptions, IServerOptions } from
 import { routers } from "./routes";
 import { diControllers, Controllers } from "./controllers";
 
+export * from "./controllers";
+export * from "./routes";
+
 export type IAcmeExpressOptions = Partial<IServerOptions>;
 
 export class AcmeExpress {
