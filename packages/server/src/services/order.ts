@@ -18,7 +18,7 @@ export interface ICertificateEnrollParams {
   /**
    * Params to finalize
    */
-  params: protocol.Finalize;
+  params: protocol.FinalizeParams;
 
   /**
    * Any object. Allows transfer data from OnEnrollCertificateBefore to OnEnrollCertificateTask
@@ -249,7 +249,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     }
   }
 
-  public async enrollCertificate(accountId: data.Key, orderId: data.Key, params: protocol.Finalize) {
+  public async enrollCertificate(accountId: data.Key, orderId: data.Key, params: protocol.FinalizeParams) {
     if (!params.csr) {
       throw new core.ArgumentNullError();
     }

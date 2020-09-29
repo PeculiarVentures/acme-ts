@@ -385,7 +385,7 @@ export class AcmeController extends BaseService {
       const account = await this.getAccount(request);
 
       // enroll certificate
-      const params = token.getPayload<protocol.Finalize>();
+      const params = token.getPayload<protocol.FinalizeParams>();
       const order = await this.orderService.enrollCertificate(account.id, orderId, params);
 
       // add headers

@@ -156,7 +156,7 @@ export interface ICertificateEnrollmentService {
    * @param order Order
    * @param request PKCS10 request
    */
-  enroll(order: data.IOrder, request: protocol.Finalize): Promise<ArrayBuffer>;
+  enroll(order: data.IOrder, request: protocol.FinalizeParams): Promise<ArrayBuffer>;
 
   /**
    * Revokes certificate
@@ -206,7 +206,7 @@ export interface IOrderService {
    * @param orderId Order specific id
    * @param params Params to finalize order
    */
-  enrollCertificate(accountId: data.Key, orderId: data.Key, params: protocol.Finalize): Promise<data.IOrder>;
+  enrollCertificate(accountId: data.Key, orderId: data.Key, params: protocol.FinalizeParams): Promise<data.IOrder>;
 
   /**
    * Returns chain for Certificate

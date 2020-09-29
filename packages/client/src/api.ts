@@ -301,7 +301,7 @@ export class ApiClient extends BaseClient {
    * @param url
    * @param params
    */
-  public async finalize(url: string, params: protocol.Finalize) {
+  public async finalize(url: string, params: protocol.FinalizeParams) {
     return this.fetch<protocol.Order>(url, {
       method: "POST",
       kid: this.getAccountId(),
