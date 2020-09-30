@@ -1,26 +1,31 @@
 {
   "name": "@peculiar/acme-ra",
   "version": "0.0.0",
+  "description": "> TODO: description",
   "keywords": [
     "acme"
   ],
-  "description": "> TODO: description",
-  "author": "romashine <miroshin.ry@gmail.com>",
-  "homepage": "https://github.com/PeculiarVentures/ts-acme#readme",
-  "license": "MIT",
+  "license": "AGPL",
+  "author": "Peculiar Ventures LLC",
+  "contributors": [
+    "Miroshin Stepan<microshine@mail.ru>",
+    "Miroshin Roman<miroshin.ry@gmail.com>"
+  ],
+  "homepage": "https://github.com/PeculiarVentures/acme-ts#readme",
   "main": "build/cjs/index.js",
   "module": "build/es2015/index.js",
   "types": "build/types/index.d.ts",
   "files": [
-    "build",
-    "README.md"
+    "build/**/*.{js,ts}",
+    "README.md",
+    "LICENSE"
   ],
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PeculiarVentures/ts-acme.git"
+    "url": "git+https://github.com/PeculiarVentures/acme-ts.git"
   },
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1",
@@ -34,7 +39,7 @@
     "rebuild": "yarn run clear && yarn run build"
   },
   "bugs": {
-    "url": "https://github.com/PeculiarVentures/ts-acme/issues"
+    "url": "https://github.com/PeculiarVentures/acme-ts/issues"
   },
   "dependencies": {
     "@peculiar/acme-core": "^1.1.0",

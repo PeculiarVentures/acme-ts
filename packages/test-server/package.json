@@ -2,10 +2,14 @@
   "name": "@peculiar/acme-test-server",
   "private": true,
   "version": "1.1.0",
-  "license": "MIT",
+  "license": "AGPL",
   "description": "",
   "keywords": [],
-  "author": "microshine <microshine@mail.ru>",
+  "author": "Peculiar Ventures LLC",
+  "contributors": [
+    "Miroshin Stepan<microshine@mail.ru>",
+    "Miroshin Roman<miroshin.ry@gmail.com>"
+  ],
   "main": "build/cjs/index.js",
   "module": "build/es2015/index.js",
   "types": "build/types/index.d.ts",
@@ -18,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PeculiarVentures/ts-acme.git"
+    "url": "git+https://github.com/PeculiarVentures/acme-ts.git"
   },
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1",
@@ -32,7 +36,7 @@
     "rebuild": "yarn run clear && yarn run build"
   },
   "bugs": {
-    "url": "https://github.com/PeculiarVentures/ts-acme/issues"
+    "url": "https://github.com/PeculiarVentures/acme-ts/issues"
   },
   "dependencies": {
     "@peculiar/acme-express": "^1.1.0",

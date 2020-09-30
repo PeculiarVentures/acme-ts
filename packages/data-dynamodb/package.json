@@ -2,22 +2,30 @@
   "name": "@peculiar/acme-data-dynamodb",
   "version": "1.1.0",
   "description": "> TODO: description",
-  "author": "romashine <miroshin.ry@gmail.com>",
-  "homepage": "https://github.com/PeculiarVentures/ts-acme#readme",
-  "license": "MIT",
+  "keywords": [
+    "acme"
+  ],
+  "author": "Peculiar Ventures LLC",
+  "contributors": [
+    "Miroshin Stepan<microshine@mail.ru>",
+    "Miroshin Roman<miroshin.ry@gmail.com>"
+  ],
+  "license": "AGPL",
   "main": "build/cjs/index.js",
   "module": "build/es2015/index.js",
   "types": "build/types/index.d.ts",
+  "files": [
+    "build/**/*.{js,ts}",
+    "README.md",
+    "LICENSE"
+  ],
   "publishConfig": {
     "access": "public"
   },
-  "files": [
-    "build",
-    "README.md"
-  ],
+  "homepage": "https://github.com/PeculiarVentures/acme-ts#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PeculiarVentures/ts-acme.git"
+    "url": "git+https://github.com/PeculiarVentures/acme-ts.git"
   },
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1",
@@ -31,14 +39,14 @@
     "rebuild": "yarn run clear && yarn run build"
   },
   "bugs": {
-    "url": "https://github.com/PeculiarVentures/ts-acme/issues"
+    "url": "https://github.com/PeculiarVentures/acme-ts/issues"
   },
   "dependencies": {
     "@peculiar/acme-core": "^1.1.0",
     "@peculiar/acme-data": "^1.1.0",
     "@peculiar/acme-protocol": "^1.1.0",
     "@peculiar/jose": "^1.1.0",
-    "aws-sdk": "^2.762.0",
+    "aws-sdk": "^2.764.0",
     "dynamoose": "^2.3.0",
     "pvtsutils": "^1.0.14"
   }
