@@ -1,4 +1,4 @@
-import { HttpStatusCode } from "../web";
+import { HttpStatusCode } from "../web/http_status_code";
 import { AcmeError } from "./acme_error";
 import { ErrorType } from "./error_type";
 
