@@ -1,8 +1,6 @@
-import { CRLReasons } from "@peculiar/asn1-x509";
 import { Response, Content, ContentType } from "@peculiar/acme-core";
 import * as protocol from "@peculiar/acme-protocol";
 import { JsonWebSignature, JsonWebKey } from "@peculiar/jose";
-import * as x509 from "@peculiar/x509";
 import { Convert } from "pvtsutils";
 import { BaseClient, ClientOptions, ApiResponse, RequestParams, AcmeMethod } from "./base";
 
@@ -22,6 +20,19 @@ export interface RetryOptions {
    * Interval duration in ms. Default is 1000
    */
   interval?: number;
+}
+
+export enum CRLReasons {
+  unspecified = 0,
+  keyCompromise = 1,
+  cACompromise = 2,
+  affiliationChanged = 3,
+  superseded = 4,
+  cessationOfOperation = 5,
+  certificateHold = 6,
+  removeFromCRL = 8,
+  privilegeWithdrawn = 9,
+  aACompromise = 10
 }
 
 /**
@@ -365,7 +376,7 @@ export class ApiClient extends BaseClient {
         }
         switch (resp.content.type) {
           case ContentType.pemCertificateChain:
-            return x509.PemConverter.decode(resp.content.toString());
+            return this.decodePem(resp.content.toString());
           case ContentType.pkixCert:
             return [resp.content.content];
           case ContentType.pkcs7Mime:
@@ -425,5 +436,20 @@ export class ApiClient extends BaseClient {
     }, this.getCrypto());
     await externalAccountBinding.sign(hmac.algorithm, hmac, this.getCrypto());
     return externalAccountBinding;
+  }
+
+  protected decodePem(pem: string): ArrayBuffer[] {
+    const pattern = /-{5}BEGIN [A-Z0-9 ]+-{5}([a-zA-Z0-9=+/\n\r]+)-{5}END [A-Z0-9 ]+-{5}/g;
+
+    const res: ArrayBuffer[] = [];
+    let matches: RegExpExecArray | null = null;
+    // eslint-disable-next-line no-cond-assign
+    while (matches = pattern.exec(pem)) {
+      const base64 = matches[1]
+        .replace(/[\r\n]/g, "")
+      res.push(Convert.FromBase64(base64));
+    }
+
+    return res;
   }
 }
