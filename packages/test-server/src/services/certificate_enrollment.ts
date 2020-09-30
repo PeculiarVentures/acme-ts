@@ -1,6 +1,6 @@
 import { BaseService, ICertificateEnrollmentService } from "@peculiar/acme-server";
 import { IOrder } from "@peculiar/acme-data";
-import { RevokeReason } from "@peculiar/acme-protocol";
+import { FinalizeParams, RevokeReason } from "@peculiar/acme-protocol";
 import * as x509 from "@peculiar/x509";
 import { Convert } from "pvtsutils";
 import { injectable } from "tsyringe";
@@ -15,8 +15,8 @@ export class CertificateEnrollmentService extends BaseService implements ICertif
     modulusLength: 2048,
   };
 
-  public async enroll(order: IOrder, request: ArrayBuffer): Promise<ArrayBuffer> {
-    const req = new x509.Pkcs10CertificateRequest(request);
+  public async enroll(order: IOrder, request: FinalizeParams): Promise<ArrayBuffer> {
+    const req = new x509.Pkcs10CertificateRequest(request.csr);
     const ca: x509.X509Certificate =  (this.options as any).caCertificate;
     if (!ca) {
       throw new Error("Cannot get CA certificate");
