@@ -5,10 +5,10 @@
   "keywords": [],
   "author": "microshine <microshine@mail.ru>",
   "license": "MIT",
-  "main": "build/index.js",
+  "main": "build/cjs/index.js",
   "browser": "build/acme.js",
   "browserMin": "build/acme.min.js",
-  "module": "build/index.es.js",
+  "module": "build/es2015/index.js",
   "types": "build/types/index.d.ts",
   "files": [
     "build",

@@ -6,8 +6,8 @@
   "description": "",
   "keywords": [],
   "author": "microshine <microshine@mail.ru>",
-  "main": "build/index.js",
-  "module": "build/index.es.js",
+  "main": "build/cjs/index.js",
+  "module": "build/es2015/index.js",
   "types": "build/types/index.d.ts",
   "files": [
     "build",

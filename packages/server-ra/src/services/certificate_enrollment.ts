@@ -20,23 +20,23 @@ export class CertificateEnrollmentService extends BaseService implements ICertif
     const requestRaw = pvtsutils.Convert.FromBase64Url(params.csr);
 
     const type = params.endpoint || this.options.defaultEndpoint;
-    const service = await this.getValidator(type);
+    const service = await this.getEndpoint(type);
     const cert = await service.enroll(order, requestRaw);
     order.endpoint = type;
     return cert;
   }
 
   public async revoke(order: IOrder, reason: RevokeReason): Promise<void> {
-    const service = await this.getValidator(order.endpoint || this.options.defaultEndpoint);
+    const service = await this.getEndpoint(order.endpoint || this.options.defaultEndpoint);
     await service.revoke(order, reason);
   }
 
-  protected getValidatorAll(): IEndpointService[] {
+  protected getEndpointAll(): IEndpointService[] {
     return container.resolveAll<IEndpointService>(diEndpointService);
   }
 
-  protected getValidator(type: string): IEndpointService {
-    const validators = this.getValidatorAll();
+  protected getEndpoint(type: string): IEndpointService {
+    const validators = this.getEndpointAll();
     const validator = validators.filter(o => o.type === type);
     if (!validator.length) {
       throw new MalformedError(`Unsupported endpoint type '${type}'`);

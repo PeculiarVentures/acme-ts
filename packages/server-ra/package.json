@@ -8,8 +8,8 @@
   "author": "romashine <miroshin.ry@gmail.com>",
   "homepage": "https://github.com/PeculiarVentures/ts-acme#readme",
   "license": "MIT",
-  "main": "build/index.js",
-  "module": "build/index.es.js",
+  "main": "build/cjs/index.js",
+  "module": "build/es2015/index.js",
   "types": "build/types/index.d.ts",
   "files": [
     "build",
