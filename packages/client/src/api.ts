@@ -1,15 +1,15 @@
-import { Convert } from "pvtsutils";
-import { PemConverter, Response, Content, ContentType } from "@peculiar/acme-core";
-import { JsonWebSignature, JsonWebKey } from "@peculiar/jose";
 import { CRLReasons } from "@peculiar/asn1-x509";
+import { Response, Content, ContentType } from "@peculiar/acme-core";
 import * as protocol from "@peculiar/acme-protocol";
+import { JsonWebSignature, JsonWebKey } from "@peculiar/jose";
+import * as x509 from "@peculiar/x509";
+import { Convert } from "pvtsutils";
 import { BaseClient, ClientOptions, ApiResponse, RequestParams, AcmeMethod } from "./base";
-import { ExternalAccountBinding } from "@peculiar/acme-protocol";
 
 export interface AccountCreateParams {
   contact?: string[];
   termsOfServiceAgreed?: boolean;
-  externalAccountBinding?: ExternalAccountBinding;
+  externalAccountBinding?: protocol.ExternalAccountBinding;
   onlyReturnExisting?: boolean;
 }
 
@@ -365,7 +365,7 @@ export class ApiClient extends BaseClient {
         }
         switch (resp.content.type) {
           case ContentType.pemCertificateChain:
-            return PemConverter.decode(resp.content.toString());
+            return x509.PemConverter.decode(resp.content.toString());
           case ContentType.pkixCert:
             return [resp.content.content];
           case ContentType.pkcs7Mime:

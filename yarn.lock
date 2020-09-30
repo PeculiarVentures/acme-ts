@@ -2480,7 +2480,7 @@ atob@^2.1.2:
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.2.tgz#6d9517eb9e030d2436666651e86bd9f6f13533c9"
   integrity sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==
 
-auth0@^2.28.0:
+auth0@^2.29.0:
   version "2.29.0"
   resolved "https://registry.yarnpkg.com/auth0/-/auth0-2.29.0.tgz#ed5e83c825cd304d445e4503fbcb572ce0dc285d"
   integrity sha512-H1mp9pMC0SmuXNIa8hJUkLsH14aBP6PhmnEEAHgPEKc3nBz7vuPPZye86XWRQANubSQhrZ/7FA0ssQI2rfdXHQ==
@@ -6778,17 +6778,17 @@ punycode@^2.1.0, punycode@^2.1.1:
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
 
+pvtsutils@1.0.13, pvtsutils@^1.0.13:
+  version "1.0.13"
+  resolved "https://registry.yarnpkg.com/pvtsutils/-/pvtsutils-1.0.13.tgz#a9c674037f973db670c52bad2e138f125091e1a2"
+  integrity sha512-YAoOarKLQE+EewCNf2kGB2wr9/DTCc9ossqmOd+eGf1Hcl60uY1Z+3Av7cCql/yp0DPS09NVhFsvDHzX6EqBuw==
+  dependencies:
+    tslib "^2.0.1"
+
 pvtsutils@1.0.14, pvtsutils@^1.0.11, pvtsutils@^1.0.14:
   version "1.0.14"
   resolved "https://registry.yarnpkg.com/pvtsutils/-/pvtsutils-1.0.14.tgz#002a07d5a47b00aa9191889e450493390ebffefc"
   integrity sha512-X9SBWQ9ceNAEEgLweoE7m7P6LDnZ3pZADBq7utQQV4pQ1vj7uQIAXaAQRCz/4nKLKQRT9ZrHOuxailKqBiztrg==
-  dependencies:
-    tslib "^2.0.1"
-
-pvtsutils@^1.0.13:
-  version "1.0.13"
-  resolved "https://registry.yarnpkg.com/pvtsutils/-/pvtsutils-1.0.13.tgz#a9c674037f973db670c52bad2e138f125091e1a2"
-  integrity sha512-YAoOarKLQE+EewCNf2kGB2wr9/DTCc9ossqmOd+eGf1Hcl60uY1Z+3Av7cCql/yp0DPS09NVhFsvDHzX6EqBuw==
   dependencies:
     tslib "^2.0.1"
 

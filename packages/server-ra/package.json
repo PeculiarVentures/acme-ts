@@ -37,12 +37,12 @@
     "url": "https://github.com/PeculiarVentures/ts-acme/issues"
   },
   "dependencies": {
-    "@peculiar/acme-core": "^0.0.0",
-    "@peculiar/acme-data": "^0.0.0",
-    "@peculiar/acme-data-memory": "^0.0.0",
-    "@peculiar/acme-express": "^0.0.0",
-    "@peculiar/acme-protocol": "^0.0.0",
-    "@peculiar/acme-server": "^0.0.0",
+    "@peculiar/acme-core": "^1.1.0",
+    "@peculiar/acme-data": "^1.1.0",
+    "@peculiar/acme-data-memory": "^1.1.0",
+    "@peculiar/acme-express": "^1.1.0",
+    "@peculiar/acme-protocol": "^1.1.0",
+    "@peculiar/acme-server": "^1.1.0",
     "@peculiar/asn1-schema": "^2.0.17",
     "@peculiar/asn1-x509": "^2.0.22",
     "@peculiar/webcrypto": "^1.1.3",

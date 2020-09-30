@@ -1,5 +1,4 @@
-import express = require("express");
-import { Express } from "express";
+import * as express from "express";
 import { container } from "tsyringe";
 import * as url from "url";
 import * as cors from "cors";
@@ -17,7 +16,7 @@ export type IAcmeExpressOptions = Partial<IServerOptions>;
 
 export class AcmeExpress {
 
-  public static register(app: Express, options: IAcmeExpressOptions = {}) {
+  public static register(app: express.Express, options: IAcmeExpressOptions = {}) {
     diServer.register(container, options);
 
     container.register(diControllers, Controllers);
