@@ -1,11 +1,14 @@
 # `@peculiar/acme-core`
 
-> TODO: description
+- [About](#about)
+- [Installation](#installation)
 
-## Usage
+## About
+
+`@peculiar/acme-core` is a core module for Automatic Certificate Management Environment (ACME) framework.
+
+## Installation
 
 ```
-const acmeCore = require('@peculiar/acme-core');
-
-// TODO: DEMONSTRATE API
+npm install @peculiar/acme-core
 ```
