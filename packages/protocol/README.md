@@ -1,11 +1,14 @@
 # `@peculiar/acme-protocol`
 
-> TODO: description
+- [About](@about)
+- [Installation](@installation)
 
-## Usage
+## About
+
+`@peculiar/acme-protocol` contains declarations of Automatic Certificate Management Environment (ACME) protocol objects
+
+## Installation
 
 ```
-const acmeProtocol = require('@peculiar/acme-protocol');
-
-// TODO: DEMONSTRATE API
+npm install @peculiar/acme-protocol
 ```
