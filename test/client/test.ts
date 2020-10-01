@@ -1,3 +1,4 @@
+import * as assert from "assert";
 import * as fetch from "node-fetch";
 import { Crypto } from "@peculiar/webcrypto";
 import { cryptoProvider } from "@peculiar/x509";
@@ -19,15 +20,16 @@ context("client", () => {
       };
       const keys = (await crypto.subtle.generateKey(alg, false, ["sign", "verify"])) as CryptoKeyPair;
 
-      const client = new ApiClient(keys, "https://acme-staging-v02.api.letsencrypt.org/directory", {
+      const client = await ApiClient.create(keys, "https://acme-staging-v02.api.letsencrypt.org/directory", {
         fetch: fetch as any,
+        crypto,
         debug: false,
       });
-      await client.initialize();
-      await client.newAccount({
+      const account = await client.newAccount({
         contact: ["mailto:microshine@mail.ru"],
         termsOfServiceAgreed: true,
       });
+      assert.strictEqual(account.status, 201);
     });
 
   });

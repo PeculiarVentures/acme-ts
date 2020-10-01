@@ -1,5 +1,5 @@
 import { Convert } from "pvtsutils";
-import { PemConverter } from "@peculiar/acme-core";
+import { PemConverter } from "@peculiar/x509";
 import * as assert from "assert";
 
 context("helpers", () => {

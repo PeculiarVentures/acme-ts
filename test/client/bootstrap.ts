@@ -41,11 +41,11 @@ export async function createClient(newAccount?: boolean): Promise<ClientResult> 
   const keys = (await crypto.subtle.generateKey(alg, false, ["sign", "verify"])) as CryptoKeyPair;
 
   // const client = new ApiClient(keys, "https://acme-staging-v02.api.letsencrypt.org/directory", {
-  const client = new ApiClient(keys, "https://localhost:5003/directory", {
+  const client = await ApiClient.create(keys, "https://localhost:5003/directory", {
     fetch: fetch as any,
+    crypto,
     // debug: true,
   });
-  await client.initialize();
 
   if (newAccount) {
     const res = await client.newAccount({
