@@ -1,6 +1,6 @@
-# `server-ra`
+# `@peculiar/acme-ra`
 
-> TODO: description
+`@peculiar/acme-ra` is Express middleware with Automatic Certificate Management Environment (ACME) protocol that support External Account Binding using Bearer tokens and multiple Certificate Authority endpoints.
 
 ## Install
 
@@ -15,6 +15,8 @@ import * as express from "express";
 import { cryptoProvider, X509CertificateGenerator } from "@peculiar/x509";
 import { Crypto } from "@peculiar/webcrypto";
 import { AcmeRa, diEndpointService } from "@peculiar/acme-ra";
+
+const app = express();
 
 const crypto = new Crypto();
 cryptoProvider.set(crypto);
@@ -31,7 +33,7 @@ AcmeRa.register(app, {
     auth0Domain: "http://domain.auth0.com",
   });
 
-app.listen(4000, () => {
+app.listen(8000, () => {
   console.log(`Server is running`);
 });
 ```
