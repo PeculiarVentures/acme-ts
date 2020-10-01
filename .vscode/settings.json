@@ -35,7 +35,8 @@
     "jose",
     "protocol",
     "server",
-    "server-ra"
+    "server-ra",
+    "server-express",
   ]
 
 }
