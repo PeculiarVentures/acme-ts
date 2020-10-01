@@ -1,7 +1,7 @@
 {
   "name": "@peculiar/acme-server",
   "version": "1.1.0",
-  "description": "",
+  "description": "Implements server services for Automatic Certificate Management Environment (ACME) framework",
   "keywords": [
     "acme"
   ],

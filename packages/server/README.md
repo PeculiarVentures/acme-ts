@@ -1,11 +1,14 @@
 # `@peculiar/acme-server`
 
-> TODO: description
+- [About](#about)
+- [Installation](#installation)
 
-## Usage
+## About
+
+`@peculiar/acme-server` implements server base services for Automatic Certificate Management Environment (ACME) framework. It doesn't depend on HTTP server framework, you are free to use any NodeJS HTTP server.
+
+## Installation
 
 ```
-const acmeServer = require('@peculiar/acme-server');
-
-// TODO: DEMONSTRATE API
+npm install @peculiar/acme-server
 ```
