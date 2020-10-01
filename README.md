@@ -3,7 +3,7 @@
 
 ## Develop
 
-[Lena](https://github.com/lerna/lerna#readme)
+[Lerna](https://github.com/lerna/lerna#readme)
 
 ### Install
 
