@@ -456,10 +456,8 @@ export class ApiClient extends BaseClient {
    */
   protected readNonce(response: ApiResponse<any>) {
     const res = response.headers.replayNonce;
-    if (!res) {
-      throw new Error("Cannot get Replay-nonce header");
-    }
-    this.nonce = res;
+    this.nonce = res || "";
+
     return res;
   }
 
