@@ -5,7 +5,6 @@ declare module "@peculiar/acme-server" {
     caCertificate: X509Certificate;
     defaultEndpoint: string;
     defaultProvider: string;
-    auth0Domain: string;
   }
 }
 
