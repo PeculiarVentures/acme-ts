@@ -12,7 +12,7 @@
 
 ## About
 
-DynamoDB data module for Automatic Certificate Management Environment (ACME) framework based
+DynamoDB data module for Automatic Certificate Management Environment (ACME) framework.
 
 ## Installation
 
