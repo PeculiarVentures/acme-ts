@@ -6,6 +6,6 @@ export interface IProfile {
 export const diProviderService = "Ra.ProviderService";
 
 export interface IProviderService {
-  readonly type: string;
+  identifier: string;
   getProfile(token: string): Promise<IProfile>;
 }
