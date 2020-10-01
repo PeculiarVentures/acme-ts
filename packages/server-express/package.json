@@ -1,7 +1,7 @@
 {
   "name": "@peculiar/acme-express",
   "version": "1.1.0",
-  "description": "> TODO: description",
+  "description": "Express middleware that adds Automatic Certificate Management Environment (ACME) protocol",
   "keywords": [
     "acme"
   ],
