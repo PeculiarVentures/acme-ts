@@ -1,11 +1,14 @@
 # `@peculiar/acme-data`
 
-> TODO: description
+- [About](#about)
+- [Installation](#installation)
 
-## Usage
+## About
+
+`@peculiar/acme-data` is a base data module for Automatic Certificate Management Environment (ACME) framework.
+
+## Installation
 
 ```
-const acmeData = require('@peculiar/acme-data');
-
-// TODO: DEMONSTRATE API
+npm install @peculiar/acme-data
 ```
