@@ -1,5 +1,8 @@
 # `@peculiar/acme-express`
 
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![npm version](https://badge.fury.io/js/%40peculiar%2Facme-express.svg)](https://badge.fury.io/js/%40peculiar%2Facme-express)
+
 - [About](#about)
 - [Installation](#installation)
 - [Usage](#usage)

@@ -1,8 +1,17 @@
 # `@peculiar/acme-ra`
 
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![npm version](https://badge.fury.io/js/%40peculiar%2Facme-ra.svg)](https://badge.fury.io/js/%40peculiar%2Facme-ra)
+
+- [About](#about)
+- [Installation](#installation)
+- [Usage](#usage)
+
+## About
+
 `@peculiar/acme-ra` is Express middleware with Automatic Certificate Management Environment (ACME) protocol that support External Account Binding using Bearer tokens and multiple Certificate Authority endpoints.
 
-## Install
+## Installation
 
 ```
 npm install @peculiar/acme-ra
