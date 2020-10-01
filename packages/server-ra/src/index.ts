@@ -25,7 +25,12 @@ export class AcmeRa {
 
     AcmeExpress.register(app, options);
 
-    app.get('/acme/new-eab', (req: Request, res: Response) => {
+    if (!options.baseAddress) {
+      throw new Error("Base Address is required");
+    }
+    const url = new URL(options.baseAddress);
+
+    app.get(`${url.pathname}/new-eab`, (req: Request, res: Response) => {
       container.resolve<RaControllers>(diControllers).newExternalAccount(req, res);
     });
 
