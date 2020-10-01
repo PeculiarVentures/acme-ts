@@ -1,4 +1,3 @@
-import { Empty } from "@peculiar/acme-data";
 import { Crypto } from "@peculiar/webcrypto";
 import { cryptoProvider } from "@peculiar/x509";
 import { DependencyContainer, RegistrationOptions } from "tsyringe";
@@ -19,7 +18,6 @@ function registerEmpty(container: DependencyContainer, token: string, provider: 
     container.register(token, provider, options);
   }
 }
-
 
 export class DependencyInjection {
   public static register(container: DependencyContainer, options: Partial<services.IServerOptions> = {}) {
@@ -65,7 +63,7 @@ export class DependencyInjection {
     registerEmpty(container, types.diAuthorizationService, services.AuthorizationService);
     registerEmpty(container, types.diChallengeService, services.ChallengeService);
     registerEmpty(container, types.diOrderService, services.OrderService);
-    registerEmpty(container, types.diCertificateEnrollmentService, Empty);
+    registerEmpty(container, types.diCertificateEnrollmentService, data.Empty);
     registerEmpty(container, diAcmeController, AcmeController);
   }
 }
