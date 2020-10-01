@@ -8,7 +8,7 @@
 
 ## About
 
-`@peculiar/acme-protocol` contains declarations of Automatic Certificate Management Environment (ACME) protocol objects
+`@peculiar/acme-protocol` contains declarations ofAutomatic Certificate Management Environment (ACME) implementing RFC 8555 protocol objects
 
 ## Installation
 

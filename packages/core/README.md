@@ -8,7 +8,7 @@
 
 ## About
 
-`@peculiar/acme-core` is a core module for Automatic Certificate Management Environment (ACME) framework.
+`@peculiar/acme-core` is a core module forAutomatic Certificate Management Environment (ACME) implementing RFC 8555 framework.
 
 ## Installation
 

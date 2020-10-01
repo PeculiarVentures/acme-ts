@@ -8,7 +8,7 @@
 
 ## About
 
-`@peculiar/acme-data` is a base data module for Automatic Certificate Management Environment (ACME) framework.
+`@peculiar/acme-data` is a base data module forAutomatic Certificate Management Environment (ACME) implementing RFC 8555 framework.
 
 ## Installation
 

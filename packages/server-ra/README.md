@@ -9,7 +9,7 @@
 
 ## About
 
-`@peculiar/acme-ra` is Express middleware with Automatic Certificate Management Environment (ACME) protocol that support External Account Binding using Bearer tokens and multiple Certificate Authority endpoints.
+`@peculiar/acme-ra` is Express middleware withAutomatic Certificate Management Environment (ACME) implementing RFC 8555 protocol that supports External Account Binding using Bearer tokens and multiple Certificate Authority endpoints.
 
 ## Installation
 

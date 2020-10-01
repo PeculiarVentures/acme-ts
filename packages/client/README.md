@@ -16,7 +16,7 @@
 
 ## About
 
-`@peculiar/acme-client` is an Automatic Certificate Management Environment (ACME) client.
+`@peculiar/acme-client` is anAutomatic Certificate Management Environment (ACME) implementing RFC 8555 client.
 
 ## Installation
 

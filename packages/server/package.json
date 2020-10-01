@@ -1,7 +1,7 @@
 {
   "name": "@peculiar/acme-server",
   "version": "1.1.0",
-  "description": "Implements server services for Automatic Certificate Management Environment (ACME) framework",
+  "description": "Implements server services forAutomatic Certificate Management Environment (ACME) implementing RFC 8555 framework",
   "keywords": [
     "acme"
   ],

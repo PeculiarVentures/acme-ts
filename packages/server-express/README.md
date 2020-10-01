@@ -8,7 +8,7 @@
 - [Usage](#usage)
 
 ## About
-`@peculiar/acme-express` is an Express middleware that can be used to add Automatic Certificate Management Environment (ACME) protocol.
+`@peculiar/acme-express` is an Express middleware that can be used to addAutomatic Certificate Management Environment (ACME) implementing RFC 8555 protocol.
 
 ## Installation
 
