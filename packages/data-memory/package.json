@@ -1,23 +1,30 @@
 {
   "name": "@peculiar/acme-data-memory",
   "version": "1.1.0",
-  "description": "",
-  "keywords": [],
-  "author": "microshine <microshine@mail.ru>",
-  "license": "MIT",
-  "main": "build/index.js",
-  "module": "build/index.es.js",
+  "description": "Memory data module forAutomatic Certificate Management Environment (ACME) implementing RFC 8555 framework",
+  "keywords": [
+    "acme"
+  ],
+  "author": "Peculiar Ventures LLC",
+  "contributors": [
+    "Miroshin Stepan<microshine@mail.ru>",
+    "Miroshin Roman<miroshin.ry@gmail.com>"
+  ],
+  "license": "AGPL",
+  "main": "build/cjs/index.js",
+  "module": "build/es2015/index.js",
   "types": "build/types/index.d.ts",
   "files": [
-    "build",
-    "README.md"
+    "build/**/*.{js,ts}",
+    "README.md",
+    "LICENSE"
   ],
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PeculiarVentures/ts-acme.git"
+    "url": "git+https://github.com/PeculiarVentures/acme-ts.git"
   },
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1",
@@ -31,16 +38,16 @@
     "rebuild": "yarn run clear && yarn run build"
   },
   "bugs": {
-    "url": "https://github.com/PeculiarVentures/ts-acme/issues"
+    "url": "https://github.com/PeculiarVentures/acme-ts/issues"
   },
-  "homepage": "https://github.com/PeculiarVentures/ts-acme#readme",
+  "homepage": "https://github.com/PeculiarVentures/acme-ts#readme",
   "dependencies": {
     "@peculiar/acme-core": "^1.1.0",
     "@peculiar/acme-data": "^1.1.0",
     "@peculiar/acme-protocol": "^1.1.0",
-    "@peculiar/asn1-x509": "2.0.21",
+    "@peculiar/asn1-x509": "2.0.22",
     "@peculiar/jose": "^1.1.0",
-    "pvtsutils": "1.0.12",
+    "pvtsutils": "1.0.14",
     "tsyringe": "^4.2.0"
   }
 }

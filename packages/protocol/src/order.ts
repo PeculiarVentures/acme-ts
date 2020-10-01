@@ -123,6 +123,6 @@ export interface RevokeCertificateParams {
   reason: number;
 }
 
-export interface Finalize {
+export interface FinalizeParams {
   csr: string;
 }

@@ -1,19 +1,33 @@
 {
   "name": "@peculiar/jose",
   "version": "1.1.0",
-  "license": "MIT",
-  "main": "build/index.js",
-  "module": "build/index.es.js",
+  "description": "Implementation of Javascript Object Signing and Encryption (jose)",
+  "keywords": [
+    "acme"
+  ],
+  "license": "AGPL",
+  "author": "Peculiar Ventures LLC",
+  "contributors": [
+    "Miroshin Stepan<microshine@mail.ru>",
+    "Miroshin Roman<miroshin.ry@gmail.com>"
+  ],
+  "main": "build/cjs/index.js",
+  "module": "build/es2015/index.js",
   "types": "build/types/index.d.ts",
   "files": [
-    "build",
-    "README.md"
+    "build/**/*.{js,ts}",
+    "README.md",
+    "LICENSE"
   ],
   "publishConfig": {
     "access": "public"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PeculiarVentures/acme-ts.git"
+  },
   "dependencies": {
-    "pvtsutils": "1.0.12"
+    "pvtsutils": "1.0.14"
   },
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1",
@@ -25,5 +39,9 @@
     "prebuild:types": "rimraf build/types",
     "build:types": "tsc -p tsconfig.compile.json --outDir build/types --declaration --emitDeclarationOnly",
     "rebuild": "yarn run clear && yarn run build"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/PeculiarVentures/acme-ts/issues"
+  },
+  "homepage": "https://github.com/PeculiarVentures/acme-ts#readme"
 }

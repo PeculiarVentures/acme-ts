@@ -1,6 +1,5 @@
-import { Empty } from "@peculiar/acme-data";
 import { Crypto } from "@peculiar/webcrypto";
-import { cryptoProvider } from "@peculiar/acme-core";
+import { cryptoProvider } from "@peculiar/x509";
 import { DependencyContainer, RegistrationOptions } from "tsyringe";
 import { AcmeController, diAcmeController } from "./controllers";
 import { IServerOptions } from "./services";
@@ -20,7 +19,6 @@ function registerEmpty(container: DependencyContainer, token: string, provider: 
   }
 }
 
-
 export class DependencyInjection {
   public static register(container: DependencyContainer, options: Partial<services.IServerOptions> = {}) {
     options.cryptoProvider ??= new Crypto();
@@ -39,7 +37,7 @@ export class DependencyInjection {
     }
     //#endregion
 
-    const serverOptions: IServerOptions = {
+    const serverOptions = {
       ...options,
       baseAddress,
       cryptoProvider: options.cryptoProvider,
@@ -49,7 +47,7 @@ export class DependencyInjection {
       downloadCertificateFormat: options.downloadCertificateFormat ?? "PemCertificateChain",
       debugMode: options.debugMode ?? false,
       levelLogger: options.levelLogger,
-    };
+    } as IServerOptions;
 
     if (!container.isRegistered(data.diAccountRepository)) {
       data.DependencyInjection.register(container);
@@ -65,7 +63,7 @@ export class DependencyInjection {
     registerEmpty(container, types.diAuthorizationService, services.AuthorizationService);
     registerEmpty(container, types.diChallengeService, services.ChallengeService);
     registerEmpty(container, types.diOrderService, services.OrderService);
-    registerEmpty(container, types.diCertificateEnrollmentService, Empty);
+    registerEmpty(container, types.diCertificateEnrollmentService, data.Empty);
     registerEmpty(container, diAcmeController, AcmeController);
   }
 }

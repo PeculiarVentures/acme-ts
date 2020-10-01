@@ -1,7 +1,6 @@
 import * as assert from "assert";
-import { Convert } from "pvtsutils";
 import { ApiClient } from "@peculiar/acme-client";
-import { Pkcs10CertificateRequestGenerator } from "@peculiar/acme-core";
+import { Pkcs10CertificateRequestGenerator } from "@peculiar/x509";
 import { Crypto } from "@peculiar/webcrypto";
 import fetch from "node-fetch";
 
@@ -16,14 +15,11 @@ async function main() {
   };
   const keys = (await crypto.subtle.generateKey(alg, false, ["sign", "verify"])) as CryptoKeyPair;
 
-  const client = new ApiClient(keys, "http://localhost:4000/acme/directory", {
+  const client = await ApiClient.create(keys, "http://localhost:4000/acme/directory", {
     fetch: fetch as any,
     crypto,
     debug: true,
   });
-
-  // Initialize
-  await client.initialize();
 
   // Create a new account
   await client.newAccount({
@@ -57,7 +53,7 @@ async function main() {
       const up = /<([^<>]+)>/.exec(resp.headers.link?.find(o => o.includes(`up"`)) || "")?.[1];
       assert(up, "Cannot get up link from header");
 
-      authz = await client.retryAuthorization(authz);
+      authz = await client.retryAuthorization(up);
       assert.strictEqual(authz.content.status, "valid");
     }
   }
@@ -72,7 +68,7 @@ async function main() {
 
   // Request certificate
   await client.finalize(order.content.finalize, {
-    csr: Convert.ToBase64Url(req.rawData),
+    csr: req.toString("base64url"),
   });
 
   order = await client.retryOrder(order);

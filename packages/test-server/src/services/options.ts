@@ -1,4 +1,4 @@
-import { X509Certificate } from "@peculiar/acme-core";
+import { X509Certificate } from "@peculiar/x509";
 import { IServerOptions } from "@peculiar/acme-server";
 
 export interface ITestServerOptions2 extends IServerOptions {

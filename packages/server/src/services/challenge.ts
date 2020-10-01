@@ -1,19 +1,16 @@
-import { injectable, inject, container } from "tsyringe";
-import { BaseService, IServerOptions, diServerOptions } from "./base";
+import { injectable, container } from "tsyringe";
+import { BaseService } from "./base";
 import { diIdentifierService, IChallengeService, IIdentifierService } from "./types";
 import * as data from "@peculiar/acme-data";
 import * as core from "@peculiar/acme-core";
 import { IAuthorization, IIdentifier } from "@peculiar/acme-data";
-import * as pvtsutils from "pvtsutils";
+import * as x509 from "@peculiar/x509";
 
 @injectable()
 export class ChallengeService extends BaseService implements IChallengeService {
-  public constructor(
-    @inject(data.diChallengeRepository) protected challengeRepository: data.IChallengeRepository,
-    @inject(core.diLogger) logger: core.ILogger,
-    @inject(diServerOptions) options: IServerOptions) {
-    super(options, logger);
-  }
+
+  protected challengeRepository = container.resolve<data.IChallengeRepository>(data.diChallengeRepository);
+
   public async create(auth: IAuthorization, type: string): Promise<data.IChallenge[]> {
     const services = await this.getValidator(type);
     let challenges: data.IChallenge[] = [];
@@ -32,7 +29,7 @@ export class ChallengeService extends BaseService implements IChallengeService {
   }
 
   public async identifierValidate(identifier: data.IIdentifier | data.IIdentifier[]): Promise<void> {
-    const err = new core.MalformedError();
+    const err = new core.MalformedError("Validate identifier failed");
     const identifiers = Array.isArray(identifier) ? identifier : [identifier];
     for (const o of identifiers) {
       const services = await this.getValidator(o.type);
@@ -59,13 +56,13 @@ export class ChallengeService extends BaseService implements IChallengeService {
   }
 
   public async csrValidate(identifiers: data.IIdentifier[], csrStr: string): Promise<void> {
-    let csr: core.Pkcs10CertificateRequest;
+    let csr: x509.Pkcs10CertificateRequest;
     try {
-      csr = new core.Pkcs10CertificateRequest(pvtsutils.Convert.FromBase64(csrStr));
+      csr = new x509.Pkcs10CertificateRequest(csrStr);
     } catch (error) {
-      throw new core.BadCSRError();
+      throw new core.BadCSRError("Cannot create CSR");
     }
-    const err = new core.BadCSRError();
+    const err = new core.BadCSRError("Validate CSR failed");
     const validators = this.getValidatorAll();
     await Promise.all(validators.map(async o => {
       const items = identifiers.filter(i => i.type === o.type);

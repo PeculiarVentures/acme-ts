@@ -25,7 +25,7 @@
       "type": "node",
       "request": "launch",
       "args": [
-        "${workspaceFolder}/packages/test-server/src/index.ts"
+        "${workspaceFolder}/packages/hancock-ra/src/index.ts"
       ],
       "runtimeArgs": [
         "--require",

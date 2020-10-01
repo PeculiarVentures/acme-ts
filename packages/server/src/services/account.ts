@@ -1,21 +1,16 @@
 import * as core from "@peculiar/acme-core";
 import { IAccountRepository, diAccountRepository, IAccount, Key, diAccount } from "@peculiar/acme-data";
 import { AccountCreateParams, AccountUpdateParams } from "@peculiar/acme-protocol";
-import { JsonWebKey } from "@peculiar/jose";
-import { inject, container, injectable } from "tsyringe";
-import { BaseService, diServerOptions, IServerOptions } from "./base";
+import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
+import { container, injectable } from "tsyringe";
+import { BaseService } from "./base";
 import { IExternalAccountService, diExternalAccountService, IAccountService } from "./types";
 
 @injectable()
 export class AccountService extends BaseService implements IAccountService {
 
-  public constructor(
-    @inject(diAccountRepository) protected accountRepository: IAccountRepository,
-    @inject(diExternalAccountService) protected externalAccountService: IExternalAccountService,
-    @inject(core.diLogger) logger: core.ILogger,
-    @inject(diServerOptions) options: IServerOptions) {
-    super(options, logger);
-  }
+  public accountRepository = container.resolve<IAccountRepository>(diAccountRepository);
+  public externalAccountService = container.resolve<IExternalAccountService>(diExternalAccountService);
 
   public async create(key: JsonWebKey, params: AccountCreateParams) {
     if (params.contact) {
@@ -26,24 +21,20 @@ export class AccountService extends BaseService implements IAccountService {
     let account = container.resolve<IAccount>(diAccount);
     await this.onCreate(account, key, params);
 
-    // TODO
-    // if (Options.ExternalAccountOptions.Type != ExternalAccountType.None) {
-    //   // Uses external account binding
-    //   if (Options.externalAccountOptions.Type == ExternalAccountType.Required
-    //     && params.externalAccountBinding == null)
-    //   {
-    //     throw new MalformedError("externalAccountBinding is required"); // TODO check rfc error
-    //   }
+    if (this.options.meta?.externalAccountRequired) {
+      // Uses external account binding
+      if (!params.externalAccountBinding) {
+        throw new core.MalformedError("externalAccountBinding is required");
+      }
+      const jws = new JsonWebSignature();
+      jws.fromJSON(params.externalAccountBinding);
 
-    //   if (params.ExternalAccountBinding != null)
-    //   {
-    //     var eab = ExternalAccountService.Validate(key, @params.ExternalAccountBinding);
-    //     if (eab.Status == ExternalAccountStatus.Invalid) {
-    //       throw new MalformedException("externalAccountBinding has wrong signature"); // TODO check rfc error
-    //     }
-    //     account.ExternalAccountId = eab.Id;
-    //   }
-    // }
+      const eab = await this.externalAccountService.validate(key, jws);
+      if (eab.status === "invalid") {
+        throw new core.MalformedError("externalAccountBinding has wrong signature");
+      }
+      account.externalAccountId = eab.id;
+    }
 
     // Adds account
     account = await this.accountRepository.add(account);

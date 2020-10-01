@@ -1,11 +1,12 @@
 import * as core from "@peculiar/acme-core";
 import * as types from "../services/types";
 import * as protocol from "@peculiar/acme-protocol";
+import * as x509 from "@peculiar/x509";
 
 import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
-import { inject, injectable } from "tsyringe";
+import { container, injectable } from "tsyringe";
 import { IAccount, Key } from "@peculiar/acme-data";
-import { BaseService, diServerOptions, IServerOptions } from "../services";
+import { BaseService } from "../services";
 
 export const diAcmeController = "ACME.AcmeController";
 /**
@@ -16,20 +17,15 @@ export const diAcmeController = "ACME.AcmeController";
 @injectable()
 export class AcmeController extends BaseService {
 
-  public constructor(
-    @inject(types.diDirectoryService) protected directoryService: types.IDirectoryService,
-    @inject(types.diNonceService) protected nonceService: types.INonceService,
-    @inject(types.diConvertService) protected convertService: types.IConvertService,
-    @inject(types.diAccountService) protected accountService: types.IAccountService,
-    @inject(types.diAuthorizationService) protected authorizationService: types.IAuthorizationService,
-    @inject(types.diChallengeService) protected challengeService: types.IChallengeService,
-    @inject(types.diOrderService) protected orderService: types.IOrderService,
-    @inject(core.diLogger) logger: core.ILogger,
-    @inject(diServerOptions) options: IServerOptions) {
-    super(options, logger);
-  }
+  protected directoryService = container.resolve<types.IDirectoryService>(types.diDirectoryService);
+  protected nonceService = container.resolve<types.INonceService>(types.diNonceService);
+  protected convertService = container.resolve<types.IConvertService>(types.diConvertService);
+  protected accountService = container.resolve<types.IAccountService>(types.diAccountService);
+  protected authorizationService = container.resolve<types.IAuthorizationService>(types.diAuthorizationService);
+  protected challengeService = container.resolve<types.IChallengeService>(types.diChallengeService);
+  protected orderService = container.resolve<types.IOrderService>(types.diOrderService);
 
-  protected async wrapAction(action: (response: core.Response) => Promise<void>, request: core.Request, useJwk = false) {
+  public async wrapAction(action: (response: core.Response) => Promise<void>, request: core.Request, useJwk = false) {
     const response = new core.Response();
 
     try {
@@ -389,7 +385,7 @@ export class AcmeController extends BaseService {
       const account = await this.getAccount(request);
 
       // enroll certificate
-      const params = token.getPayload<protocol.Finalize>();
+      const params = token.getPayload<protocol.FinalizeParams>();
       const order = await this.orderService.enrollCertificate(account.id, orderId, params);
 
       // add headers
@@ -483,7 +479,7 @@ export class AcmeController extends BaseService {
       switch (this.options.downloadCertificateFormat) {
         case "PemCertificateChain":
           {
-            const pem = core.PemConverter.encode(certs.map(o => o.rawData), "certificate");
+            const pem = x509.PemConverter.encode(certs.map(o => o.rawData), "certificate");
             response.content = new core.Content(pem);
           }
           break;
@@ -495,7 +491,7 @@ export class AcmeController extends BaseService {
           break;
         case "Pkcs7Mime":
           {
-            response.content = new core.Content(certs.export(), "application/pkcs7-mime");
+            response.content = new core.Content(certs.export("raw"), "application/pkcs7-mime");
           }
           break;
       }

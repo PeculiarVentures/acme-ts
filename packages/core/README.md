@@ -1,11 +1,17 @@
 # `@peculiar/acme-core`
 
-> TODO: description
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![npm version](https://badge.fury.io/js/%40peculiar%2Facme-core.svg)](https://badge.fury.io/js/%40peculiar%2Facme-core)
 
-## Usage
+- [About](#about)
+- [Installation](#installation)
+
+## About
+
+`@peculiar/acme-core` is a core module forAutomatic Certificate Management Environment (ACME) implementing RFC 8555 framework.
+
+## Installation
 
 ```
-const acmeCore = require('@peculiar/acme-core');
-
-// TODO: DEMONSTRATE API
+npm install @peculiar/acme-core
 ```

@@ -1,19 +1,12 @@
-import { BaseService, ICertificateEnrollmentService, diServerOptions, IServerOptions } from "@peculiar/acme-server";
+import { BaseService, ICertificateEnrollmentService } from "@peculiar/acme-server";
 import { IOrder } from "@peculiar/acme-data";
-import { RevokeReason } from "@peculiar/acme-protocol";
-import { X509Certificate, Pkcs10CertificateRequest, diLogger, ILogger } from "@peculiar/acme-core";
-import { X509CertificateGenerator } from "packages/core/src/crypto/x509_cert_generator";
+import { FinalizeParams, RevokeReason } from "@peculiar/acme-protocol";
+import * as x509 from "@peculiar/x509";
 import { Convert } from "pvtsutils";
-import { inject, injectable } from "tsyringe";
+import { injectable } from "tsyringe";
 
 @injectable()
 export class CertificateEnrollmentService extends BaseService implements ICertificateEnrollmentService {
-
-  public constructor(
-    @inject(diLogger) logger: ILogger,
-    @inject(diServerOptions) options: IServerOptions) {
-    super(options, logger);
-  }
 
   public static signingAlgorithm: RsaHashedKeyGenParams = {
     name: "RSASSA-PKCS1-v1_5",
@@ -22,9 +15,9 @@ export class CertificateEnrollmentService extends BaseService implements ICertif
     modulusLength: 2048,
   };
 
-  public async enroll(order: IOrder, request: ArrayBuffer): Promise<ArrayBuffer> {
-    const req = new Pkcs10CertificateRequest(request);
-    const ca: X509Certificate =  (this.options as any).caCertificate;
+  public async enroll(order: IOrder, request: FinalizeParams): Promise<ArrayBuffer> {
+    const req = new x509.Pkcs10CertificateRequest(request.csr);
+    const ca: x509.X509Certificate =  (this.options as any).caCertificate;
     if (!ca) {
       throw new Error("Cannot get CA certificate");
     }
@@ -34,7 +27,7 @@ export class CertificateEnrollmentService extends BaseService implements ICertif
     const notAfter = new Date();
     notAfter.setUTCMonth(notAfter.getUTCMonth() + 1);
 
-    const cert = await X509CertificateGenerator.create({
+    const cert = await x509.X509CertificateGenerator.create({
       serialNumber: Convert.ToHex(this.getCrypto().getRandomValues(new Uint8Array(10))),
       subject: req.subject,
       issuer: ca.subject,

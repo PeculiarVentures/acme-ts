@@ -36,7 +36,7 @@ export interface ApiResponse<T> {
 
 export class BaseClient {
 
-  public static createResponse<T>(resp: core.Response, content: T): ApiResponse<T> {
+  protected static createResponse<T>(resp: core.Response, content: T): ApiResponse<T> {
     return {
       status: resp.status,
       headers: resp.headers,
@@ -48,12 +48,15 @@ export class BaseClient {
 
   public constructor(options: ClientOptions = {}) {
     this.options = {
-      crypto: options.crypto || core.cryptoProvider.get(),
+      crypto: typeof self !== "undefined" ? self.crypto : undefined,
       debug: options.debug,
       defaultHash: "SHA-256",
       fetch: typeof fetch !== "undefined" ? fetch : undefined,
       ...options
     };
+    if (!this.options.crypto) {
+      throw new Error("Cannot initialize ACME client. It requires crypto provider to be set.")
+    }
   }
 
   protected async fetch<T = core.Content>(url: string, params: RequestParams<T>) {

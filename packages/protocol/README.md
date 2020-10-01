@@ -1,11 +1,17 @@
 # `@peculiar/acme-protocol`
 
-> TODO: description
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![npm version](https://badge.fury.io/js/%40peculiar%2Facme-protocol.svg)](https://badge.fury.io/js/%40peculiar%2Facme-protocol)
 
-## Usage
+- [About](@about)
+- [Installation](@installation)
+
+## About
+
+`@peculiar/acme-protocol` contains declarations ofAutomatic Certificate Management Environment (ACME) implementing RFC 8555 protocol objects
+
+## Installation
 
 ```
-const acmeProtocol = require('@peculiar/acme-protocol');
-
-// TODO: DEMONSTRATE API
+npm install @peculiar/acme-protocol
 ```

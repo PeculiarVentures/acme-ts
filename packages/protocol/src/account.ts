@@ -68,15 +68,21 @@ export interface AccountCreateParams {
    *
    * NOTE: This field is not updateable by the client
    */
-  externalAccountBinding?: ExternalAccountBinding;
+  externalAccountBinding?: JsonWebSignature;
 
   /**
    * If this field is present
    * with the value "true", then the server MUST NOT create a new
-   * account if one does not already exist.This allows a client to
+   * account if one does not already exist. This allows a client to
    * look up an account URL based on an account key.
    */
   onlyReturnExisting?: boolean;
+}
+
+export interface JsonWebSignature {
+  protected: string;
+  payload: string;
+  signature: string;
 }
 
 export interface AccountUpdateParams {
@@ -92,12 +98,7 @@ export interface AccountUpdateParams {
   status?: AccountStatus;
 }
 
-export interface ExternalAccountBinding {
-  challenge: string;
-  kid: string;
-}
-
-export interface CreateAccountProtocol {
+export interface CreateAccountParams {
   contact?: string[];
   termsOfServiceAgreed?: boolean;
   onlyReturnExisting?: boolean;

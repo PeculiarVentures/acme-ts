@@ -34,7 +34,9 @@
     "data-memory",
     "jose",
     "protocol",
-    "server"
+    "server",
+    "server-ra",
+    "server-express",
   ]
 
 }

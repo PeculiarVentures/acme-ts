@@ -1,6 +1,6 @@
-import { AcmeError } from "../errors";
-import { Convert, BufferSourceConverter } from "pvtsutils";
 import { Error } from "@peculiar/acme-protocol";
+import { Convert, BufferSourceConverter } from "pvtsutils";
+import { AcmeError } from "../errors/acme_error";
 
 export enum ContentType {
   json = "application/json",
@@ -29,7 +29,7 @@ export class Content {
    *
    * @param json Initialize application/json content
    */
-  public constructor(json: object, formatted?: boolean);
+  public constructor(json: any, formatted?: boolean);
   /**
    * Initialize type specified content
    * @param buffer Binary content
@@ -44,7 +44,9 @@ export class Content {
       this.content = Convert.FromUtf8String(JSON.stringify({
         detail: data.message,
         type: data.type,
-        subproblems: data.subproblems,
+        subproblems: data.subproblems?.map(o => {
+          return { detail: o.message, type: o.type };
+        }),
       } as Error));
       this.type = ContentType.problemJson;
     } else if (BufferSourceConverter.isBufferSource(data)) {

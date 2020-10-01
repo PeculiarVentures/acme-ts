@@ -1,5 +1,6 @@
-import { MalformedError, ILogger, Level, diLogger, X509Certificate } from "@peculiar/acme-core";
-import { inject } from "tsyringe";
+import { MalformedError, ILogger, Level, diLogger } from "@peculiar/acme-core";
+import { X509Certificate } from "@peculiar/x509";
+import { container } from "tsyringe";
 import { DirectoryMetadata } from "@peculiar/acme-protocol";
 
 export const diServerOptions = "ACME.ServerOptions";
@@ -28,10 +29,8 @@ export interface IServerOptions {
 
 export class BaseService {
 
-  public constructor(
-    @inject(diServerOptions) public options: IServerOptions,
-    @inject(diLogger) protected logger: ILogger,
-  ) { }
+  public logger = container.resolve<ILogger>(diLogger);
+  public options = container.resolve<IServerOptions>(diServerOptions);
 
   public getKeyIdentifier(kid: string) {
     const res = /\/([^/?]+)\??[^/]*$/.exec(kid)?.[1];

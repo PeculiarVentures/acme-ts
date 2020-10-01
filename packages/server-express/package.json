@@ -1,27 +1,32 @@
 {
   "name": "@peculiar/acme-express",
   "version": "1.1.0",
-  "description": "> TODO: description",
+  "description": "Express middleware that addsAutomatic Certificate Management Environment (ACME) implementing RFC 8555 protocol",
   "keywords": [
     "acme"
   ],
-  "author": "romashine <miroshin.ry@gmail.com>",
-  "homepage": "https://github.com/PeculiarVentures/ts-acme#readme",
-  "license": "MIT",
-  "main": "build/index.js",
-  "module": "build/index.es.js",
+  "license": "AGPL",
+  "author": "Peculiar Ventures LLC",
+  "contributors": [
+    "Miroshin Stepan<microshine@mail.ru>",
+    "Miroshin Roman<miroshin.ry@gmail.com>"
+  ],
+  "main": "build/cjs/index.js",
+  "module": "build/es2015/index.js",
   "types": "build/types/index.d.ts",
   "files": [
-    "build",
-    "README.md"
+    "build/**/*.{js,ts}",
+    "README.md",
+    "LICENSE"
   ],
   "publishConfig": {
     "access": "public"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PeculiarVentures/ts-acme.git"
+    "url": "git+https://github.com/PeculiarVentures/acme-ts.git"
   },
+  "homepage": "https://github.com/PeculiarVentures/acme-ts#readme",
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1",
     "clear": "rimraf build/*",
@@ -34,13 +39,15 @@
     "rebuild": "yarn run clear && yarn run build"
   },
   "bugs": {
-    "url": "https://github.com/PeculiarVentures/ts-acme/issues"
+    "url": "https://github.com/PeculiarVentures/acme-ts/issues"
   },
   "dependencies": {
     "@peculiar/acme-core": "^1.1.0",
     "@peculiar/acme-data": "^1.1.0",
     "@peculiar/acme-server": "^1.1.0",
+    "@types/cors": "^2.8.7",
     "@types/express": "^4.17.7",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "tsyringe": "^4.3.0"
   }

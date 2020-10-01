@@ -4,7 +4,7 @@ import { ApiClient } from "@peculiar/acme-client";
 import { ApiResponse } from "packages/client/src/base";
 import * as protocol from "@peculiar/acme-protocol";
 import { Crypto } from "@peculiar/webcrypto";
-import { cryptoProvider } from "@peculiar/acme-core";
+import { cryptoProvider } from "@peculiar/x509";
 import { Account } from "@peculiar/acme-protocol";
 
 export function checkHeaders(res: ApiResponse<any>) {
@@ -41,11 +41,11 @@ export async function createClient(newAccount?: boolean): Promise<ClientResult> 
   const keys = (await crypto.subtle.generateKey(alg, false, ["sign", "verify"])) as CryptoKeyPair;
 
   // const client = new ApiClient(keys, "https://acme-staging-v02.api.letsencrypt.org/directory", {
-  const client = new ApiClient(keys, "https://localhost:5003/directory", {
+  const client = await ApiClient.create(keys, "https://localhost:5003/directory", {
     fetch: fetch as any,
+    crypto,
     // debug: true,
   });
-  await client.initialize();
 
   if (newAccount) {
     const res = await client.newAccount({

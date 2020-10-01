@@ -1,4 +1,5 @@
-import { ContentType, ErrorType, Extension, Pkcs10CertificateRequestGenerator, QueryParams, Request, Response, X509CertificateGenerator } from "@peculiar/acme-core";
+import * as core from "@peculiar/acme-core";
+import * as x509 from "@peculiar/x509";
 import * as data from "@peculiar/acme-data";
 import { IAuthorizationRepository } from "@peculiar/acme-data";
 import * as dataMemory from "@peculiar/acme-data-memory";
@@ -28,7 +29,7 @@ context("Server", () => {
     const rootName = "CN=ACME demo root CA, O=PeculiarVentures LLC";
     const rootKeys = await crypto.subtle.generateKey(CertificateEnrollmentService.signingAlgorithm, false, ["sign", "verify"]) as CryptoKeyPair;
 
-    const rootCert = await X509CertificateGenerator.create({
+    const rootCert = await x509.X509CertificateGenerator.create({
       serialNumber: "01",
       subject: rootName,
       issuer: rootName,
@@ -60,7 +61,7 @@ context("Server", () => {
 
   //#region Helpers
   async function getNonce() {
-    const nonceResp = await controller.getNonce(new Request({
+    const nonceResp = await controller.getNonce(new core.Request({
       path: `${baseAddress}/new-nonce`,
       method: "HEAD",
     }));
@@ -78,7 +79,7 @@ context("Server", () => {
     return await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as CryptoKeyPair;
   }
 
-  async function createPostRequest(params: any, url: string, kid: string, keys: CryptoKeyPair, queryParams: QueryParams = {}) {
+  async function createPostRequest(params: any, url: string, kid: string, keys: CryptoKeyPair, queryParams: core.QueryParams = {}) {
     const jws = new JsonWebSignature({
       payload: params,
       protected: {
@@ -90,7 +91,7 @@ context("Server", () => {
     }, crypto);
     await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
 
-    return new Request({
+    return new core.Request({
       path: url,
       method: "POST",
       queryParams,
@@ -99,7 +100,7 @@ context("Server", () => {
   }
 
   // eslint-disable-next-line @typescript-eslint/member-delimiter-style
-  async function createAccount(params: protocol.AccountCreateParams & { keys?: CryptoKeyPair; }, response?: (resp: Response) => void) {
+  async function createAccount(params: protocol.AccountCreateParams & { keys?: CryptoKeyPair; }, response?: (resp: core.Response) => void) {
     const keys = params.keys || await generateKey();
     const jws = new JsonWebSignature({
       payload: params,
@@ -111,7 +112,7 @@ context("Server", () => {
     }, crypto);
     await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
 
-    const resp = await controller.newAccount(new Request({
+    const resp = await controller.newAccount(new core.Request({
       path: `${baseAddress}/new-acct`,
       method: "POST",
       body: jws.toJSON(),
@@ -146,13 +147,13 @@ context("Server", () => {
   //#endregion
 
   it("GET directory", async () => {
-    const resp = await controller.getDirectory(new Request({
+    const resp = await controller.getDirectory(new core.Request({
       path: `${baseAddress}/directory`,
       method: "GET",
     }));
 
     assert.strictEqual(resp.status, 200);
-    assert.strictEqual(resp.content?.type, ContentType.json);
+    assert.strictEqual(resp.content?.type, core.ContentType.json);
 
     const json: protocol.Directory = resp.json();
     assert.strictEqual(json.keyChange, `${baseAddress}/key-change`);
@@ -164,7 +165,7 @@ context("Server", () => {
   });
 
   it("GET new-nonce", async () => {
-    const resp = await controller.getNonce(new Request({
+    const resp = await controller.getNonce(new core.Request({
       path: `${baseAddress}/new-nonce`,
       method: "GET",
     }));
@@ -175,7 +176,7 @@ context("Server", () => {
   });
 
   it("HEAD new-nonce", async () => {
-    const resp = await controller.getNonce(new Request({
+    const resp = await controller.getNonce(new core.Request({
       path: `${baseAddress}/new-nonce`,
       method: "HEAD",
     }));
@@ -207,7 +208,7 @@ context("Server", () => {
         }, crypto);
         await jws.sign(alg, keys.privateKey);
 
-        const resp = await controller.newAccount(new Request({
+        const resp = await controller.newAccount(new core.Request({
           path: `${baseAddress}/new-acct`,
           method: "POST",
           body: jws.toJSON(),
@@ -216,7 +217,7 @@ context("Server", () => {
         assert.strictEqual(resp.status, 400);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, ErrorType.badNonce);
+        assert.strictEqual(json.type, core.ErrorType.badNonce);
       });
 
       it("empty url", async () => {
@@ -231,7 +232,7 @@ context("Server", () => {
         }, crypto);
         await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
 
-        const resp = await controller.newAccount(new Request({
+        const resp = await controller.newAccount(new core.Request({
           path: `${baseAddress}/new-acct`,
           method: "POST",
           body: jws.toJSON(),
@@ -241,7 +242,7 @@ context("Server", () => {
         assert.strictEqual(!!resp.headers.replayNonce, true);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, ErrorType.unauthorized);
+        assert.strictEqual(json.type, core.ErrorType.unauthorized);
       });
 
       it("invalid jws signature", async () => {
@@ -261,7 +262,7 @@ context("Server", () => {
         await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
         jws.signature += "a";
 
-        const resp = await controller.newAccount(new Request({
+        const resp = await controller.newAccount(new core.Request({
           path: `${baseAddress}/new-acct`,
           method: "POST",
           body: jws.toJSON(),
@@ -271,7 +272,7 @@ context("Server", () => {
         assert.strictEqual(!!resp.headers.replayNonce, true);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, ErrorType.unauthorized);
+        assert.strictEqual(json.type, core.ErrorType.unauthorized);
       });
 
       it("create with contacts", async () => {
@@ -304,7 +305,7 @@ context("Server", () => {
           const json = resp.json<protocol.Error>();
           // If the server rejects a contact URL for using an unsupported scheme,
           // it MUST return an error of type "unsupportedContact"
-          assert.strictEqual(json.type, ErrorType.unsupportedContact);
+          assert.strictEqual(json.type, core.ErrorType.unsupportedContact);
         });
 
         assert.strictEqual(client.account.contact, undefined);
@@ -318,7 +319,7 @@ context("Server", () => {
           // If the server rejects a contact URL for using
           // a supported scheme but an invalid value, then the server MUST return
           // an error of type "invalidContact".
-          assert.strictEqual(json.type, ErrorType.invalidContact);
+          assert.strictEqual(json.type, core.ErrorType.invalidContact);
         });
 
         assert.strictEqual(client.account.contact, undefined);
@@ -329,7 +330,7 @@ context("Server", () => {
           assert.strictEqual(resp.status, 400);
 
           const json = resp.json<protocol.Error>();
-          assert.strictEqual(json.type, ErrorType.accountDoesNotExist);
+          assert.strictEqual(json.type, core.ErrorType.accountDoesNotExist);
         });
       });
 
@@ -380,7 +381,7 @@ context("Server", () => {
       });
 
       it("get directory", async () => {
-        const resp = await controller.getDirectory(new Request({
+        const resp = await controller.getDirectory(new core.Request({
           method: "GET",
           path: `${baseAddress}/directory`,
         }));
@@ -397,7 +398,7 @@ context("Server", () => {
           assert.strictEqual(resp.status, 403);
 
           const json = resp.json<protocol.Error>();
-          assert.strictEqual(json.type, ErrorType.malformed);
+          assert.strictEqual(json.type, core.ErrorType.malformed);
         });
       });
 
@@ -474,7 +475,7 @@ context("Server", () => {
         assert.strictEqual(resp.status, 400);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, ErrorType.invalidContact);
+        assert.strictEqual(json.type, core.ErrorType.invalidContact);
       });
 
       it("unsupported contact", async () => {
@@ -493,7 +494,7 @@ context("Server", () => {
         assert.strictEqual(resp.status, 400);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, ErrorType.unsupportedContact);
+        assert.strictEqual(json.type, core.ErrorType.unsupportedContact);
       });
 
       it("deactivate", async () => {
@@ -529,7 +530,7 @@ context("Server", () => {
           assert.strictEqual(resp.status, 401);
 
           const json = resp.json<protocol.Error>();
-          assert.strictEqual(json.type, ErrorType.unauthorized);
+          assert.strictEqual(json.type, core.ErrorType.unauthorized);
         }
       });
 
@@ -591,7 +592,7 @@ context("Server", () => {
         assert.strictEqual(resp.headers.location, client2.location);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, ErrorType.malformed);
+        assert.strictEqual(json.type, core.ErrorType.malformed);
       });
 
       it("inner token must have JWK", async () => {
@@ -612,7 +613,7 @@ context("Server", () => {
         assert.strictEqual(resp.status, 403);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, ErrorType.malformed);
+        assert.strictEqual(json.type, core.ErrorType.malformed);
       });
 
       it("inner token must have JWK", async () => {
@@ -633,7 +634,7 @@ context("Server", () => {
         assert.strictEqual(resp.status, 403);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, ErrorType.malformed);
+        assert.strictEqual(json.type, core.ErrorType.malformed);
       });
 
       it("inner token invalid signature", async () => {
@@ -652,7 +653,7 @@ context("Server", () => {
         assert.strictEqual(resp.status, 403);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, ErrorType.malformed);
+        assert.strictEqual(json.type, core.ErrorType.malformed);
       });
 
       it("inner token invalid signature", async () => {
@@ -671,7 +672,7 @@ context("Server", () => {
         assert.strictEqual(resp.status, 403);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, ErrorType.malformed);
+        assert.strictEqual(json.type, core.ErrorType.malformed);
       });
 
     });
@@ -932,7 +933,7 @@ context("Server", () => {
         assert.strictEqual(resp.status, 403);
 
         const error = resp.json<protocol.Error>();
-        assert.strictEqual(error.type, ErrorType.unsupportedIdentifier);
+        assert.strictEqual(error.type, core.ErrorType.unsupportedIdentifier);
       });
 
       it("incorrect identifier value", async () => {
@@ -954,7 +955,7 @@ context("Server", () => {
         assert.strictEqual(resp.status, 403);
 
         const error = resp.json<protocol.Error>();
-        assert.strictEqual(error.type, ErrorType.malformed);
+        assert.strictEqual(error.type, core.ErrorType.malformed);
       });
 
     });
@@ -1104,14 +1105,14 @@ context("Server", () => {
         const resp2 = await controller.finalizeOrder(await createPostRequest(
           {
             csr: "AaAaAaAaAaAaAaAaAaAaAaAa",
-          } as protocol.Finalize,
+          } as protocol.FinalizeParams,
           `${baseAddress}/finalize/${orderId}`,
           client.location!,
           client.keys), orderId);
 
         assert.strictEqual(resp2.status, 403);
         const error = resp2.json<protocol.Error>();
-        assert.strictEqual(error.type, ErrorType.badCSR);
+        assert.strictEqual(error.type, core.ErrorType.badCSR);
       });
 
       it("CSR doesn't have required identifiers", async () => {
@@ -1142,14 +1143,14 @@ context("Server", () => {
         const resp2 = await controller.finalizeOrder(await createPostRequest(
           {
             csr: "MIICRzCCAS8CAQAwAjEAMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArut7tLrb1BEHXImMTWipet+3/J2isn7mBv278oP7YyOkmX/Vzxvk9nvSc/B1wh6kSo6nfaxYacNNSP3r+WQYaTeLm5TsDbUfCJYtvvTuYH0GVTM8Qm7QhMZKnyUy/D60WNcRM4pnBDSEMpKppi7HhfL37DZpQnsQfr9r8LQPWZ9t/mf+FsSeWyQOQcz+ob6cODfNQIvbzpaXXdNpKIHLPW+/e4af5/WlZ9wL5Sy7kOf4X6nErdl74s1vSji9goANSQkd5TbswtFPRNybikrrisz0HtsIq2uTGDY6t3iOEHTe5qe/ux4anjbSqKVuIQEQWQOKb4h+mHTc+EC5yknihQIDAQABoAAwDQYJKoZIhvcNAQELBQADggEBAE7TU20ui1MLtxLM0UZMytYAjC7vtXxB5Vl6bzHUzZkVFW6oTeizqDxjeBtZ1SqErpgdyvzMvFSxF6f+679kl1/Zs2V0IPa4y58he3wTT/M1xCBN/bITY2cA4ETozbtK4cGoi6jY/0j8NcxTLfiBgwhE3ap+9GzLtWEhHWCXmpsohbvAktXSh1tLh4xmgoQoePEBSPbnaOmsonyzscKiBMASDvjrFdNbtD0uY2v/wYXwtRGvV/Q/O3lLWEosE4NdnZmgId4bm7ru48WucSnxuEJAkKUjDLrN0uqY/tKfX4Zy9w8Y/o+hk3QzNBVa3ZUvzDhVAmamQflvw3lXMm/JG4U=",
-          } as protocol.Finalize,
+          } as protocol.FinalizeParams,
           `${baseAddress}/finalize/${orderId}`,
           client.location!,
           client.keys), orderId);
 
         assert.strictEqual(resp2.status, 403);
         const error = resp2.json<protocol.Error>();
-        assert.strictEqual(error.type, ErrorType.badCSR);
+        assert.strictEqual(error.type, core.ErrorType.badCSR);
         assert(error.subproblems);
         assert.strictEqual(error.subproblems.length, 2);
       });
@@ -1186,12 +1187,12 @@ context("Server", () => {
           modulusLength: 2048,
         };
         const keys = await crypto.subtle.generateKey(keyAlg, false, ["sign", "verify"]) as CryptoKeyPair;
-        const req = await Pkcs10CertificateRequestGenerator.create({
+        const req = await x509.Pkcs10CertificateRequestGenerator.create({
           name: "CN=some.com",
           keys,
           signingAlgorithm: { name: "RSASSA-PKCS1-v1_5" },
           extensions: [
-            new Extension(id_ce_subjectAltName, false, AsnConvert.serialize(new SubjectAlternativeName([
+            new x509.Extension(id_ce_subjectAltName, false, AsnConvert.serialize(new SubjectAlternativeName([
               new GeneralName({ dNSName: "info.some.com" }),
               new GeneralName({ dNSName: "*.some.com" }),
             ])))
@@ -1200,14 +1201,14 @@ context("Server", () => {
         const resp2 = await controller.finalizeOrder(await createPostRequest(
           {
             csr: Convert.ToBase64Url(req.rawData),
-          } as protocol.Finalize,
+          } as protocol.FinalizeParams,
           `${baseAddress}/finalize/${orderId}`,
           client.location!,
           client.keys), orderId);
 
         assert.strictEqual(resp2.status, 403);
         const error = resp2.json<protocol.Error>();
-        assert.strictEqual(error.type, ErrorType.badCSR);
+        assert.strictEqual(error.type, core.ErrorType.badCSR);
         assert(error.subproblems);
         assert.strictEqual(error.subproblems.length, 2);
       });
@@ -1574,7 +1575,7 @@ context("Server", () => {
         assert.strictEqual(resp3.status, 403);
 
         const error = resp3.json<protocol.Error>();
-        assert.strictEqual(error.type, ErrorType.malformed);
+        assert.strictEqual(error.type, core.ErrorType.malformed);
       });
 
     });
@@ -1624,12 +1625,12 @@ context("Server", () => {
           modulusLength: 2048,
         };
         const keys = await crypto.subtle.generateKey(keyAlg, false, ["sign", "verify"]) as CryptoKeyPair;
-        const req = await Pkcs10CertificateRequestGenerator.create({
+        const req = await x509.Pkcs10CertificateRequestGenerator.create({
           name: "DC=some.com",
           keys,
           signingAlgorithm: { name: "RSASSA-PKCS1-v1_5" },
           extensions: [
-            new Extension(id_ce_subjectAltName, false, AsnConvert.serialize(new SubjectAlternativeName([
+            new x509.Extension(id_ce_subjectAltName, false, AsnConvert.serialize(new SubjectAlternativeName([
               new GeneralName({ dNSName: "some.com" }),
             ])))
           ]
@@ -1637,7 +1638,7 @@ context("Server", () => {
         const resp2 = await controller.finalizeOrder(await createPostRequest(
           {
             csr: Convert.ToBase64Url(req.rawData),
-          } as protocol.Finalize,
+          } as protocol.FinalizeParams,
           `${baseAddress}/finalize/${orderId}`,
           client.location!,
           client.keys), orderId);
@@ -1648,7 +1649,7 @@ context("Server", () => {
         const resp3 = await controller.getCertificate(await createPostRequest(
           {
             csr: Convert.ToBase64Url(req.rawData),
-          } as protocol.Finalize,
+          } as protocol.FinalizeParams,
           order2.certificate,
           client.location!,
           client.keys), thumbprint);
@@ -1726,7 +1727,7 @@ context("Server", () => {
 
         assert.strictEqual(resp3.status, 400);
         const error = resp3.json<protocol.Error>();
-        assert.strictEqual(error.type, ErrorType.alreadyRevoked);
+        assert.strictEqual(error.type, core.ErrorType.alreadyRevoked);
       });
 
       it("Error: access denied", async () => {
@@ -1753,7 +1754,7 @@ context("Server", () => {
 
         assert.strictEqual(resp2.status, 401);
         const error = resp2.json<protocol.Error>();
-        assert.strictEqual(error.type, ErrorType.unauthorized);
+        assert.strictEqual(error.type, core.ErrorType.unauthorized);
       });
     });
   });

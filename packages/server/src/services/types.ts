@@ -1,7 +1,8 @@
 import * as protocol from "@peculiar/acme-protocol";
 import * as data from "@peculiar/acme-data";
 import { JsonWebSignature, JsonWebKey } from "@peculiar/jose";
-import { AcmeError, Pkcs10CertificateRequest, QueryParams, X509Certificates } from "@peculiar/acme-core";
+import { AcmeError, QueryParams } from "@peculiar/acme-core";
+import { Pkcs10CertificateRequest, X509Certificates } from "@peculiar/x509";
 
 export const diConvertService = "ACME.ConvertService";
 
@@ -155,7 +156,7 @@ export interface ICertificateEnrollmentService {
    * @param order Order
    * @param request PKCS10 request
    */
-  enroll(order: data.IOrder, request: ArrayBuffer): Promise<ArrayBuffer>;
+  enroll(order: data.IOrder, request: protocol.FinalizeParams): Promise<ArrayBuffer>;
 
   /**
    * Revokes certificate
@@ -205,7 +206,7 @@ export interface IOrderService {
    * @param orderId Order specific id
    * @param params Params to finalize order
    */
-  enrollCertificate(accountId: data.Key, orderId: data.Key, params: protocol.Finalize): Promise<data.IOrder>;
+  enrollCertificate(accountId: data.Key, orderId: data.Key, params: protocol.FinalizeParams): Promise<data.IOrder>;
 
   /**
    * Returns chain for Certificate

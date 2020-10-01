@@ -1,11 +1,17 @@
 # `@peculiar/acme-data`
 
-> TODO: description
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![npm version](https://badge.fury.io/js/%40peculiar%2Facme-data.svg)](https://badge.fury.io/js/%40peculiar%2Facme-data)
 
-## Usage
+- [About](#about)
+- [Installation](#installation)
+
+## About
+
+`@peculiar/acme-data` is a base data module forAutomatic Certificate Management Environment (ACME) implementing RFC 8555 framework.
+
+## Installation
 
 ```
-const acmeData = require('@peculiar/acme-data');
-
-// TODO: DEMONSTRATE API
+npm install @peculiar/acme-data
 ```

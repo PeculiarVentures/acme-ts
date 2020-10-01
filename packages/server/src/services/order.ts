@@ -1,9 +1,10 @@
-import { inject, container, injectable } from "tsyringe";
-import { BaseService, diServerOptions, IServerOptions } from "./base";
+import { container, injectable } from "tsyringe";
+import { BaseService } from "./base";
 import * as data from "@peculiar/acme-data";
 import * as protocol from "@peculiar/acme-protocol";
 import * as types from "./types";
 import * as core from "@peculiar/acme-core";
+import * as x509 from "@peculiar/x509";
 import { JsonWebKey } from "@peculiar/jose";
 import * as ModelFabric from "./model_fabric";
 import * as pvtsutils from "pvtsutils";
@@ -17,7 +18,7 @@ export interface ICertificateEnrollParams {
   /**
    * Params to finalize
    */
-  params: protocol.Finalize;
+  params: protocol.FinalizeParams;
 
   /**
    * Any object. Allows transfer data from OnEnrollCertificateBefore to OnEnrollCertificateTask
@@ -33,17 +34,12 @@ export interface ICertificateEnrollParams {
 @injectable()
 export class OrderService extends BaseService implements types.IOrderService {
 
-  public constructor(
-    @inject(data.diOrderRepository) protected orderRepository: data.IOrderRepository,
-    @inject(types.diAccountService) protected accountService: types.IAccountService,
-    @inject(types.diAuthorizationService) protected authorizationService: types.IAuthorizationService,
-    @inject(types.diChallengeService) protected challengeService: types.IChallengeService,
-    @inject(data.diOrderAuthorizationRepository) protected orderAuthorizationRepository: data.IOrderAuthorizationRepository,
-    @inject(types.diCertificateEnrollmentService) protected certificateEnrollmentService: types.ICertificateEnrollmentService,
-    @inject(core.diLogger) logger: core.ILogger,
-    @inject(diServerOptions) options: IServerOptions) {
-    super(options, logger);
-  }
+  protected orderRepository = container.resolve<data.IOrderRepository>(data.diOrderRepository);
+  protected accountService = container.resolve<types.IAccountService>(types.diAccountService);
+  protected authorizationService = container.resolve<types.IAuthorizationService>(types.diAuthorizationService);
+  protected challengeService = container.resolve<types.IChallengeService>(types.diChallengeService);
+  protected orderAuthorizationRepository = container.resolve<data.IOrderAuthorizationRepository>(data.diOrderAuthorizationRepository);
+  protected certificateEnrollmentService = container.resolve<types.ICertificateEnrollmentService>(types.diCertificateEnrollmentService);
 
   /**
    * Returns hash
@@ -63,7 +59,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     // create order
     let order = container.resolve<data.IOrder>(data.diOrder);
     // fill params
-    this.onCreateParams(order, params, accountId);
+    await this.onCreateParams(order, params, accountId);
 
     // create authorization
     const authorizations = await this.onCreateAuth(order, params);
@@ -91,7 +87,7 @@ export class OrderService extends BaseService implements types.IOrderService {
    * @param params Params to create
    * @param accountId Account identifier
    */
-  protected onCreateParams(order: data.IOrder, params: protocol.OrderCreateParams, accountId: data.Key) {
+  protected async onCreateParams(order: data.IOrder, params: protocol.OrderCreateParams, accountId: data.Key) {
     order.accountId = accountId;
     if (params.notAfter) {
       order.notAfter = params.notAfter;
@@ -253,7 +249,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     }
   }
 
-  public async enrollCertificate(accountId: data.Key, orderId: data.Key, params: protocol.Finalize) {
+  public async enrollCertificate(accountId: data.Key, orderId: data.Key, params: protocol.FinalizeParams) {
     if (!params.csr) {
       throw new core.ArgumentNullError();
     }
@@ -290,8 +286,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     // check cancel
     if (!certificateEnrollParams.cancel) {
       try {
-        const requestRaw = pvtsutils.Convert.FromBase64Url(params.csr);
-        const certificate = await this.certificateEnrollmentService.enroll(order, requestRaw); // todo ? using certEnrollParams
+        const certificate = await this.certificateEnrollmentService.enroll(order, params); // todo ? using certEnrollParams
 
         order.certificate = ModelFabric.certificate();
         order.certificate.rawData = certificate;
@@ -299,7 +294,7 @@ export class OrderService extends BaseService implements types.IOrderService {
         order.certificate.status = "valid";
 
         await this.orderRepository.update(order);
-        await this.onEnrollCertificateTask(certificateEnrollParams);
+        await this.onEnrollCertificateTask();
 
         if (order.status === "processing") {
           order.status = "valid";
@@ -323,8 +318,8 @@ export class OrderService extends BaseService implements types.IOrderService {
     if (!order.certificate) {
       throw new core.MalformedError("Certificate not found");
     }
-    const cert = new core.X509Certificate(order.certificate.rawData);
-    const chain = new core.X509ChainBuilder({
+    const cert = new x509.X509Certificate(order.certificate.rawData);
+    const chain = new x509.X509ChainBuilder({
       certificates: this.options.extraCertificateStorage,
     });
 
@@ -415,7 +410,7 @@ export class OrderService extends BaseService implements types.IOrderService {
    * Allows add additional task before enroll certificate
    * @param certificateEnrollParams
    */
-  protected onEnrollCertificateBefore(certificateEnrollParams: ICertificateEnrollParams): ICertificateEnrollParams {
+  protected async onEnrollCertificateBefore(certificateEnrollParams: ICertificateEnrollParams): Promise<ICertificateEnrollParams> {
     return certificateEnrollParams;
   }
 
@@ -423,7 +418,7 @@ export class OrderService extends BaseService implements types.IOrderService {
    * Allows add additional enroll certificate task
    * @param certificateEnrollParams
    */
-  protected async onEnrollCertificateTask(certificateEnrollParams: ICertificateEnrollParams): Promise<void> {
+  protected async onEnrollCertificateTask(): Promise<void> {
     // empty
   }
 
@@ -445,7 +440,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     }
     const accountId = order.accountId;
     if (!accountId) {
-      throw new core.MalformedError();
+      throw new core.MalformedError("Order don't have accountId");
     }
     const authzs = await Promise.all(orderAuthzs.map(async o => await this.authorizationService.getById(accountId, o.authorizationId)));
     return authzs.map(o => { return { ...o.identifier }; });

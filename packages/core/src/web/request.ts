@@ -10,7 +10,7 @@ export class Request {
   public method: RequestMethod = "GET";
   public path = "";
   public queryParams: QueryParams = {};
-  public body?: object;
+  public body?: any;
 
   public constructor(params: Partial<Request> = {}) {
     Object.assign(this, params);
