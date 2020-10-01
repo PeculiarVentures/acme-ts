@@ -31,6 +31,7 @@ export class AcmeRa {
 
     container.register(acmeServer.diCertificateEnrollmentService, services.CertificateEnrollmentService, { lifecycle: Lifecycle.Singleton });
     container.register(acmeServer.diIdentifierService, services.EmailChallengeService);
+    container.register(acmeServer.diDirectoryService, services.RaDirectoryService);
     container.register(services.diAuth0, services.Auth0Service);
     container.register(diControllers, RaControllers);
     container.register(acmeServer.diExternalAccountService, acmeServer.ExternalAccountService);

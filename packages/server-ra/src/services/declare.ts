@@ -18,4 +18,7 @@ declare module "@peculiar/acme-protocol" {
   interface FinalizeParams {
     endpoint?: string;
   }
+  interface Directory {
+    newEab?: string;
+  }
 }
