@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.1.0...v1.2.0) (2020-10-01)
+
+
+### Bug Fixes
+
+* Build script ([845a2af](https://github.com/PeculiarVentures/acme-ts/commit/845a2af0a596fdb18b2cd3260779c1b05cdd9120))
+* **core, server, server-express:** small bugs ([a6228c3](https://github.com/PeculiarVentures/acme-ts/commit/a6228c3432ed8fc9dea7f01afbac73f3d9ca185c))
+* **server-express:** Error message ([a281904](https://github.com/PeculiarVentures/acme-ts/commit/a28190410762b50ea9191ed09e823fa1365ed2ac))
+* **server-express:** Headers ([9240357](https://github.com/PeculiarVentures/acme-ts/commit/9240357dcfa1aeb19e0702ea6bb263993fd7cad1))
+
+
+
+
+
 # 1.1.0 (2020-09-23)
 
 

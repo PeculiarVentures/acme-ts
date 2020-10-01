@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/jose",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Implementation of Javascript Object Signing and Encryption (jose)",
   "keywords": [
     "acme"

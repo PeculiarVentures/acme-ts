@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.1.0...v1.2.0) (2020-10-01)
+
+
+### Bug Fixes
+
+* Build script ([845a2af](https://github.com/PeculiarVentures/acme-ts/commit/845a2af0a596fdb18b2cd3260779c1b05cdd9120))
+* **client, protocol, server:** ExternalAccountBinding ([983e412](https://github.com/PeculiarVentures/acme-ts/commit/983e4122a794c5678c5a71043ca0de1db55288a2))
+
+
+### Features
+
+* **client:** Clear cached nonce if response doesn't have it ([2ec05e5](https://github.com/PeculiarVentures/acme-ts/commit/2ec05e53f8949e16bb949cfa6ef3b4dfe496024d))
+* **client:** Move ApiClient constructor to static create method ([308047e](https://github.com/PeculiarVentures/acme-ts/commit/308047eaad5f10a39976122a75d08558b81beda6))
+* **client:** Remove odd deps to minify bundle size ([9c0f482](https://github.com/PeculiarVentures/acme-ts/commit/9c0f482a985e16aa2971a40b6da085de45af77f1))
+* Use x509 module instead of core/crypto ([9c75764](https://github.com/PeculiarVentures/acme-ts/commit/9c75764c9ab51464b4fe2da3789ec435f806c93c))
+* **client:** added rollup ([85d8644](https://github.com/PeculiarVentures/acme-ts/commit/85d8644c20cf940a395074927f470bff5270a22a))
+
+
+
+
+
 # 1.1.0 (2020-09-23)
 
 

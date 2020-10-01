@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.1.0...v1.2.0) (2020-10-01)
+
+
+### Bug Fixes
+
+* **client, protocol, server:** ExternalAccountBinding ([983e412](https://github.com/PeculiarVentures/acme-ts/commit/983e4122a794c5678c5a71043ca0de1db55288a2))
+* **core, server:** Convert Error ([d8c3493](https://github.com/PeculiarVentures/acme-ts/commit/d8c34935ce5e12cb37cbc1913fcba6b93b2b3198))
+* **core, server, server-express:** small bugs ([a6228c3](https://github.com/PeculiarVentures/acme-ts/commit/a6228c3432ed8fc9dea7f01afbac73f3d9ca185c))
+* **server:** message log ([0627e57](https://github.com/PeculiarVentures/acme-ts/commit/0627e578974aff803f3fe2d3855e58ecc040e38e))
+
+
+### Features
+
+* **server:** Changed input params for certificateEnrollmentService enroll ([525e178](https://github.com/PeculiarVentures/acme-ts/commit/525e178f153f8561d77256843ca3dee92656e47a))
+* **server-ra:** created project server-ra ([dd8a5f2](https://github.com/PeculiarVentures/acme-ts/commit/dd8a5f2ff79c57c2e64de2cdecdfecf4f12aad6d))
+* Use x509 module instead of core/crypto ([9c75764](https://github.com/PeculiarVentures/acme-ts/commit/9c75764c9ab51464b4fe2da3789ec435f806c93c))
+
+
+
+
+
 # 1.1.0 (2020-09-23)
 
 

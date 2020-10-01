@@ -3,6 +3,43 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/PeculiarVentures/ts-acme/compare/v1.1.0...v1.2.0) (2020-10-01)
+
+
+### Bug Fixes
+
+* **core:** Circular dependency ([305e3e2](https://github.com/PeculiarVentures/ts-acme/commit/305e3e21ccfabf60daa702718e401c0964ae024c))
+* **test-server:** Wrong type of enroll method ([499b393](https://github.com/PeculiarVentures/ts-acme/commit/499b393ed734db85d94e33dce702fb6bef0ce883))
+* Build script ([845a2af](https://github.com/PeculiarVentures/ts-acme/commit/845a2af0a596fdb18b2cd3260779c1b05cdd9120))
+* **client, protocol, server:** ExternalAccountBinding ([983e412](https://github.com/PeculiarVentures/ts-acme/commit/983e4122a794c5678c5a71043ca0de1db55288a2))
+* **core:** Change object type on any type ([5a3b235](https://github.com/PeculiarVentures/ts-acme/commit/5a3b23560e5fe10ffd6c01745253ca941db7a2f9))
+* **core, server:** Convert Error ([d8c3493](https://github.com/PeculiarVentures/ts-acme/commit/d8c34935ce5e12cb37cbc1913fcba6b93b2b3198))
+* **core, server, server-express:** small bugs ([a6228c3](https://github.com/PeculiarVentures/ts-acme/commit/a6228c3432ed8fc9dea7f01afbac73f3d9ca185c))
+* **jose:** build script ([6430aeb](https://github.com/PeculiarVentures/ts-acme/commit/6430aebae895fb9d921f0bd050886be3730e3612))
+* **protocol:** interface JWS ([1723c08](https://github.com/PeculiarVentures/ts-acme/commit/1723c08a801322a5738eace00f89a9f969c88026))
+* **server:** message log ([0627e57](https://github.com/PeculiarVentures/ts-acme/commit/0627e578974aff803f3fe2d3855e58ecc040e38e))
+* **server-express:** Error message ([a281904](https://github.com/PeculiarVentures/ts-acme/commit/a28190410762b50ea9191ed09e823fa1365ed2ac))
+* **server-express:** Headers ([9240357](https://github.com/PeculiarVentures/ts-acme/commit/9240357dcfa1aeb19e0702ea6bb263993fd7cad1))
+
+
+### Features
+
+* **client:** added rollup ([85d8644](https://github.com/PeculiarVentures/ts-acme/commit/85d8644c20cf940a395074927f470bff5270a22a))
+* **client:** Clear cached nonce if response doesn't have it ([2ec05e5](https://github.com/PeculiarVentures/ts-acme/commit/2ec05e53f8949e16bb949cfa6ef3b4dfe496024d))
+* **client:** Move ApiClient constructor to static create method ([308047e](https://github.com/PeculiarVentures/ts-acme/commit/308047eaad5f10a39976122a75d08558b81beda6))
+* **client:** Remove odd deps to minify bundle size ([9c0f482](https://github.com/PeculiarVentures/ts-acme/commit/9c0f482a985e16aa2971a40b6da085de45af77f1))
+* **server:** Changed input params for certificateEnrollmentService enroll ([525e178](https://github.com/PeculiarVentures/ts-acme/commit/525e178f153f8561d77256843ca3dee92656e47a))
+* **server-ra:** Added ProviderService ([775b0c2](https://github.com/PeculiarVentures/ts-acme/commit/775b0c2980de11079fb312659d6ebc87b20941ae))
+* **server-ra:** created project server-ra ([dd8a5f2](https://github.com/PeculiarVentures/ts-acme/commit/dd8a5f2ff79c57c2e64de2cdecdfecf4f12aad6d))
+* **server-ra:** Remove data-memory dependency ([2ca8bf2](https://github.com/PeculiarVentures/ts-acme/commit/2ca8bf2cc40df86bec423ebbfc294a03550ea83e))
+* **server-ra:** Removed auth0Domain option ([00bb743](https://github.com/PeculiarVentures/ts-acme/commit/00bb743fb317d1f6c4def8baa9aa0168bed51b54))
+* **server-ra:** Update readme ([94d7a74](https://github.com/PeculiarVentures/ts-acme/commit/94d7a7414d14225d93960a649f8da46abfe92b8f))
+* Use x509 module instead of core/crypto ([9c75764](https://github.com/PeculiarVentures/ts-acme/commit/9c75764c9ab51464b4fe2da3789ec435f806c93c))
+
+
+
+
+
 # 1.1.0 (2020-09-23)
 
 

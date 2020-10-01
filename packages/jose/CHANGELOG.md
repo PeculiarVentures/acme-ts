@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.1.0...v1.2.0) (2020-10-01)
+
+
+### Bug Fixes
+
+* **jose:** build script ([6430aeb](https://github.com/PeculiarVentures/acme-ts/commit/6430aebae895fb9d921f0bd050886be3730e3612))
+
+
+
+
+
 # 1.1.0 (2020-09-23)
 
 

@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.1.0...v1.2.0) (2020-10-01)
+
+
+### Bug Fixes
+
+* **client, protocol, server:** ExternalAccountBinding ([983e412](https://github.com/PeculiarVentures/acme-ts/commit/983e4122a794c5678c5a71043ca0de1db55288a2))
+* **protocol:** interface JWS ([1723c08](https://github.com/PeculiarVentures/acme-ts/commit/1723c08a801322a5738eace00f89a9f969c88026))
+
+
+### Features
+
+* **client:** Move ApiClient constructor to static create method ([308047e](https://github.com/PeculiarVentures/acme-ts/commit/308047eaad5f10a39976122a75d08558b81beda6))
+
+
+
+
+
 # 1.1.0 (2020-09-23)
 
 

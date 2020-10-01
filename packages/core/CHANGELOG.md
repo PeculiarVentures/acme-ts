@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.1.0...v1.2.0) (2020-10-01)
+
+
+### Bug Fixes
+
+* **core:** Change object type on any type ([5a3b235](https://github.com/PeculiarVentures/acme-ts/commit/5a3b23560e5fe10ffd6c01745253ca941db7a2f9))
+* **core:** Circular dependency ([305e3e2](https://github.com/PeculiarVentures/acme-ts/commit/305e3e21ccfabf60daa702718e401c0964ae024c))
+* **core, server:** Convert Error ([d8c3493](https://github.com/PeculiarVentures/acme-ts/commit/d8c34935ce5e12cb37cbc1913fcba6b93b2b3198))
+* **core, server, server-express:** small bugs ([a6228c3](https://github.com/PeculiarVentures/acme-ts/commit/a6228c3432ed8fc9dea7f01afbac73f3d9ca185c))
+
+
+### Features
+
+* Use x509 module instead of core/crypto ([9c75764](https://github.com/PeculiarVentures/acme-ts/commit/9c75764c9ab51464b4fe2da3789ec435f806c93c))
+
+
+
+
+
 # 1.1.0 (2020-09-23)
 
 
