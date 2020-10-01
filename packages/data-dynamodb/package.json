@@ -1,7 +1,7 @@
 {
   "name": "@peculiar/acme-data-dynamodb",
   "version": "1.1.0",
-  "description": "> TODO: description",
+  "description": "DynamoDB data module for Automatic Certificate Management Environment (ACME) framework",
   "keywords": [
     "acme"
   ],

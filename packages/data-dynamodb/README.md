@@ -1,6 +1,24 @@
-# `data-dynamodb`
+# `@peculiar/acme-data-dynamodb`
 
-> TODO: description
+- [About](#about)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Data structure](#data-structure)
+  - [Account](#account)
+  - [Order](#order)
+  - [Certificate](#certificate)
+  - [Authorization](#authorization)
+  - [challenge](#challenge)
+
+## About
+
+DynamoDB data module for Automatic Certificate Management Environment (ACME) framework based
+
+## Installation
+
+```
+npm install @peculiar/acme-data-dynamodb
+```
 
 ## Usage
 
@@ -8,18 +26,18 @@
 import * as data from "@peculiar/acme-data-dynamodb";
 import { container } from "tsyaringe";
 
+// Register services in dependency injection container
 data.DependencyInjection.register(container, {
   accessKeyId: "AWS_ACCESS_KEY_ID",
   secretAccessKey: "AWS_ACCESS_KEY",
   region: "local",
   endpoint: "http://localhost:8000",
 });
-// TODO: DEMONSTRATE API
 ```
 
 ## Data structure
 
-Account
+### Account
 ```ts
 {
   id:                   { "S": String },
@@ -43,7 +61,7 @@ Account
 },
 ```
 
-Order
+### Order
 ```ts
 {
   id:             { "S": String },
@@ -63,7 +81,7 @@ Order
 },
 ```
 
-Link for find order by certificate thumbprint
+### Certificate
 ```ts
 {
   id:       { "S": String }, //CertificateThumbprint
@@ -72,7 +90,7 @@ Link for find order by certificate thumbprint
 },
 ```
 
-Authorization
+### Authorization
 ```ts
 {
   id:         { "S": String },
@@ -89,7 +107,7 @@ Authorization
 }
 ```
 
-Challenge
+### Challenge
 ```ts
 {
   id:        { "S": String },
