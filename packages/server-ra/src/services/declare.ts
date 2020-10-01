@@ -4,6 +4,7 @@ declare module "@peculiar/acme-server" {
   interface IServerOptions {
     caCertificate: X509Certificate;
     defaultEndpoint: string;
+    defaultProvider: string;
     auth0Domain: string;
   }
 }

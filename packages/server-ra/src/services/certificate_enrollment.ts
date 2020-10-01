@@ -8,7 +8,7 @@ import * as pvtsutils from "pvtsutils";
 export const diEndpointService = "Ra.Endpoint";
 
 export interface IEndpointService {
-  type: string;
+  readonly type: string;
   enroll(order: IOrder, request: ArrayBuffer): Promise<ArrayBuffer>;
   revoke(order: IOrder, reason: RevokeReason): Promise<void>;
 }

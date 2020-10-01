@@ -39,6 +39,6 @@ export class AcmeRa {
     container.register(diControllers, RaControllers);
     container.register(acmeServer.diExternalAccountService, acmeServer.ExternalAccountService);
     container.register(acmeServer.diAuthorizationService, services.RaAuthorizationService);
-    container.register(services.diAuth0, services.Auth0Service);
+    container.register(services.diAuthProviderService, services.ProviderService);
   }
 }

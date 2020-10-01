@@ -3,12 +3,12 @@ import { Controllers } from "@peculiar/acme-express";
 import { container, injectable } from "tsyringe";
 import { Request, Response } from "express";
 import { Content } from "@peculiar/acme-core";
-import { Auth0Service, diAuth0 } from "../services";
+import { diAuthProviderService, ProviderService } from "../services";
 
 @injectable()
 export class RaControllers extends Controllers {
 
-  protected auth0 = container.resolve<Auth0Service>(diAuth0);
+  protected providerService = container.resolve<ProviderService>(diAuthProviderService);
 
   protected externalAccountService = container.resolve<ExternalAccountService>(diExternalAccountService);
 
@@ -18,20 +18,9 @@ export class RaControllers extends Controllers {
       if (!req.headers.authorization) {
         throw new Error("Authorization header is required");
       }
-
-      const profile = await this.auth0.getProfile(req.headers.authorization);
-      if (profile.email && profile.phone_number) {
-        if (!profile.email_verified && !profile.phone_verified) {
-          throw new Error("Email and phone number don't verified");
-        }
-      } else if (profile.email) {
-        if (!profile.email_verified) {
-          throw new Error("Email don't verified");
-        }
-      } else {
-        if (!profile.phone_verified) {
-          throw new Error("Phone number don't verified");
-        }
+      const profile = await this.providerService.getProfile(req.headers.authorization, req.query.provider?.valueOf().toString());
+      if (!profile.email && !profile.phone) {
+        throw new Error("Email and phone number don't verified");
       }
 
       const externalAccount = await this.externalAccountService.create(profile);

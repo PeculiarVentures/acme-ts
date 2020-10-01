@@ -40,15 +40,9 @@ export class RaAuthorizationService extends acmeServer.AuthorizationService {
       if (!eab.account.email || identifier.value !== eab.account.email) {
         throw new MalformedError("Email from request not equal with email from external account");
       }
-      if (!eab.account.email_verified) {
-        throw new MalformedError("Email don't verified");
-      }
     } else if (identifier.type === "phone") {
       if (!eab.account.phone_number || identifier.value !== eab.account.phone_number) {
         throw new MalformedError("Phone number from request not equal with phone number from external account");
-      }
-      if (!eab.account.phone_number_verified) {
-        throw new MalformedError("Phone number don't verified");
       }
     } else {
       throw new MalformedError("Not supported type identifier");
