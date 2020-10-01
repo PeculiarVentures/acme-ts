@@ -44,7 +44,6 @@
   "dependencies": {
     "@peculiar/acme-core": "^1.1.0",
     "@peculiar/acme-data": "^1.1.0",
-    "@peculiar/acme-data-memory": "^1.1.0",
     "@peculiar/acme-express": "^1.1.0",
     "@peculiar/acme-protocol": "^1.1.0",
     "@peculiar/acme-server": "^1.1.0",
