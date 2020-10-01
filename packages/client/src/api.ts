@@ -2,12 +2,35 @@ import { Response, Content, ContentType } from "@peculiar/acme-core";
 import * as protocol from "@peculiar/acme-protocol";
 import { JsonWebSignature, JsonWebKey } from "@peculiar/jose";
 import { Convert } from "pvtsutils";
-import { BaseClient, ClientOptions, ApiResponse, RequestParams, AcmeMethod } from "./base";
+import { BaseClient, ClientOptions, ApiResponse, RequestParams } from "./base";
+
+export interface ExternalAccountBinding {
+  /**
+   * HMAC key in base64url encoded format
+   */
+  challenge: string;
+  /**
+   * URI with key identifier
+   */
+  kid: string;
+}
 
 export interface AccountCreateParams {
+  /**
+   * List of contacts
+   */
   contact?: string[];
+  /**
+   * Indicates the client's agreement with the terms of service
+   */
   termsOfServiceAgreed?: boolean;
-  externalAccountBinding?: protocol.ExternalAccountBinding;
+  /**
+   * External account parameters
+   */
+  externalAccountBinding?: ExternalAccountBinding;
+  /**
+   * Indicates that client must return only existing account
+   */
   onlyReturnExisting?: boolean;
 }
 
@@ -42,55 +65,81 @@ export class ApiClient extends BaseClient {
   public static RETRIES = 10;
   public static INTERVAL = 1000;
 
-  private _nonce = "";
-  private _accountId = "";
-  private _directory?: protocol.Directory;
+  /**
+   * Creates a new instance of ApiClient
+   * @param accountKey Account key pair
+   * @param url URI to ACME directory controller
+   * @param options Client options
+   */
+  public static async create(accountKey: CryptoKeyPair, url: string, options?: ClientOptions) {
+    const client = new ApiClient(accountKey, url, options);
+    client.directory = await client.getDirectory();
 
-  public constructor(
+    return client;
+  }
+
+  /**
+   * Last used nonce
+   */
+  protected nonce = "";
+  /**
+   * Account id
+   */
+  protected accountId = "";
+  /**
+   * Cached directory object
+   */
+  protected directory!: protocol.Directory;
+
+  protected constructor(
     public accountKey: CryptoKeyPair,
     public url: string,
     options?: ClientOptions) {
     super(options);
   }
 
+  /**
+   * Sends request
+   * @param url URI
+   * @param params Parameters
+   */
   protected async fetch<T = Content>(url: string, params: RequestParams<T>) {
     if (params.method === "POST" || params.method === "POST-as-GET") {
-      if (!this._nonce) {
-        await this.nonce();
+      if (!this.nonce) {
+        await this.getNonce();
       }
-      params.nonce = this._nonce;
-      this._nonce = "";
+      params.nonce = this.nonce;
+      this.nonce = "";
     }
 
     const resp = await super.fetch(url, params);
 
-    this.getNonce(resp);
+    this.readNonce(resp);
 
     return resp;
   }
 
   /**
-   * Retrieving a list of controllers from an ACME server
-   * @param url ACME Server Controller List Issue URL
+   * Gets a directory object
    */
-  public async initialize() {
+  public async getDirectory() {
     const response = await this.fetch<protocol.Directory>(this.url, {
       method: "GET",
       convert: (resp) => resp.json(),
     });
-    this._directory = response.content;
-    return this._directory;
+
+    return response.content;
   }
 
   /**
-   * Confirmation Code Request
+   * Gets a new nonce
    */
-  public async nonce(method: "GET" | "HEAD" = "HEAD") {
-    const response = await this.fetch<null>(this.getDirectory().newNonce, {
+  public async getNonce(method: "GET" | "HEAD" = "HEAD") {
+    const response = await this.fetch<null>(this.directory.newNonce, {
       method,
       convert: () => null,
     });
-    return this.getNonce(response);
+    return this.readNonce(response);
   }
 
   //#region Account
@@ -102,7 +151,7 @@ export class ApiClient extends BaseClient {
    * @param params Request parameters
    */
   public async newAccount(params: AccountCreateParams) {
-    const newParam: protocol.CreateAccountProtocol = {
+    const newParam: protocol.CreateAccountParams = {
       contact: params.contact,
       onlyReturnExisting: params.onlyReturnExisting,
       termsOfServiceAgreed: params.termsOfServiceAgreed
@@ -110,10 +159,10 @@ export class ApiClient extends BaseClient {
     if (params.externalAccountBinding) {
       newParam.externalAccountBinding = await this.createExternalAccountBinding(params.externalAccountBinding.challenge, params.externalAccountBinding.kid);
     }
-    const res = await this.fetch<protocol.Account>(this.getDirectory().newAccount, {
+    const res = await this.fetch<protocol.Account>(this.directory.newAccount, {
       method: "POST",
       kid: this.accountKey.publicKey,
-      nonce: this._nonce,
+      nonce: this.nonce,
       key: this.accountKey.privateKey,
       body: newParam,
       convert: (resp) => resp.json(),
@@ -121,20 +170,20 @@ export class ApiClient extends BaseClient {
     if (!res.headers.location) {
       throw new Error("Cannot get Location header");
     }
-    this._accountId = res.headers.location;
+    this.accountId = res.headers.location;
     return res;
   }
 
   /**
    * Update account settings.
-   * @param params Updateable parameters
+   * @param params Updatable parameters
    */
   public async updateAccount(params: protocol.AccountUpdateParams) {
     const kid = this.getAccountId();
     return await this.fetch<protocol.Account>(kid, {
       method: "POST",
       kid,
-      nonce: this._nonce,
+      nonce: this.nonce,
       key: this.accountKey.privateKey,
       body: params,
       convert: (resp) => resp.json(),
@@ -145,10 +194,10 @@ export class ApiClient extends BaseClient {
    * Getting an account id.
    */
   protected getAccountId() {
-    if (!this._accountId) {
+    if (!this.accountId) {
       throw new Error("Create or Find account first");
     }
-    return this._accountId;
+    return this.accountId;
   }
 
   /**
@@ -168,7 +217,7 @@ export class ApiClient extends BaseClient {
     const cryptoProvider = this.getCrypto();
     const innerToken = new JsonWebSignature({
       protected: {
-        url: this.getDirectory().keyChange,
+        url: this.directory.keyChange,
         jwk: new JsonWebKey(cryptoProvider, await cryptoProvider.subtle.exportKey("jwk", key.publicKey)),
       },
       payload: {
@@ -178,10 +227,10 @@ export class ApiClient extends BaseClient {
     }, this.getCrypto());
     await innerToken.sign({ hash: this.options.defaultHash, ...key.privateKey.algorithm }, key.privateKey);
 
-    const response = await this.fetch<null>(this.getDirectory().keyChange, {
+    const response = await this.fetch<null>(this.directory.keyChange, {
       method: "POST",
       kid,
-      nonce: this._nonce,
+      nonce: this.nonce,
       key: this.accountKey.privateKey,
       body: innerToken,
       convert: () => null,
@@ -196,32 +245,46 @@ export class ApiClient extends BaseClient {
   //#region Order
 
   /**
-     * Create a new order.
-     * Returns an existing order if the identifiers parameter matches
-     * @param params
-     */
+   * Create a new order.
+   * Returns an existing order if the identifiers parameter matches
+   * @param params
+   */
   public async newOrder(params: protocol.OrderCreateParams) {
-    return this.fetch<protocol.Order>(this.getDirectory().newOrder, {
+    return this.fetch<protocol.Order>(this.directory.newOrder, {
       method: "POST",
       kid: this.getAccountId(),
-      nonce: this._nonce,
+      nonce: this.nonce,
       key: this.accountKey.privateKey,
       body: params,
       convert: (resp) => resp.json(),
     });
   }
 
+  /**
+   * Gets an order by URI
+   * @param orderUrl
+   */
   public async getOrder(orderUrl: string) {
     return this.fetch<protocol.Order>(orderUrl, {
       method: "POST",
       kid: this.getAccountId(),
-      nonce: this._nonce,
+      nonce: this.nonce,
       key: this.accountKey.privateKey,
       convert: (resp) => resp.json(),
     });
   }
 
+  /**
+   * Waits for order status changing
+   * @param order Order
+   * @param options Retry options
+   */
   public async retryOrder(order: ApiResponse<protocol.Order>, options?: RetryOptions): Promise<ApiResponse<protocol.Order>>;
+  /**
+   * Waits for order status changing
+   * @param url Order URI
+   * @param options Retry options
+   */
   public async retryOrder(url: string, options?: RetryOptions): Promise<ApiResponse<protocol.Order>>;
   public async retryOrder(param: string | ApiResponse<protocol.Order>, options: RetryOptions = {}) {
     let order = typeof param === "string"
@@ -245,15 +308,15 @@ export class ApiClient extends BaseClient {
   //#endregion
 
   /**
-   * Certificate revocation.
+   * Certificate revocation
    * @param certificate
    * @param reason Reason for feedback
    */
   public async revoke(certificate: BufferSource, reason = CRLReasons.unspecified) {
-    return await this.fetch(this.getDirectory().keyChange, {
+    return await this.fetch(this.directory.keyChange, {
       method: "POST",
       kid: this.getAccountId(),
-      nonce: this._nonce,
+      nonce: this.nonce,
       key: this.accountKey.privateKey,
       body: {
         certificate: Convert.ToBase64Url(certificate),
@@ -266,12 +329,13 @@ export class ApiClient extends BaseClient {
   /**
    * Deactivation Request
    * @param url Deactivation element URL
+   * @param convert Convert callback
    */
   protected async deactivate<T>(url: string, convert: (resp: Response) => T) {
     return this.fetch(url, {
       method: "POST",
       kid: this.getAccountId(),
-      nonce: this._nonce,
+      nonce: this.nonce,
       key: this.accountKey.privateKey,
       body: { status: "deactivated" },
       convert,
@@ -279,24 +343,24 @@ export class ApiClient extends BaseClient {
   }
 
   /**
-   * Authorization deactivation.
-   * changes authorization status to deactivated
+   * Deactivates an authorization
+   * @param authzId Authorization URI
    */
-  public async deactivateAuthorization() {
-    return this.deactivate<protocol.Authorization>(this.getAccountId(), (resp) => resp.json());
+  public async deactivateAuthorization(authzId: string) {
+    return this.deactivate<protocol.Authorization>(authzId, (resp) => resp.json());
   }
 
   /**
    * Getting data about challenge.
    * The POST method starts checking on the ACME server side.
-   * @param url адресс сhallenge
-   * @param method метод вызова
+   * @param url Challenge URI
+   * @param method Method selector
    */
-  public async getChallenge(url: string, method: AcmeMethod = "POST-as-GET") {
+  public async getChallenge(url: string, method: "POST" | "POST-as-GET" = "POST-as-GET") {
     const res = await this.fetch<protocol.Challenge>(url, {
       method,
       kid: this.getAccountId(),
-      nonce: this._nonce,
+      nonce: this.nonce,
       key: this.accountKey.privateKey,
       body: method === "POST" ? {} : undefined,
       convert: (resp) => resp.json(),
@@ -316,7 +380,7 @@ export class ApiClient extends BaseClient {
     return this.fetch<protocol.Order>(url, {
       method: "POST",
       kid: this.getAccountId(),
-      nonce: this._nonce,
+      nonce: this.nonce,
       key: this.accountKey.privateKey,
       body: params,
       convert: (resp) => resp.json(),
@@ -325,14 +389,13 @@ export class ApiClient extends BaseClient {
 
   /**
    * Retrieving Authorization Data
-   * @param url адрес авторизации
-   * @param method метод вызова
+   * @param url Authorization URI
    */
   public async getAuthorization(url: string) {
     return this.fetch<protocol.Authorization>(url, {
       method: "POST-as-GET",
       kid: this.getAccountId(),
-      nonce: this._nonce,
+      nonce: this.nonce,
       key: this.accountKey.privateKey,
       convert: (resp) => resp.json(),
     });
@@ -362,13 +425,12 @@ export class ApiClient extends BaseClient {
   /**
    * Obtaining a certificate of a complete order
    * @param url
-   * @param method
    */
   public async getCertificate(url: string) {
     return await this.fetch<ArrayBuffer[]>(url, {
       method: "POST-as-GET",
       kid: this.getAccountId(),
-      nonce: this._nonce,
+      nonce: this.nonce,
       key: this.accountKey.privateKey,
       convert: (resp) => {
         if (!resp.content) {
@@ -389,25 +451,15 @@ export class ApiClient extends BaseClient {
   }
 
   /**
-   * Returns a list of ACME server controllers.
-   */
-  protected getDirectory() {
-    if (!this._directory) {
-      throw new Error("Call 'initialize' method fist");
-    }
-    return this._directory;
-  }
-
-  /**
    * Getting replay-nonce parameter response from the header
    * @param response
    */
-  protected getNonce(response: ApiResponse<any>) {
+  protected readNonce(response: ApiResponse<any>) {
     const res = response.headers.replayNonce;
     if (!res) {
       throw new Error("Cannot get Replay-nonce header");
     }
-    this._nonce = res;
+    this.nonce = res;
     return res;
   }
 
@@ -446,7 +498,7 @@ export class ApiClient extends BaseClient {
     // eslint-disable-next-line no-cond-assign
     while (matches = pattern.exec(pem)) {
       const base64 = matches[1]
-        .replace(/[\r\n]/g, "")
+        .replace(/[\r\n]/g, "");
       res.push(Convert.FromBase64(base64));
     }
 

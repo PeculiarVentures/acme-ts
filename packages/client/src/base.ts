@@ -36,7 +36,7 @@ export interface ApiResponse<T> {
 
 export class BaseClient {
 
-  public static createResponse<T>(resp: core.Response, content: T): ApiResponse<T> {
+  protected static createResponse<T>(resp: core.Response, content: T): ApiResponse<T> {
     return {
       status: resp.status,
       headers: resp.headers,
