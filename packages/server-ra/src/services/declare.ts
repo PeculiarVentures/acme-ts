@@ -21,4 +21,7 @@ declare module "@peculiar/acme-protocol" {
   interface Directory {
     newEab?: string;
   }
+  interface DirectoryMetadata {
+    authzProviders?: string[];
+  }
 }
