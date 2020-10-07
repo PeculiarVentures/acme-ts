@@ -1,4 +1,4 @@
-﻿import { IBaseObject } from "./base";
+﻿import { IBaseObject, Key } from "./base";
 import { CRLReason } from "@peculiar/asn1-x509";
 
 export type CertificateStatus = "valid" | "expired" | "revoked";
@@ -10,4 +10,5 @@ export interface ICertificate extends IBaseObject {
     rawData: ArrayBuffer;
     reason?: CRLReason;
     status: CertificateStatus;
+    orderId?: Key;
 }

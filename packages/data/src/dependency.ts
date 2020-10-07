@@ -25,6 +25,7 @@ export class DependencyInjection {
       .register(repository.diNonceRepository, Empty)
       .register(repository.diOrderAuthorizationRepository, Empty)
       .register(repository.diOrderRepository, Empty)
+      .register(repository.diCertificateRepository, Empty)
       .register(repository.diChallengeRepository, Empty);
 
   }
