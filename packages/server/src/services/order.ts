@@ -8,6 +8,7 @@ import * as x509 from "@peculiar/x509";
 import { JsonWebKey } from "@peculiar/jose";
 import * as ModelFabric from "./model_fabric";
 import * as pvtsutils from "pvtsutils";
+import { MalformedError } from "@peculiar/acme-core";
 
 export interface ICertificateEnrollParams {
   /**
@@ -35,6 +36,7 @@ export interface ICertificateEnrollParams {
 export class OrderService extends BaseService implements types.IOrderService {
 
   protected orderRepository = container.resolve<data.IOrderRepository>(data.diOrderRepository);
+  protected certificateService = container.resolve<types.ICertificateService>(types.diCertificateService);
   protected accountService = container.resolve<types.IAccountService>(types.diAccountService);
   protected authorizationService = container.resolve<types.IAuthorizationService>(types.diAuthorizationService);
   protected challengeService = container.resolve<types.IChallengeService>(types.diChallengeService);
@@ -57,7 +59,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     await this.challengeService.identifierValidate(params.identifiers);
 
     // create order
-    let order = container.resolve<data.IOrder>(data.diOrder);
+    let order = ModelFabric.order();
     // fill params
     await this.onCreateParams(order, params, accountId);
 
@@ -286,13 +288,11 @@ export class OrderService extends BaseService implements types.IOrderService {
     // check cancel
     if (!certificateEnrollParams.cancel) {
       try {
-        const certificate = await this.certificateEnrollmentService.enroll(order, params); // todo ? using certEnrollParams
+        const rawData = await this.certificateEnrollmentService.enroll(order, params); // todo ? using certEnrollParams
 
-        order.certificate = ModelFabric.certificate();
-        order.certificate.rawData = certificate;
-        order.certificate.thumbprint = pvtsutils.Convert.ToHex(await this.getHash(certificate));
-        order.certificate.status = "valid";
+        const certificate = await this.certificateService.create(rawData);
 
+        order.certificate = certificate.thumbprint;
         await this.orderRepository.update(order);
         await this.onEnrollCertificateTask();
 
@@ -300,7 +300,7 @@ export class OrderService extends BaseService implements types.IOrderService {
           order.status = "valid";
           await this.orderRepository.update(order);
 
-          this.logger.info(`Certificate ${order.certificate.thumbprint} for Order ${order.id} issued successfully`);
+          this.logger.info(`Certificate ${order.certificate} for Order ${order.id} issued successfully`);
         }
       } catch (error) {
         // TODO Optimize Error assignment
@@ -314,13 +314,16 @@ export class OrderService extends BaseService implements types.IOrderService {
   }
 
   public async getCertificate(accountId: data.Key, thumbprint: string) {
-    const order = await this.getByCertificate(accountId, thumbprint);
-    if (!order.certificate) {
-      throw new core.MalformedError("Certificate not found");
+    const certificate = await this.certificateService.getByThumbprint(thumbprint);
+    if (certificate.orderId) {
+      await this.getByCertificate(accountId, thumbprint);
     }
-    const cert = new x509.X509Certificate(order.certificate.rawData);
+    const cert = new x509.X509Certificate(certificate.rawData);
     const chain = new x509.X509ChainBuilder({
-      certificates: this.options.extraCertificateStorage,
+      certificates: [
+        ...this.options.extraCertificateStorage || [],
+        // ...await caCertificateStorage.find(),
+      ],
     });
 
     const res = await chain.build(cert);
@@ -356,7 +359,7 @@ export class OrderService extends BaseService implements types.IOrderService {
       const order = await this.getByCertificate(key, x509);
 
       // revoke
-      await this._revokeCertificate(order, params.reason);
+      await this.certificateService.revoke(order, params.reason);
     } else {
       // var x509 = new X509Certificate2(Base64Url.Decode(params.certificate));
       throw new core.MalformedError(`Not implemented method`);
@@ -370,24 +373,6 @@ export class OrderService extends BaseService implements types.IOrderService {
 
       //RevokeCertificate(order, params.Reason);
     }
-  }
-
-  private async _revokeCertificate(order: data.IOrder, reason: protocol.RevokeReason): Promise<void> {
-    if (order.certificate?.status === "revoked") {
-      throw new core.AlreadyRevokedError();
-    }
-
-    // revoke
-    await this.certificateEnrollmentService.revoke(order, reason);
-
-    // update status
-    if (!order.certificate) {
-      throw new core.MalformedError(``);
-    }
-    order.certificate.status = "revoked";
-    await this.orderRepository.update(order);
-
-    this.logger.info(`Certificate ${order.certificate.thumbprint} revoked`);
   }
 
   /**

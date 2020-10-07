@@ -63,6 +63,7 @@ export class DependencyInjection {
     registerEmpty(container, types.diAuthorizationService, services.AuthorizationService);
     registerEmpty(container, types.diChallengeService, services.ChallengeService);
     registerEmpty(container, types.diOrderService, services.OrderService);
+    registerEmpty(container, types.diCertificateService, services.CertificateService);
     registerEmpty(container, types.diCertificateEnrollmentService, data.Empty);
     registerEmpty(container, diAcmeController, AcmeController);
   }

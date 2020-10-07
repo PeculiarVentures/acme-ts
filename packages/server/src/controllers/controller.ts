@@ -24,6 +24,7 @@ export class AcmeController extends BaseService {
   protected authorizationService = container.resolve<types.IAuthorizationService>(types.diAuthorizationService);
   protected challengeService = container.resolve<types.IChallengeService>(types.diChallengeService);
   protected orderService = container.resolve<types.IOrderService>(types.diOrderService);
+  protected endpointService = container.resolve<types.ICertificateEnrollmentService>(types.diCertificateEnrollmentService);
 
   public async wrapAction(action: (response: core.Response) => Promise<void>, request: core.Request, useJwk = false) {
     const response = new core.Response();
@@ -407,7 +408,7 @@ export class AcmeController extends BaseService {
       if (token.isPayloadEmptyObject()) {
         await this.challengeService.challengeValidate(challenge, auth.identifier.type);
 
-        response.headers.setLink(`<${this.options.baseAddress}/authz/${challenge.authorizationId}>;rel="up"`)
+        response.headers.setLink(`<${this.options.baseAddress}/authz/${challenge.authorizationId}>;rel="up"`);
       }
       response.content = new core.Content(await this.convertService.toChallenge(challenge));
     }, request);
@@ -517,5 +518,20 @@ export class AcmeController extends BaseService {
   }
   //#endregion
 
+  public async getEndpoint(request: core.Request, type: string) {
+    return this.wrapAction(async (response) => {
+      const endpoint = await this.endpointService.getEndpoint(type);
+      const cert = await endpoint.getCaCertificate();
+
+      // add headers
+      response.headers.location = `${this.options.baseAddress}/endpoint/${endpoint.type}`;
+
+      response.content = new core.Content({
+        name: endpoint.type,
+        certificate: `${this.options.baseAddress}/cert/${cert.getThumbprint()}`,
+      });
+
+    }, request);
+  }
 
 }

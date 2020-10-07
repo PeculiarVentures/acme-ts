@@ -62,7 +62,7 @@ export class ConvertService extends BaseService implements IConvertService {
       order.error = await this.toError(data.error);
     }
     if (data.certificate) {
-      order.certificate = `${this.options.baseAddress}/cert/${data.certificate.thumbprint}`;
+      order.certificate = `${this.options.baseAddress}/cert/${data.certificate}`;
     }
 
     return order;

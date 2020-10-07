@@ -2,7 +2,8 @@ import * as protocol from "@peculiar/acme-protocol";
 import * as data from "@peculiar/acme-data";
 import { JsonWebSignature, JsonWebKey } from "@peculiar/jose";
 import { AcmeError, QueryParams } from "@peculiar/acme-core";
-import { Pkcs10CertificateRequest, X509Certificates } from "@peculiar/x509";
+import { Pkcs10CertificateRequest, X509Certificates, X509Certificate } from "@peculiar/x509";
+import { IOrder } from "@peculiar/acme-data";
 
 export const diConvertService = "ACME.ConvertService";
 
@@ -164,6 +165,8 @@ export interface ICertificateEnrollmentService {
    * @param reason Revoke reason
    */
   revoke(order: data.IOrder, reason: protocol.RevokeReason): Promise<void>;
+
+  getEndpoint(type: string): IEndpointService;
 }
 
 export const diOrderService = "ACME.OrderService";
@@ -268,4 +271,21 @@ export interface IIdentifierService {
   challengeValidate(challenge: data.IChallenge): Promise<void>;
   identifierValidate(identifier: data.IIdentifier): Promise<AcmeError[]>;
   csrValidate(identifiers: data.IIdentifier[], csr: Pkcs10CertificateRequest): Promise<AcmeError[]>;
+}
+
+export const diEndpointService = "ACME.EndpointService";
+
+export interface IEndpointService {
+  readonly type: string;
+  enroll(order: data.IOrder, request: ArrayBuffer): Promise<ArrayBuffer>;
+  revoke(order: data.IOrder, reason: protocol.RevokeReason): Promise<void>;
+  getCaCertificate(): Promise<X509Certificate>;
+}
+
+export const diCertificateService = "ACME.CertificateService";
+
+export interface ICertificateService {
+  getByThumbprint(thumbprint: string): Promise<data.ICertificate>;
+  create(rawData: ArrayBuffer, order?: IOrder): Promise<data.ICertificate>;
+  revoke(order: data.IOrder, reason: protocol.RevokeReason): Promise<void>
 }

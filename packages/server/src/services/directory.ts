@@ -1,10 +1,13 @@
-import { IDirectoryService } from "./types";
-import { Directory } from "@peculiar/acme-protocol";
+import { diEndpointService, IDirectoryService, IEndpointService } from "./types";
+import { Directory, DirectoryMetadata } from "@peculiar/acme-protocol";
 import { BaseService } from "./base";
-import { injectable } from "tsyringe";
+import { container, injectable } from "tsyringe";
+import { MalformedError } from "@peculiar/acme-core";
 
 @injectable()
 export class DirectoryService extends BaseService implements IDirectoryService {
+
+  protected endpoints = container.resolveAll<IEndpointService>(diEndpointService);
 
   public async getDirectory() {
     const url = this.options.baseAddress;
@@ -22,6 +25,21 @@ export class DirectoryService extends BaseService implements IDirectoryService {
     }
 
     await this.onGetDirectory(directory);
+
+    // Add endpoints info
+    if (!this.endpoints.length) {
+      throw new MalformedError("No endpoints found");
+    } else if (this.endpoints.length > 1) {
+      const types = this.endpoints.map(o => `${this.options.baseAddress}/endpoint/${o.type}`);
+      if (!directory.meta) {
+        const meta: DirectoryMetadata = {
+          endpoints: types,
+        };
+        directory.meta = meta;
+      } else {
+        directory.meta.endpoints = types;
+      }
+    }
 
     return directory;
   }
