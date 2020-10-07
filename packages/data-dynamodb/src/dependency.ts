@@ -28,6 +28,7 @@ export class DependencyInjection {
     container.register(data.diExternalAccountRepository, repositories.ExternalAccountRepository, { lifecycle: Lifecycle.Singleton });
     container.register(data.diNonceRepository, repositories.NonceRepository, { lifecycle: Lifecycle.Singleton });
     container.register(data.diOrderRepository, repositories.OrderRepository, { lifecycle: Lifecycle.Singleton });
+    container.register(data.diCertificateRepository, repositories.CertificateRepository, { lifecycle: Lifecycle.Singleton });
     container.register(data.diOrderAuthorizationRepository, repositories.OrderAuthorizationRepository, { lifecycle: Lifecycle.Singleton });
   }
 }

@@ -6,17 +6,6 @@ import { Order } from "../models";
 export class OrderRepository extends BaseRepository<Order> implements IOrderRepository {
   protected className = diOrder;
 
-  public async update(item: Order) {
-    const Model = this.getModel();
-    if (item.certificate) {
-      const model = new Model({ id: item.certificate.thumbprint, parentId: item.id, index: "cert#" });
-      await model.save();
-    }
-    const dynamo = await item.toDynamo();
-    const data = await Model.update(dynamo);
-    return this.fromDocument(data);
-  }
-
   public async findByThumbprint(thumbprint: string) {
     const cert = await this.getModel().get(thumbprint);
     return await this.findById(cert.toJSON().parentId);
