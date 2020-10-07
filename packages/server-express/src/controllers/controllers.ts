@@ -88,6 +88,12 @@ export class Controllers {
   }
   //#endregion
 
+  public async getEndpoint(req: Request, res: Response, type: string): Promise<void> {
+    const request = this.getAcmeRequest(req);
+    const result = await this.acmeController.getEndpoint(request, type);
+    this.createHttpResponseMessage(result, res);
+  }
+
   //#region Parse Request and Response
   /**
    * Parse AcmeResponse to express response
