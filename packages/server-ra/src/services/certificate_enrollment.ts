@@ -1,17 +1,9 @@
-import { BaseService, ICertificateEnrollmentService } from "@peculiar/acme-server";
+import { BaseService, diEndpointService, ICertificateEnrollmentService, IEndpointService } from "@peculiar/acme-server";
 import { IOrder } from "@peculiar/acme-data";
 import { FinalizeParams, RevokeReason } from "@peculiar/acme-protocol";
 import { MalformedError } from "@peculiar/acme-core";
 import { container, injectable } from "tsyringe";
 import * as pvtsutils from "pvtsutils";
-
-export const diEndpointService = "Ra.Endpoint";
-
-export interface IEndpointService {
-  readonly type: string;
-  enroll(order: IOrder, request: ArrayBuffer): Promise<ArrayBuffer>;
-  revoke(order: IOrder, reason: RevokeReason): Promise<void>;
-}
 
 @injectable()
 export class CertificateEnrollmentService extends BaseService implements ICertificateEnrollmentService {
@@ -35,7 +27,7 @@ export class CertificateEnrollmentService extends BaseService implements ICertif
     return container.resolveAll<IEndpointService>(diEndpointService);
   }
 
-  protected getEndpoint(type: string): IEndpointService {
+  public getEndpoint(type: string): IEndpointService {
     const validators = this.getEndpointAll();
     const validator = validators.filter(o => o.type === type);
     if (!validator.length) {

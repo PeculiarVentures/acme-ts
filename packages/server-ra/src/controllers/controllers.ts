@@ -9,7 +9,6 @@ import { diAuthProviderService, ProviderService } from "../services";
 export class RaControllers extends Controllers {
 
   protected providerService = container.resolve<ProviderService>(diAuthProviderService);
-
   protected externalAccountService = container.resolve<ExternalAccountService>(diExternalAccountService);
 
   public async newExternalAccount(req: Request, res: Response): Promise<void> {
@@ -34,4 +33,6 @@ export class RaControllers extends Controllers {
     }, request);
     this.createHttpResponseMessage(result, res);
   }
+
+
 }
