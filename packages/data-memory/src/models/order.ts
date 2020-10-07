@@ -1,4 +1,4 @@
-import { IOrder, IError, ICertificate, Key } from "@peculiar/acme-data";
+import { IOrder, IError, Key } from "@peculiar/acme-data";
 import { OrderStatus } from "@peculiar/acme-protocol";
 import { BaseObject } from "./base";
 
@@ -9,7 +9,7 @@ export class Order extends BaseObject implements IOrder {
   public notBefore?: Date;
   public notAfter?: Date;
   public error?: IError;
-  public certificate?: ICertificate;
+  public certificate?: string;
   public accountId?: Key;
 
   public constructor(params: Partial<Order> = {}) {
