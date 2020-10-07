@@ -61,6 +61,8 @@ export interface Order {
    * A URL for the certificate that has been issued in response to this order.
    */
   certificate?: string;
+
+  endpoint?: string;
 }
 
 export interface OrderList {
@@ -125,4 +127,5 @@ export interface RevokeCertificateParams {
 
 export interface FinalizeParams {
   csr: string;
+  endpoint?: string;
 }
