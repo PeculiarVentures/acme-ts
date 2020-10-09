@@ -1,6 +1,6 @@
 import { Crypto } from "@peculiar/webcrypto";
 import { cryptoProvider } from "@peculiar/x509";
-import { DependencyContainer, RegistrationOptions } from "tsyringe";
+import { DependencyContainer, Lifecycle, RegistrationOptions } from "tsyringe";
 import { AcmeController, diAcmeController } from "./controllers";
 import { IServerOptions } from "./services";
 
@@ -63,8 +63,7 @@ export class DependencyInjection {
     registerEmpty(container, types.diAuthorizationService, services.AuthorizationService);
     registerEmpty(container, types.diChallengeService, services.ChallengeService);
     registerEmpty(container, types.diOrderService, services.OrderService);
-    registerEmpty(container, types.diCertificateService, services.CertificateService);
-    registerEmpty(container, types.diCertificateEnrollmentService, data.Empty);
+    registerEmpty(container, types.diCertificateService, services.CertificateService, { lifecycle: Lifecycle.Singleton });
     registerEmpty(container, diAcmeController, AcmeController);
   }
 }

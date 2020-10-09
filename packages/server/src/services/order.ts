@@ -41,15 +41,6 @@ export class OrderService extends BaseService implements types.IOrderService {
   protected authorizationService = container.resolve<types.IAuthorizationService>(types.diAuthorizationService);
   protected challengeService = container.resolve<types.IChallengeService>(types.diChallengeService);
   protected orderAuthorizationRepository = container.resolve<data.IOrderAuthorizationRepository>(data.diOrderAuthorizationRepository);
-  protected certificateEnrollmentService = container.resolve<types.ICertificateEnrollmentService>(types.diCertificateEnrollmentService);
-
-  /**
-   * Returns hash
-   * @param obj
-   */
-  protected async getHash(obj: ArrayBuffer, alg: string = this.options.hashAlgorithm) {
-    return this.getCrypto().subtle.digest(alg, obj);
-  }
 
   public async create(accountId: data.Key, params: protocol.OrderCreateParams) {
     if (!params) {
@@ -288,9 +279,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     // check cancel
     if (!certificateEnrollParams.cancel) {
       try {
-        const rawData = await this.certificateEnrollmentService.enroll(order, params); // todo ? using certEnrollParams
-
-        const certificate = await this.certificateService.create(rawData);
+        const certificate = await this.certificateService.enroll(order, params);
 
         order.certificate = certificate.thumbprint;
         await this.orderRepository.update(order);
@@ -315,19 +304,10 @@ export class OrderService extends BaseService implements types.IOrderService {
 
   public async getCertificate(accountId: data.Key, thumbprint: string) {
     const certificate = await this.certificateService.getByThumbprint(thumbprint);
-    if (certificate.orderId) {
+    if (certificate.type === "leaf") {
       await this.getByCertificate(accountId, thumbprint);
     }
-    const cert = new x509.X509Certificate(certificate.rawData);
-    const chain = new x509.X509ChainBuilder({
-      certificates: [
-        ...this.options.extraCertificateStorage || [],
-        // ...await caCertificateStorage.find(),
-      ],
-    });
-
-    const res = await chain.build(cert);
-    return res;
+    return await this.certificateService.getChain(certificate);
   }
 
   /**

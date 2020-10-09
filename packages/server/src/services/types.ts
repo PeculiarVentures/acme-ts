@@ -1,5 +1,6 @@
 import * as protocol from "@peculiar/acme-protocol";
 import * as data from "@peculiar/acme-data";
+import * as x509 from "@peculiar/x509";
 import { JsonWebSignature, JsonWebKey } from "@peculiar/jose";
 import { AcmeError, QueryParams } from "@peculiar/acme-core";
 import { Pkcs10CertificateRequest, X509Certificates, X509Certificate } from "@peculiar/x509";
@@ -149,26 +150,6 @@ export interface IAuthorizationService {
   deactivate(id: data.Key): Promise<data.IAuthorization>;
 }
 
-export const diCertificateEnrollmentService = "ACME.CertificateEnrollmentService";
-
-export interface ICertificateEnrollmentService {
-  /**
-   * Enrolls certificate
-   * @param order Order
-   * @param request PKCS10 request
-   */
-  enroll(order: data.IOrder, request: protocol.FinalizeParams): Promise<ArrayBuffer>;
-
-  /**
-   * Revokes certificate
-   * @param order Order
-   * @param reason Revoke reason
-   */
-  revoke(order: data.IOrder, reason: protocol.RevokeReason): Promise<void>;
-
-  getEndpoint(type: string): IEndpointService;
-}
-
 export const diOrderService = "ACME.OrderService";
 
 /**
@@ -279,7 +260,7 @@ export interface IEndpointService {
   readonly type: string;
   enroll(order: data.IOrder, request: ArrayBuffer): Promise<ArrayBuffer>;
   revoke(order: data.IOrder, reason: protocol.RevokeReason): Promise<void>;
-  getCaCertificate(): Promise<X509Certificate>;
+  getCaCertificate(): Promise<X509Certificates>;
 }
 
 export const diCertificateService = "ACME.CertificateService";
@@ -287,5 +268,19 @@ export const diCertificateService = "ACME.CertificateService";
 export interface ICertificateService {
   getByThumbprint(thumbprint: string): Promise<data.ICertificate>;
   create(rawData: ArrayBuffer, order?: IOrder): Promise<data.ICertificate>;
-  revoke(order: data.IOrder, reason: protocol.RevokeReason): Promise<void>
+  getChain(thumbprint: string | data.ICertificate): Promise<x509.X509Certificates>;
+  getEndpoint(type: string): IEndpointService;
+  /**
+   * Enrolls certificate
+   * @param order Order
+   * @param request PKCS10 request
+   */
+  enroll(order: data.IOrder, request: protocol.FinalizeParams): Promise<data.ICertificate>;
+
+  /**
+   * Revokes certificate
+   * @param order Order
+   * @param reason Revoke reason
+   */
+  revoke(order: data.IOrder, reason: protocol.RevokeReason): Promise<void>;
 }

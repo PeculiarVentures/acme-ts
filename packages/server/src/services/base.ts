@@ -46,4 +46,12 @@ export class BaseService {
     }
     return this.options.cryptoProvider;
   }
+
+  /**
+   * Returns hash
+   * @param obj
+   */
+  protected async getHash(obj: ArrayBuffer, alg: string = this.options.hashAlgorithm) {
+    return this.getCrypto().subtle.digest(alg, obj);
+  }
 }

@@ -2,6 +2,7 @@ import * as core from "@peculiar/acme-core";
 import * as types from "../services/types";
 import * as protocol from "@peculiar/acme-protocol";
 import * as x509 from "@peculiar/x509";
+import * as pvtsutils from "pvtsutils";
 
 import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
 import { container, injectable } from "tsyringe";
@@ -24,7 +25,7 @@ export class AcmeController extends BaseService {
   protected authorizationService = container.resolve<types.IAuthorizationService>(types.diAuthorizationService);
   protected challengeService = container.resolve<types.IChallengeService>(types.diChallengeService);
   protected orderService = container.resolve<types.IOrderService>(types.diOrderService);
-  protected endpointService = container.resolve<types.ICertificateEnrollmentService>(types.diCertificateEnrollmentService);
+  protected certificateService = container.resolve<types.ICertificateService>(types.diCertificateService);
 
   public async wrapAction(action: (response: core.Response) => Promise<void>, request: core.Request, useJwk = false) {
     const response = new core.Response();
@@ -486,8 +487,14 @@ export class AcmeController extends BaseService {
           break;
         case "PkixCert":
           {
+            if(certs.length > 1){
+              for (let index = 1; index < certs.length; index++) {
+                const cert = certs[index];
+                const thumbprint = pvtsutils.Convert.ToHex(await cert.getThumbprint());
+                response.headers.setLink(`<${this.options.baseAddress}/cert/${thumbprint}>;rel="up"`);
+              }
+            }
             response.content = new core.Content(certs[0].rawData, "application/pkix-cert");
-            // todo add header links on other certificates
           }
           break;
         case "Pkcs7Mime":
@@ -520,15 +527,25 @@ export class AcmeController extends BaseService {
 
   public async getEndpoint(request: core.Request, type: string) {
     return this.wrapAction(async (response) => {
-      const endpoint = await this.endpointService.getEndpoint(type);
-      const cert = await endpoint.getCaCertificate();
+      const endpoint = this.certificateService.getEndpoint(type);
+      // todo roman
+      const certs = await endpoint.getCaCertificate();
+      const thumbprint = pvtsutils.Convert.ToHex(await certs[0].getThumbprint());
 
       // add headers
       response.headers.location = `${this.options.baseAddress}/endpoint/${endpoint.type}`;
 
+      if(certs.length > 1){
+        for (let index = 1; index < certs.length; index++) {
+          const cert = certs[index];
+          const thumbprint = pvtsutils.Convert.ToHex(await cert.getThumbprint());
+          response.headers.setLink(`<${this.options.baseAddress}/cert/${thumbprint}>;rel="up"`);
+        }
+      }
+
       response.content = new core.Content({
         name: endpoint.type,
-        certificate: `${this.options.baseAddress}/cert/${cert.getThumbprint()}`,
+        certificate: `${this.options.baseAddress}/cert/${thumbprint}`,
       });
 
     }, request);
