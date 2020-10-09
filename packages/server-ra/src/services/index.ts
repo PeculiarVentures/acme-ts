@@ -1,4 +1,3 @@
-export * from "./certificate_enrollment";
 export * from "./authorization";
 export * from "./declare";
 export * from "./identifiers";
