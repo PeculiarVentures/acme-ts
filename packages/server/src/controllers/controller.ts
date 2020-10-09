@@ -528,9 +528,7 @@ export class AcmeController extends BaseService {
   public async getEndpoint(request: core.Request, type: string) {
     return this.wrapAction(async (response) => {
       const endpoint = this.certificateService.getEndpoint(type);
-      // todo roman
       const certs = await endpoint.getCaCertificate();
-      const thumbprint = pvtsutils.Convert.ToHex(await certs[0].getThumbprint());
 
       // add headers
       response.headers.location = `${this.options.baseAddress}/endpoint/${endpoint.type}`;
@@ -543,10 +541,7 @@ export class AcmeController extends BaseService {
         }
       }
 
-      response.content = new core.Content({
-        name: endpoint.type,
-        certificate: `${this.options.baseAddress}/cert/${thumbprint}`,
-      });
+      response.content = new core.Content(await this.convertService.toEndpoint(endpoint));
 
     }, request);
   }

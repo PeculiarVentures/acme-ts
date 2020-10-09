@@ -3,7 +3,7 @@ import * as data from "@peculiar/acme-data";
 import * as x509 from "@peculiar/x509";
 import { JsonWebSignature, JsonWebKey } from "@peculiar/jose";
 import { AcmeError, QueryParams } from "@peculiar/acme-core";
-import { Pkcs10CertificateRequest, X509Certificates, X509Certificate } from "@peculiar/x509";
+import { Pkcs10CertificateRequest, X509Certificates } from "@peculiar/x509";
 import { IOrder } from "@peculiar/acme-data";
 
 export const diConvertService = "ACME.ConvertService";
@@ -20,6 +20,12 @@ export interface IConvertService {
   toAuthorization(auth: data.IAuthorization): Promise<protocol.Authorization>;
   toChallenge(challenge: data.IChallenge): Promise<protocol.Challenge>;
   toError(error: data.IError): Promise<protocol.Error>;
+  toEndpoint(endpoint: IEndpointService): Promise<Endpoint>;
+}
+
+export interface Endpoint {
+  name: string;
+  certificate: string;
 }
 
 export const diDirectoryService = "ACME.DirectoryService";
