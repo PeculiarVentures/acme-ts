@@ -1,8 +1,8 @@
-import { X509Certificate } from "@peculiar/x509";
+import "@peculiar/acme-protocol";
+import "@peculiar/acme-server";
 
 declare module "@peculiar/acme-server" {
   interface IServerOptions {
-    caCertificate?: X509Certificate[];
     defaultEndpoint: string;
     defaultProvider: string;
   }

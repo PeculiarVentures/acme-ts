@@ -35,7 +35,6 @@ AcmeRa.register(app, {
     levelLogger: "info",
     cryptoProvider: crypto,
     debugMode: true,
-    caCertificate: caCert,
     extraCertificateStorage: [rootCert, caCert],
     meta: { externalAccountRequired: true },
     defaultEndpoint: "default",
