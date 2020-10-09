@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.1](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.0...v1.2.1) (2020-10-09)
+
+
+### Features
+
+* **data-memory:** Added CertificateRepository ([29b3bfe](https://github.com/PeculiarVentures/acme-ts/commit/29b3bfe77f10786a7c5fcc6f8856da1318e7e242))
+* **data-memory:** Added type to Certificate ([e944a4e](https://github.com/PeculiarVentures/acme-ts/commit/e944a4ef2b3591a13a72f087be55148bed48bbe2))
+
+
+
+
+
 # [1.2.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.1.0...v1.2.0) (2020-10-01)
 
 

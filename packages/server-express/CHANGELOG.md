@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.1](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.0...v1.2.1) (2020-10-09)
+
+
+### Features
+
+* **server-express:** Added endpoint ([455f367](https://github.com/PeculiarVentures/acme-ts/commit/455f3679d6d2281270cdb2e331b7328263b66d0b))
+
+
+
+
+
 # [1.2.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.1.0...v1.2.0) (2020-10-01)
 
 

@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.1](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.0...v1.2.1) (2020-10-09)
+
+
+### Bug Fixes
+
+* **server:** Move defaultEndpoint option to server ([54f179e](https://github.com/PeculiarVentures/acme-ts/commit/54f179e7ec872b01f2f238e1da5eeba371186635))
+
+
+### Features
+
+* **server:** Added Certificate service ([aebfff9](https://github.com/PeculiarVentures/acme-ts/commit/aebfff9e4e33dcacc6a50292f5addb08a8f63969))
+* **server:** Added endpoint, CertificateService ([155603f](https://github.com/PeculiarVentures/acme-ts/commit/155603f32f846bff3a010c54438daea5d6e79775))
+* **server:** Added toEndpoint to ConvertService ([34c61bb](https://github.com/PeculiarVentures/acme-ts/commit/34c61bbf59281304c70cebdfe6499820f5632ebd))
+
+
+
+
+
 # [1.2.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.1.0...v1.2.0) (2020-10-01)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.1](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.0...v1.2.1) (2020-10-09)
+
+
+### Features
+
+* **protocol:** Added endpoint ([a6742fb](https://github.com/PeculiarVentures/acme-ts/commit/a6742fb16f8246f0138bd917633dee77d695ae4f))
+
+
+
+
+
 # [1.2.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.1.0...v1.2.0) (2020-10-01)
 
 

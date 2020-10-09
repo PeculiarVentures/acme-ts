@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.1](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.0...v1.2.1) (2020-10-09)
+
+
+### Features
+
+* **data-dynamodb:** Added CertificateRepository ([eed25af](https://github.com/PeculiarVentures/acme-ts/commit/eed25af6c8cf20466af238125a816b53d739fcde))
+* **data-dynamodb:** Added type to Certificate ([a140868](https://github.com/PeculiarVentures/acme-ts/commit/a14086885440ed5b1f813b676798c8acb884e855))
+
+
+
+
+
 # [1.2.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.1.0...v1.2.0) (2020-10-01)
 
 

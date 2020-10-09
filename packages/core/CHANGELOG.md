@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.1](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.0...v1.2.1) (2020-10-09)
+
+
+### Bug Fixes
+
+* **core:** Switch case to onWrite ([a223c37](https://github.com/PeculiarVentures/acme-ts/commit/a223c37fdbb1368be2d7cf4cd6e8350ca5430d5b))
+
+
+### Features
+
+* **core:** Added enum LoggerLevel and LoggerData ([256ad31](https://github.com/PeculiarVentures/acme-ts/commit/256ad3110a85168d235c50fe12c01f6440fd10a9))
+
+
+
+
+
 # [1.2.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.1.0...v1.2.0) (2020-10-01)
 
 

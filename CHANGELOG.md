@@ -3,6 +3,37 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.1](https://github.com/PeculiarVentures/ts-acme/compare/v1.2.0...v1.2.1) (2020-10-09)
+
+
+### Bug Fixes
+
+* **core:** Switch case to onWrite ([a223c37](https://github.com/PeculiarVentures/ts-acme/commit/a223c37fdbb1368be2d7cf4cd6e8350ca5430d5b))
+* **server:** Move defaultEndpoint option to server ([54f179e](https://github.com/PeculiarVentures/ts-acme/commit/54f179e7ec872b01f2f238e1da5eeba371186635))
+
+
+### Features
+
+* **core:** Added enum LoggerLevel and LoggerData ([256ad31](https://github.com/PeculiarVentures/ts-acme/commit/256ad3110a85168d235c50fe12c01f6440fd10a9))
+* **data:** Added endpoint, CertificateRepository ([c2e6c93](https://github.com/PeculiarVentures/ts-acme/commit/c2e6c93e834254a1a76272ba53c4b261d42d4db0))
+* **data:** Added type to Certificate ([6491f51](https://github.com/PeculiarVentures/ts-acme/commit/6491f513e859ebbfa30e5d7b6ce46711c7fd75c8))
+* **data-dynamodb:** Added CertificateRepository ([eed25af](https://github.com/PeculiarVentures/ts-acme/commit/eed25af6c8cf20466af238125a816b53d739fcde))
+* **data-dynamodb:** Added type to Certificate ([a140868](https://github.com/PeculiarVentures/ts-acme/commit/a14086885440ed5b1f813b676798c8acb884e855))
+* **data-memory:** Added CertificateRepository ([29b3bfe](https://github.com/PeculiarVentures/ts-acme/commit/29b3bfe77f10786a7c5fcc6f8856da1318e7e242))
+* **data-memory:** Added type to Certificate ([e944a4e](https://github.com/PeculiarVentures/ts-acme/commit/e944a4ef2b3591a13a72f087be55148bed48bbe2))
+* **protocol:** Added endpoint ([a6742fb](https://github.com/PeculiarVentures/ts-acme/commit/a6742fb16f8246f0138bd917633dee77d695ae4f))
+* **server:** Added Certificate service ([aebfff9](https://github.com/PeculiarVentures/ts-acme/commit/aebfff9e4e33dcacc6a50292f5addb08a8f63969))
+* **server:** Added endpoint, CertificateService ([155603f](https://github.com/PeculiarVentures/ts-acme/commit/155603f32f846bff3a010c54438daea5d6e79775))
+* **server:** Added toEndpoint to ConvertService ([34c61bb](https://github.com/PeculiarVentures/ts-acme/commit/34c61bbf59281304c70cebdfe6499820f5632ebd))
+* **server-express:** Added endpoint ([455f367](https://github.com/PeculiarVentures/ts-acme/commit/455f3679d6d2281270cdb2e331b7328263b66d0b))
+* **server-ra:** Added providers info to meta ([13873b7](https://github.com/PeculiarVentures/ts-acme/commit/13873b7ce4c1eccb6dbadb5e365588e43b93ebcb))
+* **server-ra:** Excluded endpoint ([4fb413e](https://github.com/PeculiarVentures/ts-acme/commit/4fb413e62379ea6b531145c839c992b31353ce1e))
+* **server-ra:** Removed caCertificate options from server options ([33f2ab9](https://github.com/PeculiarVentures/ts-acme/commit/33f2ab90427d1d2611a8f43078a921b856a060d1))
+
+
+
+
+
 # [1.2.0](https://github.com/PeculiarVentures/ts-acme/compare/v1.1.0...v1.2.0) (2020-10-01)
 
 
