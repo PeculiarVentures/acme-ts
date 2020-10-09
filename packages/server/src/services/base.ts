@@ -25,6 +25,7 @@ export interface IServerOptions {
   debugMode?: boolean;
   meta?: DirectoryMetadata;
   extraCertificateStorage?: X509Certificate[];
+  defaultEndpoint: string;
 }
 
 export class BaseService {
