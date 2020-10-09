@@ -11,10 +11,18 @@ import { FinalizeParams, RevokeReason } from "@peculiar/acme-protocol";
 @injectable()
 export class CertificateService extends BaseService implements ICertificateService {
 
-  public x509caCerts: Map<string, x509.X509Certificate> = new Map();
+  /**
+   * CA certificates cache
+   */
+  public caCerts: Map<string, x509.X509Certificate> = new Map();
 
   protected certificateRepository = container.resolve<ICertificateRepository>(diCertificateRepository);
 
+  /**
+   * Creates and adds certificate to repository
+   * @param rawData
+   * @param order
+   */
   public async create(rawData: ArrayBuffer, order?: IOrder,): Promise<ICertificate> {
     const certificate = ModelFabric.certificate();
     certificate.rawData = rawData;
@@ -27,15 +35,20 @@ export class CertificateService extends BaseService implements ICertificateServi
       certificate.type = "ca";
     }
 
+    // Check chaining certificate
     await this.getChain(certificate);
 
     const cert = await this.certificateRepository.add(certificate);
 
     this.logger.info(`Certificate ${cert.thumbprint} created`);
-
     return cert;
   }
 
+  /**
+   * Revokes certificate by order
+   * @param order
+   * @param reason
+   */
   public async revoke(order: IOrder, reason: RevokeReason): Promise<void> {
     if (!order.certificate) {
       throw new MalformedError("Order doesn't have a certificate");
@@ -59,17 +72,25 @@ export class CertificateService extends BaseService implements ICertificateServi
     this.logger.info(`Certificate ${order.certificate} revoked`);
   }
 
+  /**
+   * Returns CA certificates
+   */
   public async getCaCerts() {
-    if (!this.x509caCerts.size) {
+    if (!this.caCerts.size) {
       await this.reloadCaCache();
     }
-    if (!this.x509caCerts.size) {
+    if (!this.caCerts.size) {
       throw new MalformedError("CA certificates not found");
     }
-    return this.x509caCerts;
+    return this.caCerts;
   }
 
+  /**
+   * Returns certificate by thumbprint from ca cache and repository
+   * @param thumbprint
+   */
   public async getByThumbprint(thumbprint: string): Promise<ICertificate> {
+    // return ca certificate from cache
     const caCerts = await this.getCaCerts();
     const caCert = caCerts.get(thumbprint);
     if (caCert) {
@@ -81,6 +102,8 @@ export class CertificateService extends BaseService implements ICertificateServi
         type: "ca",
       };
     }
+
+    // return certificate from repository
     const cert = await this.certificateRepository.findByThumbprint(thumbprint);
     if (!cert) {
       throw new MalformedError("Certificate doesn't exist");
@@ -88,6 +111,11 @@ export class CertificateService extends BaseService implements ICertificateServi
     return cert;
   }
 
+  /**
+   * Enrols certificate by order and params
+   * @param order
+   * @param params
+   */
   public async enroll(order: IOrder, params: FinalizeParams): Promise<ICertificate> {
     const requestRaw = pvtsutils.Convert.FromBase64Url(params.csr);
 
@@ -98,6 +126,11 @@ export class CertificateService extends BaseService implements ICertificateServi
     return await this.create(cert, order);
   }
 
+  /**
+   * Returns certificates chain for certificate by thumbprint
+   * from ca certificate cache and repository
+   * @param thumbprint
+   */
   public async getChain(thumbprint: string | ICertificate) {
     let cert: ICertificate;
     if (typeof thumbprint === "string") {
@@ -106,12 +139,10 @@ export class CertificateService extends BaseService implements ICertificateServi
       cert = thumbprint;
     }
     const x509Cert = new x509.X509Certificate(cert.rawData);
-    // if (cert.type === "ca" && x509Cert.isSelfSigned()) {
-    //   return x509Cert;
-    // }
+
     await this.getCaCerts();
     const chainBuilder = new x509.X509ChainBuilder({
-      certificates: Array.from(this.x509caCerts.values()),
+      certificates: Array.from(this.caCerts.values()),
     });
     let chain: x509.X509Certificates;
     try {
@@ -121,52 +152,55 @@ export class CertificateService extends BaseService implements ICertificateServi
       chain = await chainBuilder.build(x509Cert);
     }
     return chain;
-    // return await Promise.all(chain.map(async o => {
-    //   const x509thumbprint = pvtsutils.Convert.ToHex(await o.getThumbprint());
-    //   const ca = this.caCerts.find(ca => ca.thumbprint === x509thumbprint);
-    //   if (!ca) {
-    //     throw new MalformedError("Not found CA from cache");
-    //   }
-    //   return ca;
-    // }));
   }
 
+  /**
+   * Downloads and adds CA certificates to cache
+   * from repository, endpoints and options
+   */
   protected async reloadCaCache() {
-    // add ca from repository
+    // add ca to cache from repository
     const caCerts = await this.certificateRepository.findCaCertificates() || [];
     for (const caCert of caCerts) {
-      this.x509caCerts.set(caCert.thumbprint, new x509.X509Certificate(caCert.rawData));
+      this.caCerts.set(caCert.thumbprint, new x509.X509Certificate(caCert.rawData));
     }
 
-    // add ca from endpoints
+    // add ca to cache from endpoints
     const endpoints = container.resolveAll<IEndpointService>(diEndpointService);
     await Promise.all(endpoints.map(async o => {
       const endpointCerts = await o.getCaCertificate();
       await Promise.all(endpointCerts.map(async cert => {
         const thumbprint = pvtsutils.Convert.ToHex(await cert.getThumbprint());
-        if (!this.x509caCerts.has(thumbprint)) {
+        if (!this.caCerts.has(thumbprint)) {
           await this.create(cert.rawData);
-          this.x509caCerts.set(thumbprint, cert);
+          this.caCerts.set(thumbprint, cert);
         }
       }));
     }));
 
-    // add ca from options
+    // add ca to cache from options
     if (this.options.extraCertificateStorage) {
       const chain = new x509.X509ChainBuilder({ certificates: this.options.extraCertificateStorage }).certificates;
       await Promise.all(chain.map(async cert => {
         const thumbprint = pvtsutils.Convert.ToHex(await cert.getThumbprint());
-        if (!this.x509caCerts.has(thumbprint)) {
-          this.x509caCerts.set(thumbprint, cert);
+        if (!this.caCerts.has(thumbprint)) {
+          this.caCerts.set(thumbprint, cert);
         }
       }));
     }
   }
 
+  /**
+   * Returns all registered endpoints
+   */
   protected getEndpointAll(): IEndpointService[] {
     return container.resolveAll<IEndpointService>(diEndpointService);
   }
 
+  /**
+   * Returns Endpoint by type
+   * @param type Endpoint type
+   */
   public getEndpoint(type: string): IEndpointService {
     const validators = this.getEndpointAll();
     const validator = validators.filter(o => o.type === type);
