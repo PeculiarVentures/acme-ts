@@ -20,7 +20,7 @@ export interface IServerOptions {
   hashAlgorithm: string;
   ordersPageSize: number;
   expireAuthorizationDays: number;
-  downloadCertificateFormat: "PemCertificateChain" | "PkixCert" | "Pkcs7Mime";
+  downloadCertificateFormat: "pem" | "pkix" | "pkcs7";
   loggerLevel?: LoggerLevel;
   debugMode?: boolean;
   meta?: DirectoryMetadata;

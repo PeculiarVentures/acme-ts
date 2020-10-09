@@ -44,7 +44,7 @@ export class DependencyInjection {
       hashAlgorithm: options.hashAlgorithm ?? "SHA-1",
       ordersPageSize: options.ordersPageSize ?? 10,
       expireAuthorizationDays: options.expireAuthorizationDays ?? 3,
-      downloadCertificateFormat: options.downloadCertificateFormat ?? "PemCertificateChain",
+      downloadCertificateFormat: options.downloadCertificateFormat ?? "pem",
       debugMode: options.debugMode ?? false,
       loggerLevel: options.loggerLevel,
     } as IServerOptions;

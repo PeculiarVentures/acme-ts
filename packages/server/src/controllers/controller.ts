@@ -479,13 +479,13 @@ export class AcmeController extends BaseService {
       // as defined in TLS (see Section 4.4.2 of [RFC8446])
 
       switch (this.options.downloadCertificateFormat) {
-        case "PemCertificateChain":
+        case "pem":
           {
             const pem = x509.PemConverter.encode(certs.map(o => o.rawData), "certificate");
             response.content = new core.Content(pem);
           }
           break;
-        case "PkixCert":
+        case "pkix":
           {
             if(certs.length > 1){
               for (let index = 1; index < certs.length; index++) {
@@ -497,7 +497,7 @@ export class AcmeController extends BaseService {
             response.content = new core.Content(certs[0].rawData, "application/pkix-cert");
           }
           break;
-        case "Pkcs7Mime":
+        case "pkcs7":
           {
             response.content = new core.Content(certs.export("raw"), "application/pkcs7-mime");
           }

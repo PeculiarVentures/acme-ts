@@ -124,9 +124,9 @@ export class Controllers {
             .status(response.status)
             .send(response.content);
           break;
-        case ContentType.pemCertificateChain:
-        case ContentType.pkcs7Mime:
-        case ContentType.pkixCert:
+        case ContentType.pem:
+        case ContentType.pkcs7:
+        case ContentType.pkix:
           res.contentType(response.content.type)
             .status(response.status)
             .send(Buffer.from(response.content.content));

@@ -6,9 +6,9 @@ export enum ContentType {
   json = "application/json",
   joseJson = "application/jose+json",
   problemJson = "application/problem+json",
-  pkixCert = "application/pkix-cert",
-  pemCertificateChain = "application/pem-certificate-chain",
-  pkcs7Mime = "application/pkcs7-mime",
+  pkix = "application/pkix-cert",
+  pem = "application/pem-certificate-chain",
+  pkcs7 = "application/pkcs7-mime",
 }
 
 export class Content {
@@ -39,7 +39,7 @@ export class Content {
   public constructor(data: any, type?: boolean | string | ContentType) {
     if (typeof data === "string") {
       this.content = Convert.FromUtf8String(data);
-      this.type = ContentType.pemCertificateChain;
+      this.type = ContentType.pem;
     } else if (data instanceof AcmeError) {
       this.content = Convert.FromUtf8String(JSON.stringify({
         detail: data.message,
