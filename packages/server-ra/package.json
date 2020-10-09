@@ -47,14 +47,14 @@
     "@peculiar/acme-express": "^1.2.0",
     "@peculiar/acme-protocol": "^1.2.0",
     "@peculiar/acme-server": "^1.2.0",
-    "@peculiar/asn1-schema": "^2.0.17",
-    "@peculiar/asn1-x509": "^2.0.22",
+    "@peculiar/asn1-schema": "^2.0.23",
+    "@peculiar/asn1-x509": "^2.0.23",
     "@peculiar/webcrypto": "^1.1.3",
     "@peculiar/x509": "^1.0.6",
     "express": "^4.17.1",
     "node-fetch": "^2.6.1",
     "pvtsutils": "^1.0.14",
-    "tslib": "^2.0.1",
+    "tslib": "^2.0.2",
     "tsyringe": "^4.3.0"
   }
 }

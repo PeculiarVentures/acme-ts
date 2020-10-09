@@ -46,7 +46,7 @@
     "@peculiar/acme-data": "^1.2.0",
     "@peculiar/acme-protocol": "^1.2.0",
     "@peculiar/jose": "^1.2.0",
-    "aws-sdk": "^2.764.0",
+    "aws-sdk": "^2.770.0",
     "dynamoose": "^2.3.0",
     "pvtsutils": "^1.0.14"
   }
