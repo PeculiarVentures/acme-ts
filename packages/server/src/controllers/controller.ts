@@ -2,6 +2,7 @@ import * as core from "@peculiar/acme-core";
 import * as types from "../services/types";
 import * as protocol from "@peculiar/acme-protocol";
 import * as x509 from "@peculiar/x509";
+import * as pvtsutils from "pvtsutils";
 
 import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
 import { container, injectable } from "tsyringe";
@@ -24,6 +25,7 @@ export class AcmeController extends BaseService {
   protected authorizationService = container.resolve<types.IAuthorizationService>(types.diAuthorizationService);
   protected challengeService = container.resolve<types.IChallengeService>(types.diChallengeService);
   protected orderService = container.resolve<types.IOrderService>(types.diOrderService);
+  protected certificateService = container.resolve<types.ICertificateService>(types.diCertificateService);
 
   public async wrapAction(action: (response: core.Response) => Promise<void>, request: core.Request, useJwk = false) {
     const response = new core.Response();
@@ -407,7 +409,7 @@ export class AcmeController extends BaseService {
       if (token.isPayloadEmptyObject()) {
         await this.challengeService.challengeValidate(challenge, auth.identifier.type);
 
-        response.headers.setLink(`<${this.options.baseAddress}/authz/${challenge.authorizationId}>;rel="up"`)
+        response.headers.setLink(`<${this.options.baseAddress}/authz/${challenge.authorizationId}>;rel="up"`);
       }
       response.content = new core.Content(await this.convertService.toChallenge(challenge));
     }, request);
@@ -477,19 +479,25 @@ export class AcmeController extends BaseService {
       // as defined in TLS (see Section 4.4.2 of [RFC8446])
 
       switch (this.options.downloadCertificateFormat) {
-        case "PemCertificateChain":
+        case "pem":
           {
             const pem = x509.PemConverter.encode(certs.map(o => o.rawData), "certificate");
             response.content = new core.Content(pem);
           }
           break;
-        case "PkixCert":
+        case "pkix":
           {
+            if(certs.length > 1){
+              for (let index = 1; index < certs.length; index++) {
+                const cert = certs[index];
+                const thumbprint = pvtsutils.Convert.ToHex(await cert.getThumbprint());
+                response.headers.setLink(`<${this.options.baseAddress}/cert/${thumbprint}>;rel="up"`);
+              }
+            }
             response.content = new core.Content(certs[0].rawData, "application/pkix-cert");
-            // todo add header links on other certificates
           }
           break;
-        case "Pkcs7Mime":
+        case "pkcs7":
           {
             response.content = new core.Content(certs.export("raw"), "application/pkcs7-mime");
           }
@@ -517,5 +525,25 @@ export class AcmeController extends BaseService {
   }
   //#endregion
 
+  public async getEndpoint(request: core.Request, type: string) {
+    return this.wrapAction(async (response) => {
+      const endpoint = this.certificateService.getEndpoint(type);
+      const certs = await endpoint.getCaCertificate();
+
+      // add headers
+      response.headers.location = `${this.options.baseAddress}/endpoint/${endpoint.type}`;
+
+      if(certs.length > 1){
+        for (let index = 1; index < certs.length; index++) {
+          const cert = certs[index];
+          const thumbprint = pvtsutils.Convert.ToHex(await cert.getThumbprint());
+          response.headers.setLink(`<${this.options.baseAddress}/cert/${thumbprint}>;rel="up"`);
+        }
+      }
+
+      response.content = new core.Content(await this.convertService.toEndpoint(endpoint));
+
+    }, request);
+  }
 
 }

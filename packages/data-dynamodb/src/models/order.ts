@@ -1,8 +1,6 @@
-import { IOrder, IError, ICertificate, Key } from "@peculiar/acme-data";
+import { IOrder, IError, Key } from "@peculiar/acme-data";
 import { OrderStatus } from "@peculiar/acme-protocol";
 import { BaseObject, IBaseDynamoObject } from "./base";
-import { Convert } from "pvtsutils";
-import { ICertificateDynamo } from ".";
 
 export interface IOrderDynamo extends IBaseDynamoObject {
   status: OrderStatus;
@@ -11,7 +9,7 @@ export interface IOrderDynamo extends IBaseDynamoObject {
   notBefore?: string;
   notAfter?: string;
   error?: IError;
-  certificate?: ICertificateDynamo;
+  certificate?: string;
 }
 
 export class Order extends BaseObject implements IOrder {
@@ -21,7 +19,7 @@ export class Order extends BaseObject implements IOrder {
   public notBefore?: Date;
   public notAfter?: Date;
   public error?: IError;
-  public certificate?: ICertificate;
+  public certificate?: string;
   public accountId?: Key;
 
   public constructor(params: Partial<Order> = {}) {
@@ -52,16 +50,7 @@ export class Order extends BaseObject implements IOrder {
       dynamo.error = this.error;
     }
     if (this.certificate) {
-      const cert: ICertificateDynamo = {
-        id: this.certificate.id,
-        status: this.certificate.status,
-        thumbprint: this.certificate.thumbprint,
-        rawData: Convert.ToBase64(this.certificate.rawData),
-      };
-      if (this.certificate.reason) {
-        cert.reason = this.certificate.reason;
-      }
-      dynamo.certificate = cert;
+      dynamo.certificate = this.certificate;
     }
     return dynamo;
   }
@@ -82,14 +71,7 @@ export class Order extends BaseObject implements IOrder {
       this.error = data.error;
     }
     if (data.certificate) {
-      const cert: ICertificate = {
-        id: data.certificate.id,
-        rawData: Convert.FromBase64(data.certificate.rawData),
-        status: data.certificate.status,
-        thumbprint: data.certificate.thumbprint,
-        reason: data.certificate.reason,
-      };
-      this.certificate = cert;
+      this.certificate = data.certificate;
     }
     if (data.parentId) {
       this.accountId = data.parentId;

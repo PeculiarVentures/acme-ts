@@ -437,11 +437,11 @@ export class ApiClient extends BaseClient {
           throw new Error("Cannot get content from ACME response");
         }
         switch (resp.content.type) {
-          case ContentType.pemCertificateChain:
+          case ContentType.pem:
             return this.decodePem(resp.content.toString());
-          case ContentType.pkixCert:
+          case ContentType.pkix:
             return [resp.content.content];
-          case ContentType.pkcs7Mime:
+          case ContentType.pkcs7:
             throw new Error("Not implemented");
           default:
             throw new Error("Not supported content type for certificate");

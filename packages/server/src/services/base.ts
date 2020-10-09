@@ -1,4 +1,4 @@
-import { MalformedError, ILogger, Level, diLogger } from "@peculiar/acme-core";
+import { MalformedError, ILogger, LoggerLevel, diLogger } from "@peculiar/acme-core";
 import { X509Certificate } from "@peculiar/x509";
 import { container } from "tsyringe";
 import { DirectoryMetadata } from "@peculiar/acme-protocol";
@@ -20,8 +20,8 @@ export interface IServerOptions {
   hashAlgorithm: string;
   ordersPageSize: number;
   expireAuthorizationDays: number;
-  downloadCertificateFormat: "PemCertificateChain" | "PkixCert" | "Pkcs7Mime";
-  levelLogger?: Level;
+  downloadCertificateFormat: "pem" | "pkix" | "pkcs7";
+  loggerLevel?: LoggerLevel;
   debugMode?: boolean;
   meta?: DirectoryMetadata;
   extraCertificateStorage?: X509Certificate[];
@@ -45,5 +45,13 @@ export class BaseService {
       throw new Error("Cannot get 'cryptoProvider' option");
     }
     return this.options.cryptoProvider;
+  }
+
+  /**
+   * Returns hash
+   * @param obj
+   */
+  protected async getHash(obj: ArrayBuffer, alg: string = this.options.hashAlgorithm) {
+    return this.getCrypto().subtle.digest(alg, obj);
   }
 }

@@ -1,6 +1,6 @@
 import { Crypto } from "@peculiar/webcrypto";
 import { cryptoProvider } from "@peculiar/x509";
-import { DependencyContainer, RegistrationOptions } from "tsyringe";
+import { DependencyContainer, Lifecycle, RegistrationOptions } from "tsyringe";
 import { AcmeController, diAcmeController } from "./controllers";
 import { IServerOptions } from "./services";
 
@@ -44,9 +44,9 @@ export class DependencyInjection {
       hashAlgorithm: options.hashAlgorithm ?? "SHA-1",
       ordersPageSize: options.ordersPageSize ?? 10,
       expireAuthorizationDays: options.expireAuthorizationDays ?? 3,
-      downloadCertificateFormat: options.downloadCertificateFormat ?? "PemCertificateChain",
+      downloadCertificateFormat: options.downloadCertificateFormat ?? "pem",
       debugMode: options.debugMode ?? false,
-      levelLogger: options.levelLogger,
+      loggerLevel: options.loggerLevel,
     } as IServerOptions;
 
     if (!container.isRegistered(data.diAccountRepository)) {
@@ -63,7 +63,7 @@ export class DependencyInjection {
     registerEmpty(container, types.diAuthorizationService, services.AuthorizationService);
     registerEmpty(container, types.diChallengeService, services.ChallengeService);
     registerEmpty(container, types.diOrderService, services.OrderService);
-    registerEmpty(container, types.diCertificateEnrollmentService, data.Empty);
+    registerEmpty(container, types.diCertificateService, services.CertificateService, { lifecycle: Lifecycle.Singleton });
     registerEmpty(container, diAcmeController, AcmeController);
   }
 }

@@ -5,7 +5,7 @@ import { BaseRepository } from "./base";
 export class OrderRepository extends BaseRepository<IOrder> implements IOrderRepository {
 
   public async findByThumbprint(thumbprint: string) {
-    return this.items.find(o => o.certificate && o.certificate.thumbprint === thumbprint) || null;
+    return this.items.find(o => o.certificate && o.certificate === thumbprint) || null;
   }
 
   public async lastByIdentifier(accountId: number, identifier: string) {

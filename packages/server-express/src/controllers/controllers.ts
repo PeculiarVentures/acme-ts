@@ -88,6 +88,12 @@ export class Controllers {
   }
   //#endregion
 
+  public async getEndpoint(req: Request, res: Response, type: string): Promise<void> {
+    const request = this.getAcmeRequest(req);
+    const result = await this.acmeController.getEndpoint(request, type);
+    this.createHttpResponseMessage(result, res);
+  }
+
   //#region Parse Request and Response
   /**
    * Parse AcmeResponse to express response
@@ -118,9 +124,9 @@ export class Controllers {
             .status(response.status)
             .send(response.content);
           break;
-        case ContentType.pemCertificateChain:
-        case ContentType.pkcs7Mime:
-        case ContentType.pkixCert:
+        case ContentType.pem:
+        case ContentType.pkcs7:
+        case ContentType.pkix:
           res.contentType(response.content.type)
             .status(response.status)
             .send(Buffer.from(response.content.content));

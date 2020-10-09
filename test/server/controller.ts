@@ -44,7 +44,7 @@ context("Server", () => {
       baseAddress,
 
       debugMode: true,
-      downloadCertificateFormat: "PemCertificateChain",
+      downloadCertificateFormat: "pem",
       hashAlgorithm: "SHA-256",
       expireAuthorizationDays: 1,
       levelLogger: "error",
@@ -1595,10 +1595,10 @@ context("Server", () => {
     context("revoke", () => {
 
       before(() => {
-        controller.options.downloadCertificateFormat = "PkixCert";
+        controller.options.downloadCertificateFormat = "pkix";
       });
       after(() => {
-        controller.options.downloadCertificateFormat = "PemCertificateChain";
+        controller.options.downloadCertificateFormat = "pem";
       });
 
       async function enrollCertificate(client: any) {

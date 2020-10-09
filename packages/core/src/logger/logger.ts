@@ -1,61 +1,55 @@
 import { injectable, container } from "tsyringe";
 
 export interface ILogger {
-  level: Level;
-  error(msg: string, ...obj: any[]): void;
-  info(msg: string, ...obj: any[]): void;
-  warn(msg: string, ...obj: any[]): void;
-  debug(msg: string, ...obj: any[]): void;
+  level: LoggerLevel;
+  error(msg: string, obj?: LoggerData): void;
+  info(msg: string, obj?: LoggerData): void;
+  warn(msg: string, obj?: LoggerData): void;
+  debug(msg: string, obj?: LoggerData): void;
 }
 
-export type Level = 'debug' | 'info' | 'warning' | 'error' | undefined;
+export enum LoggerLevel {
+  error,
+  warn,
+  info,
+  debug,
+}
+
+export interface LoggerData {
+  [key: string]: any;
+}
 
 export const diLogger = "ACME.Logger";
 
 @injectable()
 export class Logger implements ILogger {
 
-  public level: Level = "info";
+  public level: LoggerLevel = LoggerLevel.info;
 
-  public error(msg: string, ...obj: any[]): void {
-    if (this.checkLevel("error")) {
-      this.write("error", msg, ...obj);
-    }
+  public error(msg: string, obj?: LoggerData): void {
+    this.write(LoggerLevel.debug, msg, obj);
   }
-  public info(msg: string, ...obj: any[]): void {
-    if (this.checkLevel("info")) {
-      this.write("info", msg, ...obj);
-    }
+  public info(msg: string, obj?: LoggerData): void {
+    this.write(LoggerLevel.info, msg, obj);
   }
-  public warn(msg: string, ...obj: any[]): void {
-    if (this.checkLevel("warning")) {
-      this.write("warning", msg, ...obj);
-    }
+  public warn(msg: string, obj?: LoggerData): void {
+    this.write(LoggerLevel.warn, msg, obj);
   }
-  public debug(msg: string, ...obj: any[]): void {
-    if (this.checkLevel("debug")) {
-      this.write("debug", msg, ...obj);
-    }
+  public debug(msg: string, obj?: LoggerData): void {
+    this.write(LoggerLevel.debug, msg, obj);
   }
 
-  protected write(lvl: Level, msg: string, ...obj: any[]) {
+  public write(lvl: LoggerLevel, msg: string, obj?: LoggerData) {
+    if (this.level >= lvl) {
+      this.onWrite(lvl, msg, obj);
+    }
+  }
+  protected onWrite(lvl: LoggerLevel, msg: string, obj?: LoggerData) {
     // empty
   }
 
-  protected checkLevel(lvl: Level): boolean {
-    // todo mask and undefined
-    switch (this.level) {
-      case "debug":
-        return lvl === "error" || lvl === "warning" || lvl === "info" || lvl === "debug";
-      case "info":
-        return lvl === "error" || lvl === "warning" || lvl === "info";
-      case "warning":
-        return lvl === "error" || lvl === "warning";
-      case "error":
-        return lvl === "error";
-      default:
-        return false;
-    }
+  protected checkLevel(lvl: LoggerLevel): boolean {
+    return this.level >= lvl;
   }
 }
 

@@ -1,7 +1,6 @@
 import { OrderStatus } from "@peculiar/acme-protocol";
 import { IBaseObject, Key } from "./base";
 import { IError } from "./error";
-import { ICertificate } from "./certificate";
 
 export const diOrder = "ACME.Models.Order";
 
@@ -42,7 +41,12 @@ export interface IOrder extends IBaseObject {
   /**
    * Enrolled certificate
    */
-  certificate?: ICertificate;
+  certificate?: string;
 
   accountId?: Key;
+
+  /**
+   * Сertification authority for issuing certificates
+   */
+  endpoint?: string;
 }

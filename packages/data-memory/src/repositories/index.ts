@@ -1,5 +1,6 @@
 export * from "./account";
 export * from "./authorization";
+export * from "./certificate";
 export * from "./base";
 export * from "./challenge";
 export * from "./external_account";

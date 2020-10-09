@@ -1,21 +1,33 @@
-import { Logger, Level } from "./logger";
+import { Logger, LoggerData, LoggerLevel } from "./logger";
 
 export class ConsoleLogger extends Logger {
 
-  protected write(lvl: Level, msg: string, ...obj: any[]) {
+  protected onWrite(lvl: LoggerLevel, msg: string, obj?: LoggerData) {
     switch (lvl) {
-      case "debug":
-        console.debug(msg, ...obj);
+      case LoggerLevel.debug:
+        if (obj) {
+          console.debug(msg, obj);
+        }
+        console.debug(msg);
         break;
-      case "warning":
-        console.warn(msg, ...obj);
+      case LoggerLevel.warn:
+        if (obj) {
+          console.warn(msg, obj);
+        }
+        console.warn(msg);
         break;
-      case "error":
-        console.error(msg, ...obj);
+      case LoggerLevel.error:
+        if (obj) {
+          console.error(msg, obj);
+        }
+        console.error(msg);
         break;
-      case "info":
+      case LoggerLevel.info:
       default:
-        console.log(msg, ...obj);
+        if (obj) {
+          console.info(msg, obj);
+        }
+        console.log(msg);
         break;
     }
   }

@@ -29,6 +29,11 @@ export interface DirectoryMetadata {
    * field associating the new account with an external account
    */
   externalAccountRequired?: boolean;
+
+  /**
+   *
+   */
+  endpoints?: string[];
 }
 
 export interface Directory {
