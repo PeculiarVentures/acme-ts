@@ -1,4 +1,4 @@
-import { MalformedError, ILogger, Level, diLogger } from "@peculiar/acme-core";
+import { MalformedError, ILogger, LoggerLevel, diLogger } from "@peculiar/acme-core";
 import { X509Certificate } from "@peculiar/x509";
 import { container } from "tsyringe";
 import { DirectoryMetadata } from "@peculiar/acme-protocol";
@@ -21,7 +21,7 @@ export interface IServerOptions {
   ordersPageSize: number;
   expireAuthorizationDays: number;
   downloadCertificateFormat: "PemCertificateChain" | "PkixCert" | "Pkcs7Mime";
-  levelLogger?: Level;
+  loggerLevel?: LoggerLevel;
   debugMode?: boolean;
   meta?: DirectoryMetadata;
   extraCertificateStorage?: X509Certificate[];
