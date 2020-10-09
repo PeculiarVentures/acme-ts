@@ -8,7 +8,7 @@ export class OrderRepository extends BaseRepository<Order> implements IOrderRepo
 
   public async findByThumbprint(thumbprint: string) {
     const cert = await this.getModel().get(thumbprint);
-    return await this.findById(cert.toJSON().parentId);
+    return await this.findById(cert.toJSON().orderId);
   }
 
   public async lastByIdentifier(accountId: string, identifier: string) {
