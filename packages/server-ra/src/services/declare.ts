@@ -3,7 +3,7 @@ import "@peculiar/acme-server";
 
 declare module "@peculiar/acme-server" {
   interface IServerOptions {
-    defaultProvider: string;
+    defaultProvider?: string;
   }
 }
 

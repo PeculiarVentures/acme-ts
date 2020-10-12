@@ -201,15 +201,23 @@ export class CertificateService extends BaseService implements ICertificateServi
    * Returns Endpoint by type
    * @param type Endpoint type
    */
-  public getEndpoint(type: string): IEndpointService {
-    const validators = this.getEndpointAll();
-    const validator = validators.filter(o => o.type === type);
-    if (!validator.length) {
-      throw new MalformedError(`Unsupported endpoint type '${type}'`);
+  public getEndpoint(type?: string): IEndpointService {
+    const endpoints = this.getEndpointAll();
+    if (!endpoints.length) {
+      throw new MalformedError("Endpoints not found");
     }
-    if (validator.length > 1) {
-      throw new MalformedError(`Several endpoints have been registered with the same type '${type}'`);
+
+    if (type) {
+      const endpoint = endpoints.filter(o => o.type === type);
+      if (!endpoint.length) {
+        throw new MalformedError(`Unsupported endpoint type '${type}'`);
+      }
+      if (endpoint.length > 1) {
+        throw new MalformedError(`Several endpoints have been registered with the same type '${type}'`);
+      }
+      return endpoint[0];
+    } else {
+      return endpoints[0];
     }
-    return validator[0];
   }
 }
