@@ -18,15 +18,23 @@ export class ProviderService extends BaseService {
     return container.resolveAll<IProviderService>(diProviderService);
   }
 
-  protected getProvider(identifier: string): IProviderService {
+  protected getProvider(identifier?: string): IProviderService {
     const providers = this.getProviderAll();
-    const provider = providers.filter(o => o.identifier === identifier);
-    if (!provider.length) {
-      throw new MalformedError(`Unsupported provider type '${identifier}'`);
+    if (!providers.length) {
+      throw new MalformedError(`Providers not found'`);
     }
-    if (provider.length > 1) {
-      throw new MalformedError(`Several providers have been registered with the same type '${identifier}'`);
+
+    if (identifier) {
+      const provider = providers.filter(o => o.identifier === identifier);
+      if (!provider.length) {
+        throw new MalformedError(`Unsupported provider type '${identifier}'`);
+      }
+      if (provider.length > 1) {
+        throw new MalformedError(`Several providers have been registered with the same type '${identifier}'`);
+      }
+      return provider[0];
+    } else {
+      return providers[0];
     }
-    return provider[0];
   }
 }
