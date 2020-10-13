@@ -1,5 +1,5 @@
 import { diEndpointService, IDirectoryService, IEndpointService } from "./types";
-import { Directory, DirectoryMetadata } from "@peculiar/acme-protocol";
+import { Directory } from "@peculiar/acme-protocol";
 import { BaseService } from "./base";
 import { container, injectable } from "tsyringe";
 import { MalformedError } from "@peculiar/acme-core";
@@ -29,13 +29,12 @@ export class DirectoryService extends BaseService implements IDirectoryService {
     // Add endpoints info
     if (!this.endpoints.length) {
       throw new MalformedError("No endpoints found");
-    } else if (this.endpoints.length > 1) {
+    } else {
       const types = this.endpoints.map(o => `${this.options.baseAddress}/endpoint/${o.type}`);
       if (!directory.meta) {
-        const meta: DirectoryMetadata = {
+        directory.meta = {
           endpoints: types,
         };
-        directory.meta = meta;
       } else {
         directory.meta.endpoints = types;
       }

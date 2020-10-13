@@ -3,7 +3,7 @@ import { diLogger, ConsoleLogger } from "@peculiar/acme-core";
 import * as x509 from "@peculiar/x509";
 import { AcmeExpress } from "@peculiar/acme-express";
 import { DependencyInjection as diData } from "@peculiar/acme-data-memory";
-import { diCertificateEnrollmentService } from "@peculiar/acme-server";
+import { diCertificateService } from "@peculiar/acme-server";
 import { Crypto } from "@peculiar/webcrypto";
 import { container, Lifecycle } from "tsyringe";
 import { CertificateEnrollmentService } from "./services";
@@ -59,7 +59,7 @@ async function main() {
     extraCertificateStorage: [rootCert, caCert],
   } as Partial<ITestServerOptions2>);
 
-  container.register(diCertificateEnrollmentService, CertificateEnrollmentService, { lifecycle: Lifecycle.Singleton });
+  container.register(diCertificateService, CertificateEnrollmentService, { lifecycle: Lifecycle.Singleton });
   diData.register(container);
 
   app.listen(4000, () => { console.log(`Server is running`); });

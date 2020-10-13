@@ -4,11 +4,9 @@ import * as data from "@peculiar/acme-data";
 import * as protocol from "@peculiar/acme-protocol";
 import * as types from "./types";
 import * as core from "@peculiar/acme-core";
-import * as x509 from "@peculiar/x509";
 import { JsonWebKey } from "@peculiar/jose";
 import * as ModelFabric from "./model_fabric";
 import * as pvtsutils from "pvtsutils";
-import { MalformedError } from "@peculiar/acme-core";
 
 export interface ICertificateEnrollParams {
   /**

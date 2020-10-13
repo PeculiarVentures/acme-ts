@@ -1,15 +1,17 @@
-import { diExternalAccountService, ExternalAccountService } from "@peculiar/acme-server";
+import { diConvertService, diExternalAccountService, ExternalAccountService } from "@peculiar/acme-server";
 import { Controllers } from "@peculiar/acme-express";
 import { container, injectable } from "tsyringe";
 import { Request, Response } from "express";
 import { Content } from "@peculiar/acme-core";
 import { diAuthProviderService, ProviderService } from "../services";
+import { RaConvertService } from "../services/convert";
 
 @injectable()
 export class RaControllers extends Controllers {
 
   protected providerService = container.resolve<ProviderService>(diAuthProviderService);
   protected externalAccountService = container.resolve<ExternalAccountService>(diExternalAccountService);
+  protected raConverterService = container.resolve<RaConvertService>(diConvertService);
 
   public async newExternalAccount(req: Request, res: Response): Promise<void> {
     const request = this.getAcmeRequest(req);
@@ -23,11 +25,7 @@ export class RaControllers extends Controllers {
       }
 
       const externalAccount = await this.externalAccountService.create(profile);
-      res.content = new Content(
-        {
-          challenge: externalAccount.key,
-          kid: `${this.acmeController.options.baseAddress}/kid/${externalAccount.id}`
-        },
+      res.content = new Content(this.raConverterService.toEabChallenge(externalAccount),
         this.acmeController.options.formattedResponse);
       res.status = 201; // Created
     }, request);

@@ -1,4 +1,4 @@
-import { ICertificate, CertificateStatus, CertificateType, Key } from "@peculiar/acme-data";
+import { ICertificate, CertificateStatus, CertificateType } from "@peculiar/acme-data";
 import { BaseObject, IBaseDynamoObject } from "./base";
 import { CRLReason } from "@peculiar/asn1-x509";
 import { Convert } from "pvtsutils";

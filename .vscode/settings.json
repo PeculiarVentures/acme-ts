@@ -37,6 +37,7 @@
     "server",
     "server-ra",
     "server-express",
+    "test-server"
   ]
 
 }

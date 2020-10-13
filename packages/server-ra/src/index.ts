@@ -35,6 +35,7 @@ export class AcmeRa {
 
     container.register(acmeServer.diIdentifierService, services.EmailChallengeService);
     container.register(acmeServer.diDirectoryService, services.RaDirectoryService);
+    container.register(acmeServer.diConvertService, services.RaConvertService);
     container.register(diControllers, RaControllers);
     container.register(acmeServer.diExternalAccountService, acmeServer.ExternalAccountService);
     container.register(acmeServer.diAuthorizationService, services.RaAuthorizationService);

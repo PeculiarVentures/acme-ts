@@ -450,6 +450,16 @@ export class ApiClient extends BaseClient {
     });
   }
 
+  public async getEndpoint(url: string) {
+    return this.fetch<protocol.Endpoint>(url, {
+      method: "POST-as-GET",
+      kid: this.getAccountId(),
+      nonce: this.nonce,
+      key: this.accountKey.privateKey,
+      convert: (resp) => resp.json(),
+    });
+  }
+
   /**
    * Getting replay-nonce parameter response from the header
    * @param response

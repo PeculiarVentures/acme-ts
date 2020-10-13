@@ -58,6 +58,7 @@ export class PhoneChallengeService extends server.BaseService implements server.
     return names;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async identifierValidate(identifier: data.IIdentifier): Promise<core.AcmeError[]> {
     const problems: core.AcmeError[] = [];
     return problems;

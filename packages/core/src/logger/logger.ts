@@ -44,6 +44,7 @@ export class Logger implements ILogger {
       this.onWrite(lvl, msg, obj);
     }
   }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected onWrite(lvl: LoggerLevel, msg: string, obj?: LoggerData) {
     // empty
   }
