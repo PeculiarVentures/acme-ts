@@ -1,7 +1,7 @@
 import * as protocol from "@peculiar/acme-protocol";
 import * as pvtsutils from "pvtsutils";
 import { BaseService } from "./base";
-import { IConvertService, IEndpointService, Endpoint } from "./types";
+import { IConvertService, IEndpointService } from "./types";
 import * as data from "@peculiar/acme-data";
 import { injectable, container } from "tsyringe";
 import { MalformedError } from "@peculiar/acme-core";
@@ -131,7 +131,7 @@ export class ConvertService extends BaseService implements IConvertService {
     return orderList;
   }
 
-  public async toEndpoint(endpoint: IEndpointService): Promise<Endpoint> {
+  public async toEndpoint(endpoint: IEndpointService): Promise<protocol.Endpoint> {
     const certs = await endpoint.getCaCertificate();
     const thumbprint = pvtsutils.Convert.ToHex(await certs[0].getThumbprint());
     return {

@@ -20,13 +20,10 @@ export interface IConvertService {
   toAuthorization(auth: data.IAuthorization): Promise<protocol.Authorization>;
   toChallenge(challenge: data.IChallenge): Promise<protocol.Challenge>;
   toError(error: data.IError): Promise<protocol.Error>;
-  toEndpoint(endpoint: IEndpointService): Promise<Endpoint>;
+  toEndpoint(endpoint: IEndpointService): Promise<protocol.Endpoint>;
 }
 
-export interface Endpoint {
-  name: string;
-  certificate: string;
-}
+
 
 export const diDirectoryService = "ACME.DirectoryService";
 
