@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.4](https://github.com/PeculiarVentures/ts-acme/compare/v1.2.3...v1.2.4) (2020-10-13)
+
+
+### Features
+
+* **client:** Export base types from the module ([8fc55cc](https://github.com/PeculiarVentures/ts-acme/commit/8fc55ccc664b2b87b36dca237d70d80ee47c0e10))
+
+
+
+
+
 ## [1.2.3](https://github.com/PeculiarVentures/ts-acme/compare/v1.2.2...v1.2.3) (2020-10-13)
 
 
