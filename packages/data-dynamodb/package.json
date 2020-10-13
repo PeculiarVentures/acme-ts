@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/acme-data-dynamodb",
-  "version": "1.2.1",
+  "version": "1.2.3",
   "description": "DynamoDB data module forAutomatic Certificate Management Environment (ACME) implementing RFC 8555 framework",
   "keywords": [
     "acme"
@@ -42,10 +42,10 @@
     "url": "https://github.com/PeculiarVentures/acme-ts/issues"
   },
   "dependencies": {
-    "@peculiar/acme-core": "^1.2.1",
-    "@peculiar/acme-data": "^1.2.1",
-    "@peculiar/acme-protocol": "^1.2.1",
-    "@peculiar/jose": "^1.2.0",
+    "@peculiar/acme-core": "^1.2.3",
+    "@peculiar/acme-data": "^1.2.3",
+    "@peculiar/acme-protocol": "^1.2.3",
+    "@peculiar/jose": "^1.2.3",
     "aws-sdk": "^2.770.0",
     "dynamoose": "^2.3.0",
     "pvtsutils": "^1.0.14"

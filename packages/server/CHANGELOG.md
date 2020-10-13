@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.3](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.2...v1.2.3) (2020-10-13)
+
+
+### Features
+
+* **protocol:** Translated endpoint from server to protocol ([b76d609](https://github.com/PeculiarVentures/acme-ts/commit/b76d60908267f16471226aa440be7cf5698af0e3))
+* **server:** Added check authorization for getEndpoint ([b285940](https://github.com/PeculiarVentures/acme-ts/commit/b285940b65772b7e8431676fb8d0d06b3e7ece90))
+* **server:** Return link on endpoint ([e1db058](https://github.com/PeculiarVentures/acme-ts/commit/e1db058fd4add3ac3c33813e0674fb0efbc0b265))
+
+
+
+
+
 ## [1.2.2](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.1...v1.2.2) (2020-10-12)
 
 

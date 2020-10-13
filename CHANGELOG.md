@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.3](https://github.com/PeculiarVentures/ts-acme/compare/v1.2.2...v1.2.3) (2020-10-13)
+
+
+### Bug Fixes
+
+* **test-server:** Fixed bugs ([83875d2](https://github.com/PeculiarVentures/ts-acme/commit/83875d2aec28b7e6f583ee335003d19de9cad502))
+
+
+### Features
+
+* **client:** Added getEndpoint ([d8b33f4](https://github.com/PeculiarVentures/ts-acme/commit/d8b33f400525950b04b0021c6b8bcbb70c232eb8))
+* **protocol:** Translated endpoint from server to protocol ([b76d609](https://github.com/PeculiarVentures/ts-acme/commit/b76d60908267f16471226aa440be7cf5698af0e3))
+* **server:** Added check authorization for getEndpoint ([b285940](https://github.com/PeculiarVentures/ts-acme/commit/b285940b65772b7e8431676fb8d0d06b3e7ece90))
+* **server:** Return link on endpoint ([e1db058](https://github.com/PeculiarVentures/ts-acme/commit/e1db058fd4add3ac3c33813e0674fb0efbc0b265))
+* **server-ra:** Added eabChallenge ([6abbe32](https://github.com/PeculiarVentures/ts-acme/commit/6abbe32ba64e6fd64638e5161241a26f958c4ee3))
+
+
+
+
+
 ## [1.2.2](https://github.com/PeculiarVentures/ts-acme/compare/v1.2.1...v1.2.2) (2020-10-12)
 
 

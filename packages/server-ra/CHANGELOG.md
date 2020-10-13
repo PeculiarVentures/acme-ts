@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.3](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.2...v1.2.3) (2020-10-13)
+
+
+### Features
+
+* **server-ra:** Added eabChallenge ([6abbe32](https://github.com/PeculiarVentures/acme-ts/commit/6abbe32ba64e6fd64638e5161241a26f958c4ee3))
+
+
+
+
+
 ## [1.2.2](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.1...v1.2.2) (2020-10-12)
 
 
