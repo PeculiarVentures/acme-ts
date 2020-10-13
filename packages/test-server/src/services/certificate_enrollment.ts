@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { BaseService, ICertificateService, IEndpointService } from "@peculiar/acme-server";
 import { diCertificate, ICertificate, IOrder } from "@peculiar/acme-data";
 import { FinalizeParams, RevokeReason } from "@peculiar/acme-protocol";

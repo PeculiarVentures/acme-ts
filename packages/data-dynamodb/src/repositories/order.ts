@@ -15,6 +15,7 @@ export class OrderRepository extends BaseRepository<Order> implements IOrderRepo
     return await this.findByIndex(accountId, `order#${identifier}`);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async getList(accountId: Key, page: QueryParams, size: number) {
     const items = await this.findAllByIndex(accountId.toString(), `order#`);
     const orderLIst: IOrderList = {
