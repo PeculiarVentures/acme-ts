@@ -527,6 +527,7 @@ export class AcmeController extends BaseService {
 
   public async getEndpoint(request: core.Request, type: string) {
     return this.wrapAction(async (response) => {
+      await this.getAccount(request);
       const endpoint = this.certificateService.getEndpoint(type);
       const certs = await endpoint.getCaCertificate();
 
