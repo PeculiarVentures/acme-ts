@@ -38,7 +38,7 @@
   "scripts": {
     "test": "mocha",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "build": "lerna run build --since",
+    "build": "lerna run build",
     "rebuild": "lerna run rebuild",
     "clear": "lerna run clear",
     "upgrade": "yarn upgrade-interactive --latest"

@@ -33,6 +33,10 @@ export class AcmeRa {
       container.resolve<RaControllers>(diControllers).newExternalAccount(req, res);
     });
 
+    app.get(`/`, (req: Request, res: Response) => {
+      container.resolve<RaControllers>(diControllers).getHealthy(req, res);
+    });
+
     container.register(acmeServer.diIdentifierService, services.EmailChallengeService);
     container.register(acmeServer.diDirectoryService, services.RaDirectoryService);
     container.register(acmeServer.diConvertService, services.RaConvertService);
