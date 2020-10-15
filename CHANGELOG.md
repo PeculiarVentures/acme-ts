@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.5](https://github.com/PeculiarVentures/ts-acme/compare/v1.2.4...v1.2.5) (2020-10-15)
+
+
+### Features
+
+* **client:** Added support headers for get method ([d96e685](https://github.com/PeculiarVentures/ts-acme/commit/d96e68553a1a58e5ac97faeea50823f7a5023c72))
+* **server-ra:** Added healthy controller ([947c517](https://github.com/PeculiarVentures/ts-acme/commit/947c5175b9a8f37890e714564be386d6f0abadd7))
+
+
+
+
+
 ## [1.2.4](https://github.com/PeculiarVentures/ts-acme/compare/v1.2.3...v1.2.4) (2020-10-13)
 
 
