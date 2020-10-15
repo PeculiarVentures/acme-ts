@@ -14,6 +14,7 @@ export type AcmeMethod = "GET" | "HEAD" | "POST" | "POST-as-GET";
 
 export interface GetParams<T> {
   method: "GET" | "HEAD";
+  headers?: Record<string, string>;
   convert: (res: core.Response) => T;
 }
 export interface PostParams<T> {
@@ -55,7 +56,7 @@ export class BaseClient {
       ...options
     };
     if (!this.options.crypto) {
-      throw new Error("Cannot initialize ACME client. It requires crypto provider to be set.")
+      throw new Error("Cannot initialize ACME client. It requires crypto provider to be set.");
     }
   }
 
@@ -76,7 +77,7 @@ export class BaseClient {
     let response: Response | undefined;
     if (params.method === "GET" || params.method === "HEAD") {
       // GET
-      response = await fetch(url, { method: params.method });
+      response = await fetch(url, { method: params.method, headers: params.headers || {} });
     } else {
       // POST
       const crypto = this.getCrypto();
