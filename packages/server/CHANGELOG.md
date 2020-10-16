@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.7](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.6...v1.2.7) (2020-10-16)
+
+
+### Features
+
+* **server:** Added logs to csrValidate ([580d5c6](https://github.com/PeculiarVentures/acme-ts/commit/580d5c6b0bd2f5d795be842a0b5c5d030bbd38ec))
+
+
+
+
+
 ## [1.2.3](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.2...v1.2.3) (2020-10-13)
 
 

@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.7](https://github.com/PeculiarVentures/ts-acme/compare/v1.2.6...v1.2.7) (2020-10-16)
+
+
+### Bug Fixes
+
+* **server-ra:** Change method for get Endpoint on post ([4f59238](https://github.com/PeculiarVentures/ts-acme/commit/4f5923858fe441bf3ddfb2267314f92be3ded871))
+
+
+### Features
+
+* **server:** Added logs to csrValidate ([580d5c6](https://github.com/PeculiarVentures/ts-acme/commit/580d5c6b0bd2f5d795be842a0b5c5d030bbd38ec))
+
+
+
+
+
 ## [1.2.6](https://github.com/PeculiarVentures/ts-acme/compare/v1.2.5...v1.2.6) (2020-10-16)
 
 

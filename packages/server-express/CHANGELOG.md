@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.7](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.6...v1.2.7) (2020-10-16)
+
+
+### Bug Fixes
+
+* **server-ra:** Change method for get Endpoint on post ([4f59238](https://github.com/PeculiarVentures/acme-ts/commit/4f5923858fe441bf3ddfb2267314f92be3ded871))
+
+
+
+
+
 ## [1.2.3](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.2...v1.2.3) (2020-10-13)
 
 **Note:** Version bump only for package @peculiar/acme-express
