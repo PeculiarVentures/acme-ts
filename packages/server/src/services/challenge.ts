@@ -60,7 +60,8 @@ export class ChallengeService extends BaseService implements IChallengeService {
     try {
       csr = new x509.Pkcs10CertificateRequest(csrStr);
     } catch (error) {
-      throw new core.BadCSRError("Cannot create CSR");
+      this.logger.error("Cannot parse CSR", error);
+      throw new core.BadCSRError("Cannot parse CSR");
     }
     const err = new core.BadCSRError("Validate CSR failed");
     const validators = this.getValidatorAll();
