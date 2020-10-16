@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/acme-ra",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "Express middleware withAutomatic Certificate Management Environment (ACME) implementing RFC 8555 protocol that supports External Account Binding using Bearer tokens and multiple Certificate Authority endpoints",
   "keywords": [
     "acme"

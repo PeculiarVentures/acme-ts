@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.6](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.5...v1.2.6) (2020-10-16)
+
+
+### Features
+
+* **server-ra:** Move server version getting to options ([2582f7d](https://github.com/PeculiarVentures/acme-ts/commit/2582f7de303981faaeaad7e0021ca34693654613))
+
+
+
+
+
 ## [1.2.5](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.4...v1.2.5) (2020-10-15)
 
 
