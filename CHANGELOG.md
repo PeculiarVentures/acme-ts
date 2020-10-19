@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.8](https://github.com/PeculiarVentures/ts-acme/compare/v1.2.7...v1.2.8) (2020-10-19)
+
+
+### Bug Fixes
+
+* **server:** GetActual wrong status ([94af2c3](https://github.com/PeculiarVentures/ts-acme/commit/94af2c35f6dd425a00df967f20a0844d35451861))
+* **server:** Remove recursion ([c4cee0f](https://github.com/PeculiarVentures/ts-acme/commit/c4cee0fc87f268af052c7e8804753431cb155f08))
+
+
+
+
+
 ## [1.2.7](https://github.com/PeculiarVentures/ts-acme/compare/v1.2.6...v1.2.7) (2020-10-16)
 
 
