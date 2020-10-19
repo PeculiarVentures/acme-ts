@@ -39,7 +39,7 @@ protected externalAccountRepository = container.resolve<IExternalAccountReposito
     if (!externalAccount) {
       throw new MalformedError("External account does not exist");
     }
-    if (externalAccount.status == "pending" && externalAccount.expires && externalAccount.expires < new Date()) {
+    if (externalAccount.status === "pending" && externalAccount.expires && externalAccount.expires < new Date()) {
       externalAccount.status = "expired";
       await this.externalAccountRepository.update(externalAccount);
 

@@ -21,7 +21,7 @@ export class ProviderService extends BaseService {
   protected getProvider(identifier?: string): IProviderService {
     const providers = this.getProviderAll();
     if (!providers.length) {
-      throw new MalformedError(`Providers not found'`);
+      throw new MalformedError(`Providers not found`);
     }
 
     if (identifier) {
