@@ -9,7 +9,7 @@ import * as ModelFabric from "./model_fabric";
 @injectable()
 export class AuthorizationService extends BaseService implements IAuthorizationService {
 
-  protected challengeService  = container.resolve<IChallengeService>(diChallengeService);
+  protected challengeService = container.resolve<IChallengeService>(diChallengeService);
   protected authorizationRepository = container.resolve<IAuthorizationRepository>(diAuthorizationRepository);
 
   public async getById(accountId: Key, authId: Key): Promise<IAuthorization> {
@@ -34,7 +34,10 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
     }
 
     const updatedAuth = await this.refreshStatus(auth);
-    return updatedAuth;
+    if (updatedAuth.status === "pending" || updatedAuth.status === "valid") {
+      return updatedAuth;
+    }
+    return null;
   }
 
   public async create(accountId: Key, identifier: IIdentifier): Promise<IAuthorization> {
@@ -83,7 +86,7 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
         await this.authorizationRepository.update(item);
       }
     }
-    if(oldStatus !== item.status){
+    if (oldStatus !== item.status) {
       this.logger.info(`Authorization ${item.id} status updated to ${item.status}`);
     }
     return item;
