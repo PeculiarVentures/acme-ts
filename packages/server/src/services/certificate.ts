@@ -36,7 +36,9 @@ export class CertificateService extends BaseService implements ICertificateServi
     }
 
     // Check chaining certificate
-    await this.getChain(certificate);
+    if (order) {
+      await this.getChain(certificate);
+    }
 
     const cert = await this.certificateRepository.add(certificate);
 
@@ -167,26 +169,26 @@ export class CertificateService extends BaseService implements ICertificateServi
 
     // add ca to cache from endpoints
     const endpoints = container.resolveAll<IEndpointService>(diEndpointService);
-    await Promise.all(endpoints.map(async o => {
-      const endpointCerts = await o.getCaCertificate();
-      await Promise.all(endpointCerts.map(async cert => {
+    for (const endpoint of endpoints) {
+      const endpointCerts = await endpoint.getCaCertificate();
+      for (const cert of endpointCerts) {
         const thumbprint = pvtsutils.Convert.ToHex(await cert.getThumbprint());
         if (!this.caCerts.has(thumbprint)) {
           await this.create(cert.rawData);
           this.caCerts.set(thumbprint, cert);
         }
-      }));
-    }));
+      }
+    }
 
     // add ca to cache from options
     if (this.options.extraCertificateStorage) {
       const chain = new x509.X509ChainBuilder({ certificates: this.options.extraCertificateStorage }).certificates;
-      await Promise.all(chain.map(async cert => {
+      for (const cert of chain) {
         const thumbprint = pvtsutils.Convert.ToHex(await cert.getThumbprint());
         if (!this.caCerts.has(thumbprint)) {
           this.caCerts.set(thumbprint, cert);
         }
-      }));
+      }
     }
   }
 
