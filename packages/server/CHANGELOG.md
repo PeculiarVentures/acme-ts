@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.9](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.8...v1.2.9) (2020-10-20)
+
+
+### Features
+
+* **server:** Make getToken public ([685dc93](https://github.com/PeculiarVentures/acme-ts/commit/685dc93882ca7e78a36f085c71be091bea04f2cc))
+
+
+
+
+
 ## [1.2.8](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.7...v1.2.8) (2020-10-19)
 
 
