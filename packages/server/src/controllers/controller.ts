@@ -115,7 +115,7 @@ export class AcmeController extends BaseService {
     return response;
   }
 
-  private getToken(request: core.Request) {
+  public getToken(request: core.Request) {
     const token = request.body;
     if (!token || !Object.keys(token).length) {
       throw new core.MalformedError("JSON Web Token is empty");
