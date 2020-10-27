@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.10](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.9...v1.2.10) (2020-10-27)
+
+
+### Bug Fixes
+
+* **client:** Fixed revoke cert ([9a1db7d](https://github.com/PeculiarVentures/acme-ts/commit/9a1db7df13dcbeb7ad157a528c73deaec74322a2))
+
+
+
+
+
 ## [1.2.5](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.4...v1.2.5) (2020-10-15)
 
 

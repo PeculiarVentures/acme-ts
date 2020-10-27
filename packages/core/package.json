@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/acme-core",
-  "version": "1.2.3",
+  "version": "1.2.10",
   "description": "Core module forAutomatic Certificate Management Environment (ACME) implementing RFC 8555",
   "keywords": [
     "acme"
