@@ -54,7 +54,7 @@
     "express": "^4.17.1",
     "node-fetch": "^2.6.1",
     "pvtsutils": "^1.0.14",
-    "tslib": "^2.0.2",
+    "tslib": "^2.0.3",
     "tsyringe": "^4.3.0"
   }
 }
