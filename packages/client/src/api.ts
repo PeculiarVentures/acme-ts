@@ -313,7 +313,7 @@ export class ApiClient extends BaseClient {
    * @param reason Reason for feedback
    */
   public async revoke(certificate: BufferSource, reason = CRLReasons.unspecified) {
-    return await this.fetch(this.directory.keyChange, {
+    return await this.fetch(this.directory.revokeCert, {
       method: "POST",
       kid: this.getAccountId(),
       nonce: this.nonce,
