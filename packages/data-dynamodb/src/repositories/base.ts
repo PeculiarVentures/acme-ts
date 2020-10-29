@@ -4,6 +4,7 @@ import { BaseObject } from "../models";
 import { Document } from "dynamoose/dist/Document";
 import { ModelType } from "dynamoose/dist/General";
 import { container } from "tsyringe";
+import { diOptionsService, OptionsService } from "../options";
 
 interface IDataTable extends Document {
   id: string;
@@ -13,10 +14,13 @@ interface IDataTable extends Document {
 
 export abstract class BaseRepository<T extends BaseObject> implements IBaseRepository<T>
 {
+
+  protected options = container.resolve<OptionsService>(diOptionsService).options;
+
   protected abstract className: string;
   private model?: ModelType<IDataTable>;
   private validator?: T;
-  private tableName = "ACME";
+  private tableName = this.options.tableName ?? "ACME";
   private tableSchema = new dynamoose.Schema({
     id: {
       type: String,

@@ -11,6 +11,9 @@ export const diServerOptions = "ACME.ServerOptions";
  * DI: ACME.ServerOptions
  */
 export interface IServerOptions {
+  /**
+   * Default value 'http://localhost/acme'
+   */
   baseAddress: string;
   formattedResponse?: boolean;
   /**
@@ -21,7 +24,7 @@ export interface IServerOptions {
   ordersPageSize: number;
   expireAuthorizationDays: number;
   downloadCertificateFormat: "pem" | "pkix" | "pkcs7";
-  loggerLevel?: LoggerLevel;
+  loggerLevel?: keyof typeof LoggerLevel;
   debugMode?: boolean;
   meta?: DirectoryMetadata;
   extraCertificateStorage?: X509Certificate[];

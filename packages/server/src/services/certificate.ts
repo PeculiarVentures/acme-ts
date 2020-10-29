@@ -1,9 +1,8 @@
 import { AlreadyRevokedError, MalformedError } from "@peculiar/acme-core";
-import { diCertificateRepository, ICertificate, ICertificateRepository, IOrder } from "@peculiar/acme-data";
+import * as data from "@peculiar/acme-data";
 import { container, injectable } from "tsyringe";
 import { BaseService } from "./base";
 import { diEndpointService, ICertificateService, IEndpointService } from "./types";
-import * as ModelFabric from "./model_fabric";
 import * as pvtsutils from "pvtsutils";
 import * as x509 from "@peculiar/x509";
 import { FinalizeParams, RevokeReason } from "@peculiar/acme-protocol";
@@ -16,15 +15,15 @@ export class CertificateService extends BaseService implements ICertificateServi
    */
   public caCerts: Map<string, x509.X509Certificate> = new Map();
 
-  protected certificateRepository = container.resolve<ICertificateRepository>(diCertificateRepository);
+  protected certificateRepository = container.resolve<data.ICertificateRepository>(data.diCertificateRepository);
 
   /**
    * Creates and adds certificate to repository
    * @param rawData
    * @param order
    */
-  public async create(rawData: ArrayBuffer, order?: IOrder,): Promise<ICertificate> {
-    const certificate = ModelFabric.certificate();
+  public async create(rawData: ArrayBuffer, order?: data.IOrder,): Promise<data.ICertificate> {
+    const certificate = container.resolve<data.ICertificate>(data.diCertificate);
     certificate.rawData = rawData;
     certificate.thumbprint = pvtsutils.Convert.ToHex(await this.getHash(rawData));
     certificate.status = "valid";
@@ -51,7 +50,7 @@ export class CertificateService extends BaseService implements ICertificateServi
    * @param order
    * @param reason
    */
-  public async revoke(order: IOrder, reason: RevokeReason): Promise<void> {
+  public async revoke(order: data.IOrder, reason: RevokeReason): Promise<void> {
     if (!order.certificate) {
       throw new MalformedError("Order doesn't have a certificate");
     }
@@ -91,7 +90,7 @@ export class CertificateService extends BaseService implements ICertificateServi
    * Returns certificate by thumbprint from ca cache and repository
    * @param thumbprint
    */
-  public async getByThumbprint(thumbprint: string): Promise<ICertificate> {
+  public async getByThumbprint(thumbprint: string): Promise<data.ICertificate> {
     // return ca certificate from cache
     const caCerts = await this.getCaCerts();
     const caCert = caCerts.get(thumbprint);
@@ -118,7 +117,7 @@ export class CertificateService extends BaseService implements ICertificateServi
    * @param order
    * @param params
    */
-  public async enroll(order: IOrder, params: FinalizeParams): Promise<ICertificate> {
+  public async enroll(order: data.IOrder, params: FinalizeParams): Promise<data.ICertificate> {
     const requestRaw = pvtsutils.Convert.FromBase64Url(params.csr);
 
     const type = params.endpoint || this.options.defaultEndpoint;
@@ -133,8 +132,8 @@ export class CertificateService extends BaseService implements ICertificateServi
    * from ca certificate cache and repository
    * @param thumbprint
    */
-  public async getChain(thumbprint: string | ICertificate) {
-    let cert: ICertificate;
+  public async getChain(thumbprint: string | data.ICertificate) {
+    let cert: data.ICertificate;
     if (typeof thumbprint === "string") {
       cert = await this.getByThumbprint(thumbprint);
     } else {

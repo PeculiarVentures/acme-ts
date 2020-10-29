@@ -1,18 +1,17 @@
 import { MalformedError } from "@peculiar/acme-core";
 import { Identifier } from "@peculiar/acme-protocol";
-import { IIdentifier, IAuthorization, diAuthorizationRepository, IAuthorizationRepository, Key } from "@peculiar/acme-data";
+import * as acmeData from "@peculiar/acme-data";
 import { injectable, container } from "tsyringe";
 import { BaseService } from "./base";
 import { IAuthorizationService, diChallengeService, IChallengeService } from "./types";
-import * as ModelFabric from "./model_fabric";
 
 @injectable()
 export class AuthorizationService extends BaseService implements IAuthorizationService {
 
   protected challengeService = container.resolve<IChallengeService>(diChallengeService);
-  protected authorizationRepository = container.resolve<IAuthorizationRepository>(diAuthorizationRepository);
+  protected authorizationRepository = container.resolve<acmeData.IAuthorizationRepository>(acmeData.diAuthorizationRepository);
 
-  public async getById(accountId: Key, authId: Key): Promise<IAuthorization> {
+  public async getById(accountId: acmeData.Key, authId: acmeData.Key): Promise<acmeData.IAuthorization> {
     const auth = await this.authorizationRepository.findById(authId);
 
     if (!auth) {
@@ -26,7 +25,7 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
     return updatedAuth;
   }
 
-  public async getActual(accountId: Key, identifier: IIdentifier): Promise<IAuthorization | null> {
+  public async getActual(accountId: acmeData.Key, identifier: acmeData.IIdentifier): Promise<acmeData.IAuthorization | null> {
     // Get auth from repository
     const auth = await this.authorizationRepository.findByIdentifier(accountId, identifier);
     if (!auth) {
@@ -40,9 +39,9 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
     return null;
   }
 
-  public async create(accountId: Key, identifier: IIdentifier): Promise<IAuthorization> {
+  public async create(accountId: acmeData.Key, identifier: acmeData.IIdentifier): Promise<acmeData.IAuthorization> {
     // Create Authorization
-    const auth = ModelFabric.authorization();
+    const auth = container.resolve<acmeData.IAuthorization>(acmeData.diAuthorization);
 
     await this.challengeService.identifierValidate(identifier);
 
@@ -63,7 +62,7 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
     }
   }
 
-  public async refreshStatus(item: IAuthorization): Promise<IAuthorization> {
+  public async refreshStatus(item: acmeData.IAuthorization): Promise<acmeData.IAuthorization> {
     if (item.status !== "pending" && item.status !== "valid") {
       return item;
     }
@@ -74,8 +73,7 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
       // Check Expire
       item.status = "expired";
       await this.authorizationRepository.update(item);
-    }
-    else {
+    } else {
       // Check status
       const challenges = await this.challengeService.getByAuthorization(item.id);
       if (challenges.find(o => o.status === "valid")) {
@@ -98,7 +96,7 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
    * @param accountId
    * @param identifier
    */
-  protected async onCreateParams(auth: IAuthorization, accountId: Key, identifier: Identifier) {
+  protected async onCreateParams(auth: acmeData.IAuthorization, accountId: acmeData.Key, identifier: Identifier) {
     auth.identifier.type = identifier.type;
     auth.identifier.value = identifier.value;
     auth.accountId = accountId;
@@ -111,7 +109,7 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
     }
   }
 
-  public async deactivate(id: Key): Promise<IAuthorization> {
+  public async deactivate(id: acmeData.Key): Promise<acmeData.IAuthorization> {
     const authz = await this.authorizationRepository.findById(id);
 
     if (!authz) {
