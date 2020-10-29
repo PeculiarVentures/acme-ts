@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.11](https://github.com/PeculiarVentures/ts-acme/compare/v1.2.10...v1.2.11) (2020-10-29)
+
+
+### Bug Fixes
+
+* **server:** Fix loggerLevel type ([4cb0f19](https://github.com/PeculiarVentures/ts-acme/commit/4cb0f19b80cba448cd9f81b6e652089aca1f8825))
+
+
+### Features
+
+* **data-dynamodb:** Add options service ([4c4a43e](https://github.com/PeculiarVentures/ts-acme/commit/4c4a43e2b6812184922936d5ff5bb42f8b4f3288))
+
+
+
+
+
 ## [1.2.10](https://github.com/PeculiarVentures/ts-acme/compare/v1.2.9...v1.2.10) (2020-10-27)
 
 

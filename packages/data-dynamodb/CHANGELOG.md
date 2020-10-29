@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.11](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.10...v1.2.11) (2020-10-29)
+
+
+### Features
+
+* **data-dynamodb:** Add options service ([4c4a43e](https://github.com/PeculiarVentures/acme-ts/commit/4c4a43e2b6812184922936d5ff5bb42f8b4f3288))
+
+
+
+
+
 ## [1.2.10](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.9...v1.2.10) (2020-10-27)
 
 **Note:** Version bump only for package @peculiar/acme-data-dynamodb

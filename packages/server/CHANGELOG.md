@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.11](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.10...v1.2.11) (2020-10-29)
+
+
+### Bug Fixes
+
+* **server:** Fix loggerLevel type ([4cb0f19](https://github.com/PeculiarVentures/acme-ts/commit/4cb0f19b80cba448cd9f81b6e652089aca1f8825))
+
+
+
+
+
 ## [1.2.10](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.9...v1.2.10) (2020-10-27)
 
 **Note:** Version bump only for package @peculiar/acme-server
