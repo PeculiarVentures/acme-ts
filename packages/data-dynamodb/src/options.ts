@@ -1,6 +1,9 @@
 import { injectable } from "tsyringe";
 
 export interface IOptions {
+  /**
+   * Table name. Default value 'ACME'.
+   */
   tableName?: string;
 }
 
