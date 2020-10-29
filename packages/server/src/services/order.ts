@@ -5,7 +5,6 @@ import * as protocol from "@peculiar/acme-protocol";
 import * as types from "./types";
 import * as core from "@peculiar/acme-core";
 import { JsonWebKey } from "@peculiar/jose";
-import * as ModelFabric from "./model_fabric";
 import * as pvtsutils from "pvtsutils";
 
 export interface ICertificateEnrollParams {
@@ -48,7 +47,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     await this.challengeService.identifierValidate(params.identifiers);
 
     // create order
-    let order = ModelFabric.order();
+    let order = container.resolve<data.IOrder>(data.diOrder);
     // fill params
     await this.onCreateParams(order, params, accountId);
 
@@ -133,7 +132,7 @@ export class OrderService extends BaseService implements types.IOrderService {
   }
 
   protected async onCreateOrderAuth(order: data.IOrder, auth: data.IAuthorization) {
-    const orderAuth = ModelFabric.orderAuthorization();
+    const orderAuth = container.resolve<data.IOrderAuthorization>(data.diOrderAuthorization);
     orderAuth.orderId = order.id;
     orderAuth.authorizationId = auth.id;
     await this.orderAuthorizationRepository.add(orderAuth);
@@ -174,7 +173,7 @@ export class OrderService extends BaseService implements types.IOrderService {
           if (authorizations.find(o => !(o.status === "pending"
             || o.status === "valid"))) {
             order.status = "invalid";
-            order.error = ModelFabric.error();
+            order.error = container.resolve<data.IError>(data.diError);
             order.error.type = core.ErrorType.malformed;
             order.error.detail = "One of order authorizations has wrong status";
             await this.orderRepository.update(order);
@@ -359,7 +358,7 @@ export class OrderService extends BaseService implements types.IOrderService {
    * @param order
    */
   private async createOrderError(err: Error, order: data.IOrder): Promise<void> {
-    const er = ModelFabric.error();
+    const er = container.resolve<data.IError>(data.diError);
 
     order.error = er;
     order.error.detail = err.message;

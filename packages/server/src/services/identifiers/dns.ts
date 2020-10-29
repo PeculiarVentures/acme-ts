@@ -1,6 +1,5 @@
 import * as core from "@peculiar/acme-core";
 import * as data from "@peculiar/acme-data";
-import * as ModelFabric from "../model_fabric";
 import * as pvtsutils from "pvtsutils";
 import * as types from "../types";
 import { container, injectable } from "tsyringe";
@@ -99,7 +98,7 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
               await this.challengeRepository.update(challenge);
             }
           } catch (error) {
-            challenge.error = ModelFabric.error();
+            challenge.error = container.resolve<data.IError>(data.diError);
             challenge.error.detail = error.message;
             challenge.error.type = core.ErrorType.serverInternal;
             challenge.status = "invalid";
@@ -152,7 +151,7 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
   }
 
   private async _create(authId: data.Key, type: string): Promise<data.IChallenge> {
-    const challenge = ModelFabric.challenge();
+    const challenge = container.resolve<data.IChallenge>(data.diChallenge);
     await this.onCreateParams(challenge, authId, type);
 
     await this.challengeRepository.add(challenge);
