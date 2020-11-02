@@ -40,7 +40,7 @@ export class Logger implements ILogger {
   }
 
   public write(lvl: LoggerLevel, msg: string, obj?: LoggerData) {
-    if (this.level >= lvl) {
+    if (this.checkLevel(lvl)) {
       this.onWrite(lvl, msg, obj);
     }
   }
