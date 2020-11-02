@@ -24,7 +24,11 @@ export const diLogger = "ACME.Logger";
 @injectable()
 export class Logger implements ILogger {
 
-  public level: LoggerLevel = LoggerLevel.info;
+  public level: LoggerLevel;
+
+  public constructor(lvl?: LoggerLevel) {
+    this.level = lvl ?? LoggerLevel.info;
+  }
 
   public error(msg: string, obj?: LoggerData): void {
     this.write(LoggerLevel.error, msg, obj);
