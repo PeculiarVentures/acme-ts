@@ -27,7 +27,7 @@ export class Logger implements ILogger {
   public level: LoggerLevel = LoggerLevel.info;
 
   public error(msg: string, obj?: LoggerData): void {
-    this.write(LoggerLevel.debug, msg, obj);
+    this.write(LoggerLevel.error, msg, obj);
   }
   public info(msg: string, obj?: LoggerData): void {
     this.write(LoggerLevel.info, msg, obj);
