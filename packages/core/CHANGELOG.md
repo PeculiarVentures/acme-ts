@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.13](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.12...v1.2.13) (2020-11-03)
+
+
+### Features
+
+* **core:** Add constructor to Logger ([bca3add](https://github.com/PeculiarVentures/acme-ts/commit/bca3add4a13fc565e2c41d0c11eed23ddf76680a))
+
+
+
+
+
 ## [1.2.12](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.11...v1.2.12) (2020-11-02)
 
 
