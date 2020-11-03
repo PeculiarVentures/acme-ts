@@ -16,7 +16,7 @@ export class NonceService extends BaseService implements INonceService {
   public async validate(nonce: string) {
     const contains = await this.nonceRepository.contains(nonce);
     if (!contains) {
-      throw new BadNonceError();
+      throw new BadNonceError(`Bad nonce`);
     }
     await this.nonceRepository.remove(nonce);
   }

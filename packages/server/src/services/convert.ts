@@ -24,23 +24,25 @@ export class ConvertService extends BaseService implements IConvertService {
     if (data.externalAccountId) {
       const ext = await this.externalAccountRepository.findById(data.externalAccountId);
       if (!ext) {
-        throw new MalformedError(`External Account ${data.externalAccountId} not exist`);
+        throw new MalformedError(`External Account ${data.externalAccountId} does not exist`);
       }
       account.externalAccountBinding = ext.account;
     }
+
     return account;
   }
 
   public async toOrder(data: data.IOrder): Promise<protocol.Order> {
     const orderAuthzs = await this.orderAuthorizationRepository.findByOrder(data.id);
     if (!orderAuthzs) {
-      throw new MalformedError(`Order authorization ${data.id} not exist`);
+      throw new MalformedError(`Order authorization ${data.id} does not exist`);
     }
     const authzs = await Promise.all(orderAuthzs.map(async o => {
       const auth = await this.authorizationRepository.findById(o.authorizationId);
       if (!auth) {
-        throw new MalformedError(`Authorization ${o.authorizationId} not exist`);
+        throw new MalformedError(`Authorization ${o.authorizationId} does not exist`);
       }
+
       return auth;
     }));
 
@@ -72,7 +74,7 @@ export class ConvertService extends BaseService implements IConvertService {
   public async toAuthorization(data: data.IAuthorization): Promise<protocol.Authorization> {
     const challenges = await this.challengeRepository.findByAuthorization(data.id);
     if (!challenges) {
-      throw new MalformedError(`Authorization ${data.id} not exist`);
+      throw new MalformedError(`Authorization ${data.id} does not exist`);
     }
     const identifier: data.IIdentifier = {
       type: data.identifier.type,
@@ -128,12 +130,14 @@ export class ConvertService extends BaseService implements IConvertService {
     const orderList: protocol.OrderList = {
       orders: orders.map(o => `${this.options.baseAddress}/order/${o.id}`),
     };
+
     return orderList;
   }
 
   public async toEndpoint(endpoint: IEndpointService): Promise<protocol.Endpoint> {
     const certs = await endpoint.getCaCertificate();
     const thumbprint = pvtsutils.Convert.ToHex(await certs[0].getThumbprint());
+
     return {
       name: endpoint.type,
       certificate: `${this.options.baseAddress}/cert/${thumbprint}`,

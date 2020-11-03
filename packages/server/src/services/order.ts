@@ -63,7 +63,7 @@ export class OrderService extends BaseService implements types.IOrderService {
       await this.onCreateOrderAuth(order, auth);
     }
 
-    this.logger.info(`Order ${order.id} created`);
+    this.logger.info(`Order '${order.id}' created`);
 
     await this.refreshStatus(order);
 
@@ -139,20 +139,22 @@ export class OrderService extends BaseService implements types.IOrderService {
   }
 
   public async getList(accountId: data.Key, query: core.QueryParams) {
-    return this.orderRepository.getList(accountId, query, this.options.ordersPageSize);
+    const list = await this.orderRepository.getList(accountId, query, this.options.ordersPageSize);
+    this.logger.debug(`Order list: length '${list.items.length}', account id '${accountId}'`);
+    return list;
   }
 
   public async getById(accountId: data.Key, id: data.Key) {
     const order = await this.orderRepository.findById(id);
     if (!order) {
-      throw new core.ArgumentNullError();
+      throw new core.ArgumentNullError(`Orders for account '${accountId}' does not found`);
     }
 
     // check access
     if (order.accountId !== accountId) {
       throw new core.MalformedError("Access denied");
     }
-
+    this.logger.debug(`Order: id '${order.id}', status '${order.status}'`);
     await this.refreshStatus(order);
     return order;
   }
@@ -160,6 +162,7 @@ export class OrderService extends BaseService implements types.IOrderService {
   private async refreshStatus(order: data.IOrder) {
     if (order.status !== "invalid") {
       // Checks expires
+      const oldStatus = order.status;
       if (order.expires && order.expires < new Date()) {
         order.status = "invalid";
         await this.orderRepository.update(order);
@@ -183,12 +186,16 @@ export class OrderService extends BaseService implements types.IOrderService {
           }
         }
       }
+      if (oldStatus !== order.status) {
+        this.logger.debug(`Order '${order.id}' status updated to '${order.status}'`);
+      }
     }
   }
 
   public async lastByIdentifiers(accountId: data.Key, identifiers: data.IIdentifier[]): Promise<data.IOrder | null> {
     const identifier = await this.computeIdentifier(identifiers);
     const order = await this.orderRepository.lastByIdentifier(accountId, identifier);
+
     return order;
   }
 
@@ -200,6 +207,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     const order = await this.onGetActualCheckBefore(params, accountId);
 
     if (!(!order || order.status === "invalid")) {
+      const oldOrder = order.status;
       // Checks expires
       if (order.expires && order.expires < new Date()) {
         order.status = "invalid";
@@ -221,17 +229,19 @@ export class OrderService extends BaseService implements types.IOrderService {
           }
         }
       }
+      if (oldOrder !== order.status) {
 
-      // Update repository
-      await this.orderRepository.update(order);
-
-      this.logger.info(`Order ${order.id} status updated to ${order.status}`);
+        // Update repository
+        await this.orderRepository.update(order);
+        this.logger.debug(`Order ${order.id} status updated to ${order.status}`);
+      }
     }
 
     if (order
       && (order.status === "pending"
         || order.status === "ready"
         || order.status === "processing")) {
+      this.logger.debug(`Order: id '${order.id}', status '${order.status}'`);
       return order;
     }
     else {
@@ -271,7 +281,7 @@ export class OrderService extends BaseService implements types.IOrderService {
 
     order.status = "processing";
     await this.orderRepository.update(order);
-    this.logger.info(`Order ${order.id} status updated to ${order.status}`);
+    this.logger.debug(`Order '${order.id}' status updated to '${order.status}'`);
 
     // check cancel
     if (!certificateEnrollParams.cancel) {
@@ -366,6 +376,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     order.error.type = core.ErrorType.serverInternal;
     order.status = "invalid";
     await this.orderRepository.update(order);
+    this.logger.debug(`Order '${order.id}' status updated to '${order.status}'`);
   }
 
   /**
@@ -398,13 +409,17 @@ export class OrderService extends BaseService implements types.IOrderService {
   public async getIdentifiers(order: data.IOrder): Promise<data.IIdentifier[]> {
     const orderAuthzs = await this.orderAuthorizationRepository.findByOrder(order.id);
     if (!orderAuthzs) {
-      throw new core.MalformedError(`Order authorization '${order.id}' not exist`);
+      throw new core.MalformedError(`Order '${order.id}' does not have orderAuthorizations`);
     }
-    const accountId = order.accountId;
-    if (!accountId) {
-      throw new core.MalformedError("Order don't have accountId");
+    if (!order.accountId) {
+      throw new core.MalformedError(`Order '${order.id}' don't have accountId`);
     }
-    const authzs = await Promise.all(orderAuthzs.map(async o => await this.authorizationService.getById(accountId, o.authorizationId)));
-    return authzs.map(o => { return { ...o.identifier }; });
+    const authzs: data.IAuthorization[] = [];
+    for (const orderAuthz of orderAuthzs) {
+      authzs.push(await this.authorizationService.getById(order.accountId, orderAuthz.authorizationId));
+    }
+    const identifiers = authzs.map(o => { return { ...o.identifier }; });
+    this.logger.debug(`Identifiers: length '${identifiers.length}', order id '${order.id}'`);
+    return identifiers;
   }
 }

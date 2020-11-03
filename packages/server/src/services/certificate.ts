@@ -52,14 +52,14 @@ export class CertificateService extends BaseService implements ICertificateServi
    */
   public async revoke(order: data.IOrder, reason: RevokeReason): Promise<void> {
     if (!order.certificate) {
-      throw new MalformedError("Order doesn't have a certificate");
+      throw new MalformedError(`Order '${order.id}' doesn't have a certificate`);
     }
     const cert = await this.getByThumbprint(order.certificate);
     if (cert.type === "ca") {
-      throw new MalformedError("Certificate cannot be revoked. This is a CA certificate");
+      throw new MalformedError(`Certificate '${cert.thumbprint}' cannot be revoked. This is a CA certificate`);
     }
     if (cert.status === "revoked") {
-      throw new AlreadyRevokedError();
+      throw new AlreadyRevokedError(`Certificate '${cert.thumbprint}' have revoked status`);
     }
 
     // revoke
@@ -107,8 +107,9 @@ export class CertificateService extends BaseService implements ICertificateServi
     // return certificate from repository
     const cert = await this.certificateRepository.findByThumbprint(thumbprint);
     if (!cert) {
-      throw new MalformedError("Certificate doesn't exist");
+      throw new MalformedError(`Certificate '${thumbprint}' doesn't exist`);
     }
+    this.logger.debug(`Certificate '${thumbprint}'`);
     return cert;
   }
 
@@ -152,6 +153,7 @@ export class CertificateService extends BaseService implements ICertificateServi
       await this.reloadCaCache();
       chain = await chainBuilder.build(x509Cert);
     }
+    this.logger.debug(`Chain for certificate '${thumbprint}'`);
     return chain;
   }
 
@@ -189,6 +191,7 @@ export class CertificateService extends BaseService implements ICertificateServi
         }
       }
     }
+    this.logger.debug(`Reload CA certificate cache`);
   }
 
   /**

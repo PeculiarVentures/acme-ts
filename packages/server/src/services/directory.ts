@@ -40,6 +40,8 @@ export class DirectoryService extends BaseService implements IDirectoryService {
       }
     }
 
+    this.logger.debug(`Directory by '${url}'`);
+
     return directory;
   }
 

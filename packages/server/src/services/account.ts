@@ -71,8 +71,9 @@ export class AccountService extends BaseService implements IAccountService {
   public async getById(accountId: Key) {
     const account = await this.accountRepository.findById(accountId);
     if (!account) {
-      throw new core.AccountDoesNotExistError();
+      throw new core.AccountDoesNotExistError(`Account '${accountId}' does not exist`);
     }
+    this.logger.debug(`Account: id '${account.id}', status '${account.status}'`);
     return account;
   }
 
@@ -80,9 +81,9 @@ export class AccountService extends BaseService implements IAccountService {
     const account = await this.findByPublicKey(key);
 
     if (!account) {
-      throw new core.AccountDoesNotExistError();
+      throw new core.AccountDoesNotExistError(`Account with JWK '${await key.getThumbprint()}' does not exist`);
     }
-
+    this.logger.debug(`Account: id '${account.id}', status '${account.status}'`);
     return account;
   }
 
@@ -120,6 +121,8 @@ export class AccountService extends BaseService implements IAccountService {
     // Save changes
     account = await this.accountRepository.update(account);
 
+    this.logger.info(`Account '${account.id}' updated`);
+
     // Return JSON
     return account;
   }
@@ -147,13 +150,13 @@ export class AccountService extends BaseService implements IAccountService {
   protected isMailto(contact: string) {
     const patternType = /^mailto:/g;
     if (!patternType.test(contact)) {
-      throw new core.UnsupportedContactError();
+      throw new core.UnsupportedContactError("Contact must contain 'mailto:'");
     }
 
     // eslint-disable-next-line no-control-regex
     const pattern = /^mailto:(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$/g;
     if (!pattern.test(contact)) {
-      throw new core.InvalidContactError;
+      throw new core.InvalidContactError("Incorrect mail format");
     }
   }
 

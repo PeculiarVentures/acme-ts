@@ -15,16 +15,18 @@ export class ChallengeService extends BaseService implements IChallengeService {
     const services = await this.getValidator(type);
     let challenges: data.IChallenge[] = [];
     for (const service of services) {
-      challenges = [...challenges, ...await service.challengesCreate(auth)]
+      challenges = [...challenges, ...await service.challengesCreate(auth)];
     }
+    this.logger.info(`'${challenges.length}' challenges for authorization '${auth.id}' created`);
     return challenges;
   }
 
   public async getById(id: data.Key): Promise<data.IChallenge> {
     const challenge = await this.challengeRepository.findById(id);
     if (!challenge) {
-      throw new core.MalformedError("Challenge does not exist");
+      throw new core.MalformedError(`Challenge '${id}' does not exist`);
     }
+    this.logger.debug(`Challenge: id '${challenge.id}', status '${challenge.status}'`);
     return challenge;
   }
 
@@ -60,7 +62,6 @@ export class ChallengeService extends BaseService implements IChallengeService {
     try {
       csr = new x509.Pkcs10CertificateRequest(csrStr);
     } catch (error) {
-      this.logger.error("Cannot parse CSR", error);
       throw new core.BadCSRError("Cannot parse CSR");
     }
     const err = new core.BadCSRError("Validate CSR failed");
@@ -80,11 +81,12 @@ export class ChallengeService extends BaseService implements IChallengeService {
   }
 
   public async getByAuthorization(id: data.Key): Promise<data.IChallenge[]> {
-    const challenge = await this.challengeRepository.findByAuthorization(id);
-    if (!challenge) {
-      throw new core.MalformedError("Challenge does not exist");
+    const challenges = await this.challengeRepository.findByAuthorization(id);
+    if (!challenges) {
+      throw new core.MalformedError(`Challenge '${id}' does not exist`);
     }
-    return challenge;
+    this.logger.debug(`'${challenges.length}' challenges for authorization '${id}'`);
+    return challenges;
   }
 
   protected getValidatorAll(): IIdentifierService[] {
