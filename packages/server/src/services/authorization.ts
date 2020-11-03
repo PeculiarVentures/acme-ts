@@ -15,8 +15,9 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
     const auth = await this.authorizationRepository.findById(authId);
 
     if (!auth) {
-      throw new MalformedError("Authorization doesn't exist");
+      throw new MalformedError(`Authorization '${authId}' doesn't exist`);
     }
+    this.logger.debug(`Authorization: id '${auth.id}', status '${auth.status}'`);
     if (auth.accountId !== accountId) {
       throw new MalformedError("Access denied");
     }
@@ -26,16 +27,20 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
   }
 
   public async getActual(accountId: acmeData.Key, identifier: acmeData.IIdentifier): Promise<acmeData.IAuthorization | null> {
+
     // Get auth from repository
     const auth = await this.authorizationRepository.findByIdentifier(accountId, identifier);
     if (!auth) {
+      this.logger.debug(`Actual authorization for account '${accountId}' not found`);
       return null;
     }
+    this.logger.debug(`Authorization: id '${auth.id}', status '${auth.status}'`);
 
     const updatedAuth = await this.refreshStatus(auth);
     if (updatedAuth.status === "pending" || updatedAuth.status === "valid") {
       return updatedAuth;
     }
+    this.logger.debug(`Actual authorization for account '${accountId}' not found`);
     return null;
   }
 
@@ -51,14 +56,13 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
     const addedAuth = await this.authorizationRepository.add(auth);
     try {
       await this.challengeService.create(auth, identifier.type);
-      this.logger.info(`Authorization ${auth.id} created`);
+      this.logger.info(`Authorization '${auth.id}' created`);
       return addedAuth;
     } catch (error) {
       addedAuth.status = "invalid";
       await this.authorizationRepository.update(addedAuth);
-      this.logger.info(`Authorization '${auth.id}' status updated to 'invalid'`);
-      this.logger.error("Error create challenges", error);
-      throw new MalformedError("Cannot create challenges");
+      this.logger.debug(`Authorization '${auth.id}' status updated to 'invalid'`);
+      throw new MalformedError("Cannot create challenges", error);
     }
   }
 
@@ -85,7 +89,7 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
       }
     }
     if (oldStatus !== item.status) {
-      this.logger.info(`Authorization ${item.id} status updated to ${item.status}`);
+      this.logger.info(`Authorization '${item.id}' status updated to '${item.status}'`);
     }
     return item;
   }
@@ -123,7 +127,7 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
 
     const resp = await this.authorizationRepository.update(authz);
 
-    this.logger.info(`Authorization ${resp.id} deactivated`);
+    this.logger.info(`Authorization '${resp.id}' deactivated`);
 
     return resp;
   }

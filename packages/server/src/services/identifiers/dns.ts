@@ -8,6 +8,7 @@ import { JsonWebKey } from "@peculiar/jose";
 import { id_ce_subjectAltName, SubjectAlternativeName } from "@peculiar/asn1-x509";
 import { AsnConvert } from "@peculiar/asn1-schema";
 import * as x509 from "@peculiar/x509";
+import { MalformedError } from "@peculiar/acme-core";
 
 @injectable()
 export class DnsChallengeService extends BaseService implements types.IIdentifierService {
@@ -85,7 +86,7 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
       challenge.status = "processing";
       await this.challengeRepository.update(challenge);
 
-      this.logger.info(`Challenge ${challenge.id} status updated to ${challenge.status}`);
+      this.logger.debug(`Challenge '${challenge.id}' status updated to '${challenge.status}'`);
 
       // validate challenge
       switch (challenge.type) {
@@ -106,12 +107,12 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
           }
           break;
         default:
-          throw new Error(`Unsupported Challenge type '${challenge.type}'`);
+          throw new MalformedError(`Unsupported Challenge type '${challenge.type}'`);
       }
 
-      this.logger.info(`Challenge ${challenge.id} status updated to ${challenge.status}`);
+      this.logger.debug(`Challenge ${challenge.id} status updated to ${challenge.status}`);
     } else {
-      throw new core.MalformedError("Wrong challenge status");
+      throw new core.MalformedError(`Challenge '${challenge.id}' has wrong status '${challenge.status}'`);
     }
   }
 
@@ -122,7 +123,7 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
   private async validateHttpChallenge(challenge: data.IChallenge): Promise<void> {
     const auth = await this.authorizationRepository.findById(challenge.authorizationId);
     if (!auth) {
-      throw new core.MalformedError("Cannot get Authorization by Id");
+      throw new core.MalformedError(`Cannot get Authorization by Id '${challenge.authorizationId}'`);
     }
     const url = `$http:;//${auth.identifier.value}/.well-known/acme-challenge/${challenge.token}`;
 
@@ -143,7 +144,7 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
         }
       }
       else {
-        throw new Error("Response status is not 200(OK)");
+        throw new MalformedError("Response status is not 200(OK)");
       }
     } else {
       this.logger.warn("HTTP challenge validation is disabled fo DEBUG mode");
@@ -156,7 +157,7 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
 
     await this.challengeRepository.add(challenge);
 
-    this.logger.info(`Challenge ${challenge.id} created`);
+    this.logger.info(`Challenge '${challenge.id}' created`);
 
     return challenge;
   }

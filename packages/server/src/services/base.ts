@@ -46,7 +46,7 @@ export class BaseService {
 
   protected getCrypto() {
     if (!this.options.cryptoProvider) {
-      throw new Error("Cannot get 'cryptoProvider' option");
+      throw new MalformedError("Cannot get 'cryptoProvider' option");
     }
     return this.options.cryptoProvider;
   }

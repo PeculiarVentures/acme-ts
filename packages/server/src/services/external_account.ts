@@ -10,7 +10,7 @@ import { cryptoProvider } from "@peculiar/x509";
 @injectable()
 export class ExternalAccountService extends BaseService implements IExternalAccountService {
 
-protected externalAccountRepository = container.resolve<IExternalAccountRepository>(diExternalAccountRepository);
+  protected externalAccountRepository = container.resolve<IExternalAccountRepository>(diExternalAccountRepository);
 
   public async create(account: any) {
     const macKey = cryptoProvider.get().getRandomValues(new Uint8Array(256 >> 3)); // TODO use service options for HMAC key length
@@ -37,20 +37,23 @@ protected externalAccountRepository = container.resolve<IExternalAccountReposito
   public async getById(id: Key): Promise<IExternalAccount> {
     const externalAccount = await this.externalAccountRepository.findById(id);
     if (!externalAccount) {
-      throw new MalformedError("External account does not exist");
+      throw new MalformedError(`External account '${id}' does not exist`);
     }
     if (externalAccount.status === "pending" && externalAccount.expires && externalAccount.expires < new Date()) {
       externalAccount.status = "expired";
       await this.externalAccountRepository.update(externalAccount);
 
-      this.logger.info(`External account ${externalAccount.id} status updated to ${externalAccount.status}`);
+      this.logger.debug(`External account '${externalAccount.id}' status updated to '${externalAccount.status}'`);
     }
+    this.logger.debug(`External account: id '${externalAccount.id}', status '${externalAccount.status}'`);
     return externalAccount;
   }
 
   public async getByUrl(url: string): Promise<IExternalAccount> {
     const id = await this.getKeyIdentifier(url);
-    return this.getById(id);
+    const account = await this.getById(id);
+    this.logger.debug(`External account: id '${account.id}', status '${account.status}'`);
+    return account;
   }
 
   public async validate(accountKey: JsonWebKey, token: JsonWebSignature): Promise<IExternalAccount> {
@@ -65,7 +68,7 @@ protected externalAccountRepository = container.resolve<IExternalAccountReposito
     // TODO Add check on null
     const externalAccount = await this.getById(matches![1]);
     if (externalAccount.status !== "pending") {
-      throw new MalformedError("External account has wrong status"); // TODO check rfc error
+      throw new MalformedError(`External account '${externalAccount.id}' has wrong status '${externalAccount.status}'`); // TODO check rfc error
     }
 
     const key = Convert.FromBase64Url(externalAccount.key);
@@ -75,7 +78,7 @@ protected externalAccountRepository = container.resolve<IExternalAccountReposito
     externalAccount.status = ok ? "valid" : "invalid";
     await this.externalAccountRepository.update(externalAccount);
 
-    this.logger.info(`External account ${externalAccount.id} status updated to ${externalAccount.status}`);
+    this.logger.debug(`External account '${externalAccount.id}' status updated to '${externalAccount.status}'`);
 
     return externalAccount;
   }
