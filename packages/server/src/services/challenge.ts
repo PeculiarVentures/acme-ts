@@ -11,13 +11,23 @@ export class ChallengeService extends BaseService implements IChallengeService {
 
   protected challengeRepository = container.resolve<data.IChallengeRepository>(data.diChallengeRepository);
 
-  public async create(auth: IAuthorization, type: string): Promise<data.IChallenge[]> {
+  public async create(authz: IAuthorization, type: string): Promise<data.IChallenge[]> {
     const services = await this.getValidator(type);
     let challenges: data.IChallenge[] = [];
     for (const service of services) {
-      challenges = [...challenges, ...await service.challengesCreate(auth)];
+      challenges = [...challenges, ...await service.challengesCreate(authz)];
     }
-    this.logger.info(`'${challenges.length}' challenges for authorization id:${auth.id} created`);
+
+    this.logger.info(`Challenges created`, {
+      authorization: authz.id,
+      challenges: challenges.map(o => {
+        return {
+          id: o.id,
+          type: o.type,
+        };
+      }),
+    });
+
     return challenges;
   }
 
@@ -134,7 +144,7 @@ export class ChallengeService extends BaseService implements IChallengeService {
           type: o.constructor.name,
         };
       }),
-    })
+    });
 
     return validator;
   }

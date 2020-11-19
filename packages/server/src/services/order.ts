@@ -63,7 +63,9 @@ export class OrderService extends BaseService implements types.IOrderService {
       await this.onCreateOrderAuth(order, auth);
     }
 
-    this.logger.info(`Order id:'${order.id}' created`);
+    this.logger.info(`Order created`, {
+      id: order.id,
+    });
 
     await this.refreshStatus(order);
 
