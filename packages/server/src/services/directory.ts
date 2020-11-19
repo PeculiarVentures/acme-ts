@@ -7,7 +7,9 @@ import { MalformedError } from "@peculiar/acme-core";
 @injectable()
 export class DirectoryService extends BaseService implements IDirectoryService {
 
-  protected endpoints = container.resolveAll<IEndpointService>(diEndpointService);
+  protected endpoints = container.isRegistered(diEndpointService)
+    ? container.resolveAll<IEndpointService>(diEndpointService)
+    : [];
 
   public async getDirectory() {
     const url = this.options.baseAddress;
