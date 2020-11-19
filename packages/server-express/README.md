@@ -36,7 +36,7 @@ AcmeExpress.register(app, {
 // Register Data layer
 data.DependencyInjection.register(container);
 // Register Enrollment layer
-container.register(server.diCertificateEnrollmentService, CertificateEnrollmentService);
+container.register(server.diCertificateService, CertificateEnrollmentService);
 
 
 app.listen(8000, () => { console.log(`Server is running`); });
