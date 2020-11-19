@@ -1,4 +1,4 @@
-import { injectable, container } from "tsyringe";
+import { injectable, container, Lifecycle } from "tsyringe";
 
 export interface ILogger {
   level: LoggerLevel;
@@ -24,11 +24,7 @@ export const diLogger = "ACME.Logger";
 @injectable()
 export class Logger implements ILogger {
 
-  public level: LoggerLevel;
-
-  public constructor(lvl?: LoggerLevel) {
-    this.level = lvl ?? LoggerLevel.info;
-  }
+  public level: LoggerLevel = LoggerLevel.info;
 
   public error(msg: string, obj?: LoggerData): void {
     this.write(LoggerLevel.error, msg, obj);
@@ -58,4 +54,4 @@ export class Logger implements ILogger {
   }
 }
 
-container.register(diLogger, Logger);
+container.register(diLogger, Logger, { lifecycle: Lifecycle.Singleton });
