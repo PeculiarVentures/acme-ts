@@ -17,16 +17,24 @@ export class ChallengeService extends BaseService implements IChallengeService {
     for (const service of services) {
       challenges = [...challenges, ...await service.challengesCreate(auth)];
     }
-    this.logger.info(`'${challenges.length}' challenges for authorization '${auth.id}' created`);
+    this.logger.info(`'${challenges.length}' challenges for authorization id:${auth.id} created`);
     return challenges;
   }
 
   public async getById(id: data.Key): Promise<data.IChallenge> {
     const challenge = await this.challengeRepository.findById(id);
     if (!challenge) {
-      throw new core.MalformedError(`Challenge '${id}' does not exist`);
+      throw new core.MalformedError(`Challenge id:${id} does not exist`);
     }
-    this.logger.debug(`Challenge: id '${challenge.id}', status '${challenge.status}'`);
+
+    this.logger.debug("Get challenge by id", {
+      challenge: {
+        id: challenge.id,
+        type: challenge.type,
+        status: challenge.status,
+      }
+    });
+
     return challenge;
   }
 
@@ -83,9 +91,22 @@ export class ChallengeService extends BaseService implements IChallengeService {
   public async getByAuthorization(id: data.Key): Promise<data.IChallenge[]> {
     const challenges = await this.challengeRepository.findByAuthorization(id);
     if (!challenges) {
-      throw new core.MalformedError(`Challenge '${id}' does not exist`);
+      throw new core.MalformedError(`Challenge id:${id} does not exist`);
     }
-    this.logger.debug(`'${challenges.length}' challenges for authorization '${id}'`);
+
+    this.logger.debug(`Get list of challenges for authorization`, {
+      authorization: {
+        id,
+      },
+      challenges: challenges.map(o => {
+        return {
+          id: o.id,
+          type: o.type,
+          status: o.status,
+        };
+      })
+    });
+
     return challenges;
   }
 
@@ -105,6 +126,16 @@ export class ChallengeService extends BaseService implements IChallengeService {
     if (!validator.length) {
       throw new core.UnsupportedIdentifierError(`Unsupported identifier type '${type}'`);
     }
+
+    this.logger.debug("Get validator", {
+      type,
+      validators: validator.map(o => {
+        return {
+          type: o.constructor.name,
+        };
+      }),
+    })
+
     return validator;
   }
 }

@@ -1,11 +1,11 @@
-import { container, injectable } from "tsyringe";
-import { BaseService } from "./base";
+import * as core from "@peculiar/acme-core";
 import * as data from "@peculiar/acme-data";
 import * as protocol from "@peculiar/acme-protocol";
-import * as types from "./types";
-import * as core from "@peculiar/acme-core";
 import { JsonWebKey } from "@peculiar/jose";
 import * as pvtsutils from "pvtsutils";
+import { container, injectable } from "tsyringe";
+import { BaseService } from "./base";
+import * as types from "./types";
 
 export interface ICertificateEnrollParams {
   /**
@@ -63,7 +63,7 @@ export class OrderService extends BaseService implements types.IOrderService {
       await this.onCreateOrderAuth(order, auth);
     }
 
-    this.logger.info(`Order '${order.id}' created`);
+    this.logger.info(`Order id:'${order.id}' created`);
 
     await this.refreshStatus(order);
 
@@ -140,7 +140,18 @@ export class OrderService extends BaseService implements types.IOrderService {
 
   public async getList(accountId: data.Key, query: core.QueryParams) {
     const list = await this.orderRepository.getList(accountId, query, this.options.ordersPageSize);
-    this.logger.debug(`Order list: length '${list.items.length}', account id '${accountId}'`);
+
+    this.logger.debug("Get list of orders", {
+      account: accountId,
+      orders: list.items.map(o => {
+        return {
+          id: o.id,
+          status: o.status,
+        };
+      }),
+      next: list.next,
+    });
+
     return list;
   }
 
@@ -154,7 +165,12 @@ export class OrderService extends BaseService implements types.IOrderService {
     if (order.accountId !== accountId) {
       throw new core.MalformedError("Access denied");
     }
-    this.logger.debug(`Order: id '${order.id}', status '${order.status}'`);
+
+    this.logger.debug(`Get order by id`, {
+      id: order.id,
+      status: order.status,
+    });
+
     await this.refreshStatus(order);
     return order;
   }
@@ -187,7 +203,11 @@ export class OrderService extends BaseService implements types.IOrderService {
         }
       }
       if (oldStatus !== order.status) {
-        this.logger.debug(`Order '${order.id}' status updated to '${order.status}'`);
+        this.logger.debug(`Order status updated`, {
+          id: order.id,
+          newStatus: order.status,
+          oldStatus: oldStatus,
+        });
       }
     }
   }
@@ -207,7 +227,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     const order = await this.onGetActualCheckBefore(params, accountId);
 
     if (!(!order || order.status === "invalid")) {
-      const oldOrder = order.status;
+      const oldStatus = order.status;
       // Checks expires
       if (order.expires && order.expires < new Date()) {
         order.status = "invalid";
@@ -229,24 +249,38 @@ export class OrderService extends BaseService implements types.IOrderService {
           }
         }
       }
-      if (oldOrder !== order.status) {
-
+      if (oldStatus !== order.status) {
         // Update repository
         await this.orderRepository.update(order);
-        this.logger.debug(`Order ${order.id} status updated to ${order.status}`);
+        this.logger.debug(`Order status updated`, {
+          id: order.id,
+          newStatus: order.status,
+          oldStatus: oldStatus,
+        });
       }
     }
 
+    let actual: data.IOrder | null = null;
     if (order
       && (order.status === "pending"
         || order.status === "ready"
         || order.status === "processing")) {
-      this.logger.debug(`Order: id '${order.id}', status '${order.status}'`);
-      return order;
+
+      this.logger.debug("Get actual order");
+
+      actual = order;
     }
-    else {
-      return null;
-    }
+
+    this.logger.debug("Get actual order", {
+      order: actual
+        ? {
+          id: actual.id,
+          status: actual.status,
+        }
+        : null
+    });
+
+    return actual;
   }
 
   public async enrollCertificate(accountId: data.Key, orderId: data.Key, params: protocol.FinalizeParams) {
@@ -279,9 +313,14 @@ export class OrderService extends BaseService implements types.IOrderService {
       return certificateEnrollParams.order;
     }
 
+    const oldStatus = order.status;
     order.status = "processing";
     await this.orderRepository.update(order);
-    this.logger.debug(`Order '${order.id}' status updated to '${order.status}'`);
+    this.logger.debug(`Order status updated`, {
+      id: order.id,
+      newStatus: order.status,
+      oldStatus: oldStatus,
+    });
 
     // check cancel
     if (!certificateEnrollParams.cancel) {
@@ -296,16 +335,23 @@ export class OrderService extends BaseService implements types.IOrderService {
           order.status = "valid";
           await this.orderRepository.update(order);
 
-          this.logger.info(`Certificate ${order.certificate} for Order ${order.id} issued successfully`);
+          this.logger.info(`Certificate issued successfully`, {
+            order: order.id,
+            certificate: certificate.thumbprint,
+          });
         }
       } catch (error) {
         // TODO Optimize Error assignment
         await this.createOrderError(error, order);
-
       }
 
-      this.logger.info(`Order ${order.id} status updated to ${order.status}`);
+      this.logger.debug(`Order status updated`, {
+        id: order.id,
+        newStatus: order.status,
+        oldStatus: oldStatus,
+      });
     }
+
     return order;
   }
 
@@ -374,9 +420,15 @@ export class OrderService extends BaseService implements types.IOrderService {
     order.error.detail = err.message;
     // todo need parse
     order.error.type = core.ErrorType.serverInternal;
+
+    const oldStatus = order.status;
     order.status = "invalid";
     await this.orderRepository.update(order);
-    this.logger.debug(`Order '${order.id}' status updated to '${order.status}'`);
+    this.logger.debug(`Order status updated`, {
+      id: order.id,
+      newStatus: order.status,
+      oldStatus: oldStatus,
+    });
   }
 
   /**
@@ -419,7 +471,17 @@ export class OrderService extends BaseService implements types.IOrderService {
       authzs.push(await this.authorizationService.getById(order.accountId, orderAuthz.authorizationId));
     }
     const identifiers = authzs.map(o => { return { ...o.identifier }; });
-    this.logger.debug(`Identifiers: length '${identifiers.length}', order id '${order.id}'`);
+
+    this.logger.debug(`Get order identifiers`, {
+      order: order.id,
+      identifiers: identifiers.map(o => {
+        return {
+          type: o.type,
+          value: o.value,
+        };
+      })
+    });
+
     return identifiers;
   }
 }

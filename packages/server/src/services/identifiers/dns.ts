@@ -82,11 +82,16 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
   }
 
   public async challengeValidate(challenge: data.IChallenge): Promise<void> {
+    const oldStatus = challenge.status;
+
     if (challenge.status === "pending") {
       challenge.status = "processing";
       await this.challengeRepository.update(challenge);
-
-      this.logger.debug(`Challenge '${challenge.id}' status updated to '${challenge.status}'`);
+      this.logger.debug("Challenge status updated", {
+        id: challenge.id,
+        newStatus: challenge.status,
+        oldStatus: oldStatus,
+      });
 
       // validate challenge
       switch (challenge.type) {
@@ -110,7 +115,11 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
           throw new MalformedError(`Unsupported Challenge type '${challenge.type}'`);
       }
 
-      this.logger.debug(`Challenge ${challenge.id} status updated to ${challenge.status}`);
+      this.logger.debug("Challenge status updated", {
+        id: challenge.id,
+        newStatus: challenge.status,
+        oldStatus: oldStatus,
+      });
     } else {
       throw new core.MalformedError(`Challenge '${challenge.id}' has wrong status '${challenge.status}'`);
     }
@@ -157,7 +166,10 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
 
     await this.challengeRepository.add(challenge);
 
-    this.logger.info(`Challenge '${challenge.id}' created`);
+    this.logger.info(`Challenge created`, {
+      id: challenge.id,
+      type: challenge.type,
+    });
 
     return challenge;
   }

@@ -32,19 +32,20 @@ context.only("Server", () => {
       downloadCertificateFormat: "pem",
       hashAlgorithm: "SHA-256",
       expireAuthorizationDays: 1,
-      loggerLevel: "info",
       ordersPageSize: 10,
       formattedResponse: true
     });
-    container.register(server.diEndpointService, MemoryEndpointService, {lifecycle: Lifecycle.Singleton });
-    container.register(core.diLogger, core.ConsoleLogger);
+    container.register(server.diEndpointService, MemoryEndpointService, { lifecycle: Lifecycle.Singleton });
+    const logger = new core.ConsoleLogger();
+    logger.level = core.LoggerLevel.debug;
+    container.register(core.diLogger, { useValue: logger });
     dataMemory.DependencyInjection.register(container);
     controller = container.resolve<server.AcmeController>(server.diAcmeController);
   });
 
   //#region Helpers
   async function getNonce() {
-    const nonceResp = await controller.getNonce(new core.Request({
+    const nonceResp = await controller.getNonce(new server.Request({
       path: `${baseAddress}/new-nonce`,
       method: "HEAD",
     }));
@@ -74,7 +75,7 @@ context.only("Server", () => {
     }, crypto);
     await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
 
-    return new core.Request({
+    return new server.Request({
       path: url,
       method: "POST",
       queryParams,
@@ -95,7 +96,7 @@ context.only("Server", () => {
     }, crypto);
     await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
 
-    const resp = await controller.newAccount(new core.Request({
+    const resp = await controller.newAccount(new server.Request({
       path: `${baseAddress}/new-acct`,
       method: "POST",
       body: jws.toJSON(),
@@ -130,7 +131,7 @@ context.only("Server", () => {
   //#endregion
 
   it("GET directory", async () => {
-    const resp = await controller.getDirectory(new core.Request({
+    const resp = await controller.getDirectory(new server.Request({
       path: `${baseAddress}/directory`,
       method: "GET",
     }));
@@ -148,7 +149,7 @@ context.only("Server", () => {
   });
 
   it("GET new-nonce", async () => {
-    const resp = await controller.getNonce(new core.Request({
+    const resp = await controller.getNonce(new server.Request({
       path: `${baseAddress}/new-nonce`,
       method: "GET",
     }));
@@ -159,7 +160,7 @@ context.only("Server", () => {
   });
 
   it("HEAD new-nonce", async () => {
-    const resp = await controller.getNonce(new core.Request({
+    const resp = await controller.getNonce(new server.Request({
       path: `${baseAddress}/new-nonce`,
       method: "HEAD",
     }));
@@ -191,7 +192,7 @@ context.only("Server", () => {
         }, crypto);
         await jws.sign(alg, keys.privateKey);
 
-        const resp = await controller.newAccount(new core.Request({
+        const resp = await controller.newAccount(new server.Request({
           path: `${baseAddress}/new-acct`,
           method: "POST",
           body: jws.toJSON(),
@@ -215,7 +216,7 @@ context.only("Server", () => {
         }, crypto);
         await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
 
-        const resp = await controller.newAccount(new core.Request({
+        const resp = await controller.newAccount(new server.Request({
           path: `${baseAddress}/new-acct`,
           method: "POST",
           body: jws.toJSON(),
@@ -245,7 +246,7 @@ context.only("Server", () => {
         await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
         jws.signature += "a";
 
-        const resp = await controller.newAccount(new core.Request({
+        const resp = await controller.newAccount(new server.Request({
           path: `${baseAddress}/new-acct`,
           method: "POST",
           body: jws.toJSON(),
@@ -364,7 +365,7 @@ context.only("Server", () => {
       });
 
       it("get directory", async () => {
-        const resp = await controller.getDirectory(new core.Request({
+        const resp = await controller.getDirectory(new server.Request({
           method: "GET",
           path: `${baseAddress}/directory`,
         }));

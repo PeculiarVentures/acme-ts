@@ -1,15 +1,16 @@
+import * as core from "@peculiar/acme-core";
+import * as data from "@peculiar/acme-data";
+import * as server from "@peculiar/acme-server";
+
 import { Request, Response } from "express";
 import { container, injectable } from "tsyringe";
-import { diAcmeController, AcmeController } from "@peculiar/acme-server";
-import { Request as AcmeRequest, Response as AcmeResponse, ContentType, MalformedError } from "@peculiar/acme-core";
-import { Key } from "@peculiar/acme-data";
 
 export const diControllers = "ACME.Express.Controllers";
 
 @injectable()
 export class Controllers {
 
-  protected acmeController = container.resolve<AcmeController>(diAcmeController);
+  protected acmeController = container.resolve<server.AcmeController>(server.diAcmeController);
 
   public async getDirectory(req: Request, res: Response): Promise<void> {
     const request = this.getAcmeRequest(req);
@@ -46,7 +47,7 @@ export class Controllers {
     const result = await this.acmeController.createOrder(request);
     this.createHttpResponseMessage(result, res);
   }
-  public async postOrder(req: Request, res: Response, orderId: Key): Promise<void> {
+  public async postOrder(req: Request, res: Response, orderId: data.Key): Promise<void> {
     const request = this.getAcmeRequest(req);
     const result = await this.acmeController.postOrder(request, orderId);
     this.createHttpResponseMessage(result, res);
@@ -56,20 +57,20 @@ export class Controllers {
     const result = await this.acmeController.postOrders(request);
     this.createHttpResponseMessage(result, res);
   }
-  public async finalizeOrder(req: Request, res: Response, orderId: Key): Promise<void> {
+  public async finalizeOrder(req: Request, res: Response, orderId: data.Key): Promise<void> {
     const request = this.getAcmeRequest(req);
     const result = await this.acmeController.finalizeOrder(request, orderId);
     this.createHttpResponseMessage(result, res);
   }
   //#endregion
 
-  public async postChallenge(req: Request, res: Response, challengeId: Key): Promise<void> {
+  public async postChallenge(req: Request, res: Response, challengeId: data.Key): Promise<void> {
     const request = this.getAcmeRequest(req);
     const result = await this.acmeController.postChallenge(request, challengeId);
     this.createHttpResponseMessage(result, res);
   }
 
-  public async postAuthorization(req: Request, res: Response, authId: Key): Promise<void> {
+  public async postAuthorization(req: Request, res: Response, authId: data.Key): Promise<void> {
     const request = this.getAcmeRequest(req);
     const result = await this.acmeController.postAuthorization(request, authId);
     this.createHttpResponseMessage(result, res);
@@ -100,7 +101,7 @@ export class Controllers {
    * @param response Acme response
    * @param res Express response
    */
-  protected createHttpResponseMessage(response: AcmeResponse, res: Response): void {
+  protected createHttpResponseMessage(response: core.Response, res: Response): void {
     const link = response.headers.link;
     const location = response.headers.location;
     const replayNonce = response.headers.replayNonce;
@@ -117,22 +118,22 @@ export class Controllers {
 
     if (response.content) {
       switch (response.content.type) {
-        case ContentType.joseJson:
-        case ContentType.json:
-        case ContentType.problemJson:
+        case core.ContentType.joseJson:
+        case core.ContentType.json:
+        case core.ContentType.problemJson:
           res.contentType(response.content.type)
             .status(response.status)
             .send(response.content);
           break;
-        case ContentType.pem:
-        case ContentType.pkcs7:
-        case ContentType.pkix:
+        case core.ContentType.pem:
+        case core.ContentType.pkcs7:
+        case core.ContentType.pkix:
           res.contentType(response.content.type)
             .status(response.status)
             .send(Buffer.from(response.content.content));
           break;
         default:
-          res.contentType(ContentType.json)
+          res.contentType(core.ContentType.json)
             .status(response.status)
             .send(JSON.stringify(response.content));
           break;
@@ -146,8 +147,8 @@ export class Controllers {
    * Parse request to AcmeRequest
    * @param req express request
    */
-  protected getAcmeRequest(req: Request): AcmeRequest {
-    const result = new AcmeRequest();
+  protected getAcmeRequest(req: Request): server.Request {
+    const result = new server.Request();
 
     // parse method
     switch (req.method.toUpperCase()) {
@@ -162,7 +163,7 @@ export class Controllers {
         break;
 
       default:
-        throw new MalformedError("Method is not supported");
+        throw new core.MalformedError("Method is not supported");
     }
 
     // parse query

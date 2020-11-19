@@ -39,7 +39,10 @@ export class AccountService extends BaseService implements IAccountService {
     // Adds account
     account = await this.accountRepository.add(account);
 
-    this.logger.info(`Account ${account.id} created`);
+    this.logger.info(`Account created`, {
+      id: account.id,
+      thumbprint: account.thumbprint,
+     });
 
     return account;
   }
@@ -52,9 +55,16 @@ export class AccountService extends BaseService implements IAccountService {
     account.termsOfServiceAgreed = params.termsOfServiceAgreed;
   }
 
-  public async deactivate(accountId: Key) {
+  protected async get(account: Key | IAccount) {
+    if (typeof account == "string" || typeof account == "number") {
+      return this.getById(account);
+    }
+    return account;
+  }
+
+  public async deactivate(data: Key | IAccount) {
     // Get account
-    let account = await this.getById(accountId);
+    let account = await this.get(data);
 
     // Assign values
     account.status = "deactivated";
@@ -62,7 +72,7 @@ export class AccountService extends BaseService implements IAccountService {
     // Save changes
     account = await this.accountRepository.update(account);
 
-    this.logger.info(`Account ${account.id} deactivated`);
+    this.logger.info(`Account deactivated`, { id: account.id });
 
     // Return JSON
     return account;
@@ -71,9 +81,16 @@ export class AccountService extends BaseService implements IAccountService {
   public async getById(accountId: Key) {
     const account = await this.accountRepository.findById(accountId);
     if (!account) {
-      throw new core.AccountDoesNotExistError(`Account '${accountId}' does not exist`);
+      throw new core.AccountDoesNotExistError(`Account id:'${accountId}' does not exist`);
     }
-    this.logger.debug(`Account: id '${account.id}', status '${account.status}'`);
+
+    this.logger.debug("Get account by id", {
+      account: {
+        id: account.id,
+        status: account.status,
+      }
+    });
+
     return account;
   }
 
@@ -83,7 +100,14 @@ export class AccountService extends BaseService implements IAccountService {
     if (!account) {
       throw new core.AccountDoesNotExistError(`Account with JWK '${await key.getThumbprint()}' does not exist`);
     }
-    this.logger.debug(`Account: id '${account.id}', status '${account.status}'`);
+
+    this.logger.debug("Get account by public key", {
+      account: {
+        id: account.id,
+        status: account.status,
+      }
+    });
+
     return account;
   }
 
@@ -91,9 +115,9 @@ export class AccountService extends BaseService implements IAccountService {
     return this.accountRepository.findByPublicKey(key);
   }
 
-  public async revoke(accountId: Key) {
+  public async revoke(data: Key | IAccount) {
     // Get account
-    let account = await this.getById(accountId);
+    let account = await this.get(data);
 
     // Assign values
     account.status = "revoked";
@@ -101,19 +125,19 @@ export class AccountService extends BaseService implements IAccountService {
     // Save changes
     account = await this.accountRepository.update(account);
 
-    this.logger.info(`Account ${account.id} revoked`);
+    this.logger.info("Account revoked", { id: account.id });
 
     // Return JSON
     return account;
   }
 
-  public async update(accountId: Key, params: AccountUpdateParams) {
+  public async update(data: Key | IAccount, params: AccountUpdateParams) {
     if (params.contact) {
       this.validateContacts(params.contact);
     }
 
     // Get account
-    let account = await this.getById(accountId);
+    let account = await this.get(data);
 
     // Assign values
     this.onUpdateParams(account, params);
@@ -121,7 +145,7 @@ export class AccountService extends BaseService implements IAccountService {
     // Save changes
     account = await this.accountRepository.update(account);
 
-    this.logger.info(`Account '${account.id}' updated`);
+    this.logger.info(`Account updated`, { id: account.id });
 
     // Return JSON
     return account;
@@ -160,11 +184,11 @@ export class AccountService extends BaseService implements IAccountService {
     }
   }
 
-  public async changeKey(accountId: Key, key: JsonWebKey) {
+  public async changeKey(data: Key | IAccount, key: JsonWebKey) {
     // https://tools.ietf.org/html/rfc8555#section-7.3.5
 
     // Get account
-    let account = await this.getById(accountId);
+    let account = await this.get(data);
 
     // Check key
     const duplicateAccount = await this.accountRepository.findByPublicKey(key);
@@ -175,6 +199,8 @@ export class AccountService extends BaseService implements IAccountService {
       throw new core.MalformedError("Account with the same key already exists", 409);
     }
 
+    const oldThumbprint = account.thumbprint;
+
     // Change key
     account.key = key;
     account.thumbprint = await key.getThumbprint();
@@ -182,7 +208,11 @@ export class AccountService extends BaseService implements IAccountService {
     // Save changes
     account = await this.accountRepository.update(account);
 
-    this.logger.info(`Account ${account.id} key changed`);
+    this.logger.info(`Account key changed`, {
+      id: account.id,
+      newThumbprint: account.thumbprint,
+      oldThumbprint: oldThumbprint,
+     });
 
     // Return JSON
     return account;

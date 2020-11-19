@@ -41,7 +41,13 @@ export class CertificateService extends BaseService implements ICertificateServi
 
     const cert = await this.certificateRepository.add(certificate);
 
-    this.logger.info(`Certificate ${cert.thumbprint} created`);
+    this.logger.info(`Certificate created`, {
+      order: order?.id || null,
+      thumbprint: cert.thumbprint,
+      type: certificate.type,
+      raw: x509.PemConverter.encode(cert.rawData, "CERTIFICATE"),
+    });
+
     return cert;
   }
 
@@ -70,7 +76,9 @@ export class CertificateService extends BaseService implements ICertificateServi
     cert.status = "revoked";
     await this.certificateRepository.update(cert);
 
-    this.logger.info(`Certificate ${order.certificate} revoked`);
+    this.logger.info(`Certificate revoked`, {
+      thumbprint: cert.thumbprint,
+    });
   }
 
   /**
@@ -109,7 +117,11 @@ export class CertificateService extends BaseService implements ICertificateServi
     if (!cert) {
       throw new MalformedError(`Certificate '${thumbprint}' doesn't exist`);
     }
-    this.logger.debug(`Certificate '${thumbprint}'`);
+
+    this.logger.debug("Get certificate by thumbprint", {
+      thumbprint: cert.thumbprint,
+    });
+
     return cert;
   }
 
@@ -125,6 +137,7 @@ export class CertificateService extends BaseService implements ICertificateServi
     const service = this.getEndpoint(type);
     const cert = await service.enroll(order, requestRaw);
     order.endpoint = type;
+
     return await this.create(cert, order);
   }
 
@@ -153,7 +166,11 @@ export class CertificateService extends BaseService implements ICertificateServi
       await this.reloadCaCache();
       chain = await chainBuilder.build(x509Cert);
     }
-    this.logger.debug(`Chain for certificate '${thumbprint}'`);
+
+    this.logger.debug(`Chain for certificate`, {
+      thumbprint: cert.thumbprint
+    });
+
     return chain;
   }
 
@@ -206,12 +223,18 @@ export class CertificateService extends BaseService implements ICertificateServi
    * @param type Endpoint type
    */
   public getEndpoint(type?: string): IEndpointService {
+    let res: IEndpointService;
+
     const endpoints = this.getEndpointAll();
     if (!endpoints.length) {
       throw new MalformedError("Endpoints not found");
     }
 
     if (type) {
+      this.logger.debug("Get certificate enrollment endpoint by type", {
+        type,
+      });
+
       const endpoint = endpoints.filter(o => o.type === type);
       if (!endpoint.length) {
         throw new MalformedError(`Unsupported endpoint type '${type}'`);
@@ -219,9 +242,20 @@ export class CertificateService extends BaseService implements ICertificateServi
       if (endpoint.length > 1) {
         throw new MalformedError(`Several endpoints have been registered with the same type '${type}'`);
       }
-      return endpoint[0];
+
+      res = endpoint[0];
     } else {
-      return endpoints[0];
+
+      this.logger.debug("Get first certificate enrollment endpoint");
+
+      res = endpoints[0];
     }
+
+    this.logger.debug("Use certificate enrollment endpoint", {
+      type: res.type,
+      class: res.constructor.name,
+    });
+
+    return res;
   }
 }

@@ -8,6 +8,7 @@ import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
 import { container, injectable } from "tsyringe";
 import { IAccount, Key } from "@peculiar/acme-data";
 import { BaseService } from "../services";
+import { Request } from "../request";
 
 export const diAcmeController = "ACME.AcmeController";
 /**
@@ -27,18 +28,40 @@ export class AcmeController extends BaseService {
   protected orderService = container.resolve<types.IOrderService>(types.diOrderService);
   protected certificateService = container.resolve<types.ICertificateService>(types.diCertificateService);
 
-  public async wrapAction(action: (response: core.Response) => Promise<void>, request: core.Request, useJwk = false) {
+  protected logRequest(request: Request) {
+    this.logger.debug("Request", { request });
+  }
+
+  protected logResponse(response: core.Response) {
+    let content: any = null;
+    if (response.content) {
+      switch (response.content.type) {
+        case core.ContentType.json:
+        case core.ContentType.problemJson:
+          content = response.content.toJSON();
+          break;
+        default:
+          content = pvtsutils.Convert.ToBase64(response.content.content);
+      }
+    }
+    this.logger.debug("Response", {
+      response,
+      body: content,
+    });
+  }
+
+  public async wrapAction(action: (response: core.Response) => Promise<void>, request: Request, useJwk = false) {
+    this.logRequest(request);
+
     const response = new core.Response();
 
     try {
-      this.logger.debug(`Request ${request.method} ${request.path}`, request.body);
-
       response.headers.replayNonce = await this.nonceService.create();
 
       if (request.method === "POST") {
-        //#region Check JWS
-        let account: IAccount | null = null;
+        this.logger.debug("Validate token signature");
 
+        //#region Check JWS
         // Parse JWT
         const token = this.getToken(request);
 
@@ -64,11 +87,11 @@ export class AcmeController extends BaseService {
             throw new core.UnauthorizedError("JWS signature is invalid");
           }
 
-          account = await this.accountService.findByPublicKey(header.jwk);
+          request.account = await this.accountService.findByPublicKey(header.jwk);
           // If a server receives a POST or POST-as-GET from a deactivated account, it MUST return an error response with status
           // code 401(Unauthorized) and type "urn:ietf:params:acme:error:unauthorized"
-          if (account && account.status !== "valid") {
-            throw new core.UnauthorizedError(`Account is not valid. Status is '${account.status}'`);
+          if (request.account && request.account.status !== "valid") {
+            throw new core.UnauthorizedError(`Account is not valid. Status is '${request.account.status}'`);
           }
         }
         else {
@@ -76,9 +99,9 @@ export class AcmeController extends BaseService {
             throw new core.IncorrectResponseError("JWS MUST contain 'kid' field");
           }
 
-          account = await this.accountService.getById(this.getKeyIdentifier(header.kid));
+          request.account = await this.accountService.getById(this.getKeyIdentifier(header.kid));
 
-          const key = await new JsonWebKey(this.getCrypto(), account.key).exportKey();
+          const key = await new JsonWebKey(this.getCrypto(), request.account.key).exportKey();
           if (!await token.verify(key)) {
             throw new core.UnauthorizedError("JWS signature is invalid");
           }
@@ -86,14 +109,14 @@ export class AcmeController extends BaseService {
           // Once an account is deactivated, the server MUST NOT accept further
           // requests authorized by that account's key
           // https://tools.ietf.org/html/rfc8555#section-7.3.6
-          if (account.status !== "valid") {
-            throw new core.UnauthorizedError(`Account is not valid. Status is '${account.status}'`);
+          if (request.account.status !== "valid") {
+            throw new core.UnauthorizedError(`Account is not valid. Status is '${request.account.status}'`);
           }
         }
         //#endregion
       }
 
-      // Invoke action
+      this.logger.debug("Invoke custom action");
       await action(response);
     }
     catch (e) {
@@ -110,11 +133,13 @@ export class AcmeController extends BaseService {
         this.logger.error(e.message);
       }
     }
-    this.logger.debug(`Response:`, response);
+
+    this.logResponse(response);
+
     return response;
   }
 
-  public getToken(request: core.Request) {
+  public getToken(request: Request) {
     const token = request.body;
     if (!token || !Object.keys(token).length) {
       throw new core.MalformedError("JSON Web Token is empty");
@@ -124,8 +149,9 @@ export class AcmeController extends BaseService {
     return jws;
   }
 
-  public keyChange(request: core.Request) {
+  public keyChange(request: Request) {
     return this.wrapAction(async (response) => {
+
       const token = this.getToken(request);
       const reqProtected = token.getProtected();
 
@@ -171,7 +197,7 @@ export class AcmeController extends BaseService {
       }
 
       try {
-        const updatedAccount = await this.accountService.changeKey(account.id, innerProtected.jwk);
+        const updatedAccount = await this.accountService.changeKey(account, innerProtected.jwk);
         response.content = new core.Content(await this.convertService.toAccount(updatedAccount));
         response.headers.location = `${this.options.baseAddress}/acct/${updatedAccount.id}`;
         response.status = 200; // Ok
@@ -186,7 +212,7 @@ export class AcmeController extends BaseService {
     }, request);
   }
 
-  public async getDirectory(request: core.Request) {
+  public async getDirectory(request: Request) {
     return this.wrapAction(async (response) => {
       const data = await this.directoryService.getDirectory();
       response.content = new core.Content(data, this.options.formattedResponse);
@@ -194,7 +220,7 @@ export class AcmeController extends BaseService {
     }, request);
   }
 
-  public async getNonce(request: core.Request) {
+  public async getNonce(request: Request) {
     return this.wrapAction(async (response) => {
       if (!request.method || request.method !== "HEAD") {
         response.status = 204; // No content
@@ -203,7 +229,7 @@ export class AcmeController extends BaseService {
   }
 
   //#region Account management
-  public async newAccount(request: core.Request) {
+  public async newAccount(request: Request) {
     return this.wrapAction(async (response) => {
       const token = this.getToken(request);
       const header = token.getProtected();
@@ -236,19 +262,25 @@ export class AcmeController extends BaseService {
     }, request, true);
   }
 
-  protected async getAccount(request: core.Request) {
-    const token = this.getToken(request);
-    const header = token.getProtected();
+  protected async getAccount(request: Request) {
+    let account: IAccount;
+    if (request.account) {
+      account = request.account;
+    } else {
+      const token = this.getToken(request);
+      const header = token.getProtected();
 
-    if (!header.kid) {
-      throw new core.MalformedError("Request has no kid");
+      if (!header.kid) {
+        throw new core.MalformedError("Request has no kid");
+      }
+
+      account = await this.accountService.getById(this.getIdFromLink(header.kid));
     }
-
-    const account = await this.accountService.getById(this.getIdFromLink(header.kid));
 
     if (account.status === "deactivated") {
       throw new core.UnauthorizedError("Account deactivated");
     }
+
     return account;
   }
 
@@ -268,7 +300,7 @@ export class AcmeController extends BaseService {
     }
   }
 
-  public async postAccount(request: core.Request) {
+  public async postAccount(request: Request) {
     return this.wrapAction(async (response) => {
       const token = this.getToken(request);
       const params = token.getPayload<protocol.AccountUpdateParams>();
@@ -296,7 +328,7 @@ export class AcmeController extends BaseService {
   //#endregion
 
   //#region Order management
-  public createOrder(request: core.Request) {
+  public createOrder(request: Request) {
     return this.wrapAction(async (response) => {
       const token = this.getToken(request);
       // get account
@@ -321,7 +353,7 @@ export class AcmeController extends BaseService {
     }, request);
   }
 
-  public postOrder(request: core.Request, orderId: Key) {
+  public postOrder(request: Request, orderId: Key) {
     return this.wrapAction(async (response) => {
       // get account
       const account = await this.getAccount(request);
@@ -337,7 +369,7 @@ export class AcmeController extends BaseService {
     }, request);
   }
 
-  public postOrders(request: core.Request) {
+  public postOrders(request: Request) {
     return this.wrapAction(async (response) => {
       // get account
       const account = await this.getAccount(request);
@@ -378,7 +410,7 @@ export class AcmeController extends BaseService {
     }, request);
   }
 
-  public finalizeOrder(request: core.Request, orderId: Key) {
+  public finalizeOrder(request: Request, orderId: Key) {
     return this.wrapAction(async (response) => {
       const token = this.getToken(request);
 
@@ -397,7 +429,7 @@ export class AcmeController extends BaseService {
   //#endregion
 
   //#region Challenge
-  public postChallenge(request: core.Request, challengeId: Key) {
+  public postChallenge(request: Request, challengeId: Key) {
     return this.wrapAction(async (response) => {
       const token = this.getToken(request);
       const account = await this.getAccount(request);
@@ -416,7 +448,7 @@ export class AcmeController extends BaseService {
   //#endregion
 
   //#region Authorization
-  public async createAuthorization(request: core.Request) {
+  public async createAuthorization(request: Request) {
     return this.wrapAction(async (response) => {
       const token = this.getToken(request);
       // get account
@@ -441,7 +473,7 @@ export class AcmeController extends BaseService {
     }, request);
   }
 
-  public async postAuthorization(request: core.Request, authzId: Key) {
+  public async postAuthorization(request: Request, authzId: Key) {
     return this.wrapAction(async (response) => {
       const token = this.getToken(request);
       const params = token.getPayload<protocol.AuthorizationUpdateParams>();
@@ -462,7 +494,7 @@ export class AcmeController extends BaseService {
   //#endregion
 
   //#region Certificate management
-  public async getCertificate(request: core.Request, thumbprint: string) {
+  public async getCertificate(request: Request, thumbprint: string) {
     return this.wrapAction(async (response) => {
       const account = await this.getAccount(request);
       const certs = await this.orderService.getCertificate(account.id, thumbprint);
@@ -486,7 +518,7 @@ export class AcmeController extends BaseService {
           break;
         case "pkix":
           {
-            if(certs.length > 1){
+            if (certs.length > 1) {
               for (let index = 1; index < certs.length; index++) {
                 const cert = certs[index];
                 const thumbprint = pvtsutils.Convert.ToHex(await cert.getThumbprint());
@@ -505,7 +537,7 @@ export class AcmeController extends BaseService {
     }, request);
   }
 
-  public async revokeCertificate(request: core.Request) {
+  public async revokeCertificate(request: Request) {
     return this.wrapAction(async (response) => {
       const token = this.getToken(request);
       const header = token.getProtected();
@@ -524,7 +556,7 @@ export class AcmeController extends BaseService {
   }
   //#endregion
 
-  public async getEndpoint(request: core.Request, type: string) {
+  public async getEndpoint(request: Request, type: string) {
     return this.wrapAction(async (response) => {
       await this.getAccount(request);
       const endpoint = this.certificateService.getEndpoint(type);
@@ -533,7 +565,7 @@ export class AcmeController extends BaseService {
       // add headers
       response.headers.location = `${this.options.baseAddress}/endpoint/${endpoint.type}`;
 
-      if(certs.length > 1){
+      if (certs.length > 1) {
         for (let index = 1; index < certs.length; index++) {
           const cert = certs[index];
           const thumbprint = pvtsutils.Convert.ToHex(await cert.getThumbprint());

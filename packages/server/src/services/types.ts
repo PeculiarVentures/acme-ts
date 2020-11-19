@@ -64,6 +64,12 @@ export interface IAccountService {
    * @param accountId Account identifier
    */
   deactivate(accountId: data.Key): Promise<data.IAccount>;
+  /**
+   * Deactivates an Account by specified Id
+   *
+   * @param account Account
+   */
+  deactivate(account: data.IAccount): Promise<data.IAccount>;
 
   /**
   * Returns Account by specified Id
@@ -88,6 +94,11 @@ export interface IAccountService {
    * @param accountId Account identifier
    */
   revoke(accountId: data.Key): Promise<data.IAccount>;
+  /**
+   * Revokes an Account
+   * @param account Account
+   */
+  revoke(account: data.IAccount): Promise<data.IAccount>;
 
   /**
    * Updates an Account
@@ -95,6 +106,12 @@ export interface IAccountService {
    * @param contacts List of contacts
    */
   update(accountId: data.Key, contacts: protocol.AccountUpdateParams): Promise<data.IAccount>;
+  /**
+   * Updates an Account
+   * @param account Account
+   * @param contacts List of contacts
+   */
+  update(account: data.IAccount, contacts: protocol.AccountUpdateParams): Promise<data.IAccount>;
 
   /**
    * Changes key for Account
@@ -102,6 +119,12 @@ export interface IAccountService {
    * @param key A new key of Account
    */
   changeKey(accountId: data.Key, key: JsonWebKey): Promise<data.IAccount>;
+  /**
+   * Changes key for Account
+   * @param account Account
+   * @param key A new key of Account
+   */
+  changeKey(account: data.IAccount, key: JsonWebKey): Promise<data.IAccount>;
 }
 
 export const diExternalAccountService = "ACME.ExternalAccountService";

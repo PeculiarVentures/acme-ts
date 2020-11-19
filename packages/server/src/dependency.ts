@@ -46,7 +46,7 @@ export class DependencyInjection {
       expireAuthorizationDays: options.expireAuthorizationDays ?? 3,
       downloadCertificateFormat: options.downloadCertificateFormat ?? "pem",
       debugMode: options.debugMode ?? false,
-      loggerLevel: options.loggerLevel,
+      loggerLevel: options.loggerLevel || "info",
     } as IServerOptions;
 
     if (!container.isRegistered(data.diAccountRepository)) {

@@ -12,56 +12,86 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
   protected authorizationRepository = container.resolve<acmeData.IAuthorizationRepository>(acmeData.diAuthorizationRepository);
 
   public async getById(accountId: acmeData.Key, authId: acmeData.Key): Promise<acmeData.IAuthorization> {
-    const auth = await this.authorizationRepository.findById(authId);
+    const authz = await this.authorizationRepository.findById(authId);
 
-    if (!auth) {
-      throw new MalformedError(`Authorization '${authId}' doesn't exist`);
+    if (!authz) {
+      throw new MalformedError(`Authorization id:'${authId}' doesn't exist`);
     }
-    this.logger.debug(`Authorization: id '${auth.id}', status '${auth.status}'`);
-    if (auth.accountId !== accountId) {
+
+    if (authz.accountId !== accountId) {
       throw new MalformedError("Access denied");
     }
 
-    const updatedAuth = await this.refreshStatus(auth);
+    this.logger.debug("Get authorization by id", {
+      authorization: {
+        id: authz.id,
+        status: authz.status,
+      }
+    });
+
+    const updatedAuth = await this.refreshStatus(authz);
     return updatedAuth;
   }
 
   public async getActual(accountId: acmeData.Key, identifier: acmeData.IIdentifier): Promise<acmeData.IAuthorization | null> {
-
     // Get auth from repository
     const auth = await this.authorizationRepository.findByIdentifier(accountId, identifier);
-    if (!auth) {
-      this.logger.debug(`Actual authorization for account '${accountId}' not found`);
-      return null;
-    }
-    this.logger.debug(`Authorization: id '${auth.id}', status '${auth.status}'`);
+    if (auth) {
+      const updatedAuth = await this.refreshStatus(auth);
+      if (updatedAuth.status === "pending" || updatedAuth.status === "valid") {
+        this.logger.debug(`Actual authorization`, {
+          account: {
+            id: accountId,
+          },
+          authorization: {
+            id: updatedAuth.id,
+            status: updatedAuth.status,
+          }
+        });
 
-    const updatedAuth = await this.refreshStatus(auth);
-    if (updatedAuth.status === "pending" || updatedAuth.status === "valid") {
-      return updatedAuth;
+        return updatedAuth;
+      }
     }
-    this.logger.debug(`Actual authorization for account '${accountId}' not found`);
+
+    this.logger.debug(`Actual authorization not found`, {
+      account: {
+        id: accountId,
+      }
+    });
+
     return null;
   }
 
   public async create(accountId: acmeData.Key, identifier: acmeData.IIdentifier): Promise<acmeData.IAuthorization> {
     // Create Authorization
-    const auth = container.resolve<acmeData.IAuthorization>(acmeData.diAuthorization);
+    const authz = container.resolve<acmeData.IAuthorization>(acmeData.diAuthorization);
 
     await this.challengeService.identifierValidate(identifier);
 
     // Fill params
-    await this.onCreateParams(auth, accountId, identifier);
+    await this.onCreateParams(authz, accountId, identifier);
     // Save authorization
-    const addedAuth = await this.authorizationRepository.add(auth);
+    const addedAuth = await this.authorizationRepository.add(authz);
     try {
-      await this.challengeService.create(auth, identifier.type);
-      this.logger.info(`Authorization '${auth.id}' created`);
+      await this.challengeService.create(authz, identifier.type);
+
+      this.logger.info(`Authorization created`, {
+        id: authz.id,
+        identifier: {
+          type: authz.identifier.type,
+          value: authz.identifier.value,
+        },
+      });
+
       return addedAuth;
     } catch (error) {
       addedAuth.status = "invalid";
       await this.authorizationRepository.update(addedAuth);
-      this.logger.debug(`Authorization '${auth.id}' status updated to 'invalid'`);
+
+      this.logger.debug(`Authorization status updated to 'invalid'`, {
+        id: authz.id,
+      });
+
       throw new MalformedError("Cannot create challenges", error);
     }
   }
@@ -88,9 +118,15 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
         await this.authorizationRepository.update(item);
       }
     }
+
     if (oldStatus !== item.status) {
-      this.logger.info(`Authorization '${item.id}' status updated to '${item.status}'`);
+      this.logger.info(`Authorization status changed`, {
+        id: item.id,
+        newStatus: item.status,
+        oldStatus: oldStatus,
+      });
     }
+
     return item;
   }
 
@@ -127,7 +163,7 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
 
     const resp = await this.authorizationRepository.update(authz);
 
-    this.logger.info(`Authorization '${resp.id}' deactivated`);
+    this.logger.info(`Authorization deactivated`, { id });
 
     return resp;
   }
