@@ -10,8 +10,7 @@ import { GeneralName, id_ce_subjectAltName, SubjectAlternativeName } from "@pecu
 import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
 import { Crypto } from "@peculiar/webcrypto";
 import * as assert from "assert";
-import { CertificateEnrollmentService, MemoryEndpointService } from "packages/test-server/src/services";
-import { ITestServerOptions2 } from "packages/test-server/src/services/options";
+import { MemoryEndpointService } from "packages/test-server/src/services";
 import { Convert } from "pvtsutils";
 import { container, Lifecycle } from "tsyringe";
 
