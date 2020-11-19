@@ -46,9 +46,9 @@
   "dependencies": {
     "@peculiar/acme-core": "^1.2.13",
     "@peculiar/acme-protocol": "^1.2.3",
-    "@peculiar/asn1-x509": "2.0.23",
+    "@peculiar/asn1-x509": "2.0.26",
     "@peculiar/jose": "^1.2.3",
-    "pvtsutils": "1.0.14"
+    "pvtsutils": "1.1.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.3",
@@ -58,6 +58,6 @@
     "@rollup/plugin-node-resolve": "^10.0.0",
     "rollup": "^2.32.1",
     "rollup-plugin-terser": "^7.0.2",
-    "rollup-plugin-typescript2": "^0.28.0"
+    "rollup-plugin-typescript2": "^0.29.0"
   }
 }

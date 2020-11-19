@@ -27,7 +27,7 @@
     "url": "git+https://github.com/PeculiarVentures/acme-ts.git"
   },
   "dependencies": {
-    "pvtsutils": "1.0.14"
+    "pvtsutils": "1.1.1"
   },
   "scripts": {
     "test": "echo \"Error: run tests from root\" && exit 1",
