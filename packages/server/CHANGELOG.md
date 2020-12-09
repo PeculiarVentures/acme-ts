@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.13...v1.3.0) (2020-12-09)
+
+
+### Bug Fixes
+
+* **server:** error on DirectoryService init ([a7df057](https://github.com/PeculiarVentures/acme-ts/commit/a7df057a7898538efc6dc3ace4c960de17bc0ace))
+
+
+### Features
+
+* Use string and date types for order date fields ([62f0f53](https://github.com/PeculiarVentures/acme-ts/commit/62f0f53928cf8095e4dd2fb2f7f6856347740f67))
+* **server:** Update logs ([4ac4504](https://github.com/PeculiarVentures/acme-ts/commit/4ac4504f5e070f4c1d60a4864f992410a4fb8a1d))
+* **server:** Update logs for order and challenge creation ([4b7ab57](https://github.com/PeculiarVentures/acme-ts/commit/4b7ab573efa5c8269ad8bffb2d0387ac55e2477c))
+
+
+
+
+
 ## [1.2.13](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.12...v1.2.13) (2020-11-03)
 
 **Note:** Version bump only for package @peculiar/acme-server

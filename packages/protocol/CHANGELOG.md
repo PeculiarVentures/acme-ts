@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.13...v1.3.0) (2020-12-09)
+
+
+### Features
+
+* Use string and date types for order date fields ([62f0f53](https://github.com/PeculiarVentures/acme-ts/commit/62f0f53928cf8095e4dd2fb2f7f6856347740f67))
+
+
+
+
+
 ## [1.2.3](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.2...v1.2.3) (2020-10-13)
 
 

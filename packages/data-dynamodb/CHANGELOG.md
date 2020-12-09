@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.13...v1.3.0) (2020-12-09)
+
+
+### Bug Fixes
+
+* Fix TS error for  IBaseDynamoObject ([3775647](https://github.com/PeculiarVentures/acme-ts/commit/377564786d0e03bfc89569d5db9b416374b52dab))
+
+
+
+
+
 ## [1.2.13](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.12...v1.2.13) (2020-11-03)
 
 **Note:** Version bump only for package @peculiar/acme-data-dynamodb

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.13...v1.3.0) (2020-12-09)
+
+
+### Features
+
+* **server:** Update logs ([4ac4504](https://github.com/PeculiarVentures/acme-ts/commit/4ac4504f5e070f4c1d60a4864f992410a4fb8a1d))
+
+
+
+
+
 ## [1.2.13](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.12...v1.2.13) (2020-11-03)
 
 **Note:** Version bump only for package @peculiar/acme-express

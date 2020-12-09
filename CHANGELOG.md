@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/PeculiarVentures/ts-acme/compare/v1.2.13...v1.3.0) (2020-12-09)
+
+
+### Bug Fixes
+
+* Fix TS error for  IBaseDynamoObject ([3775647](https://github.com/PeculiarVentures/ts-acme/commit/377564786d0e03bfc89569d5db9b416374b52dab))
+* **server:** error on DirectoryService init ([a7df057](https://github.com/PeculiarVentures/ts-acme/commit/a7df057a7898538efc6dc3ace4c960de17bc0ace))
+* DI doesn't allow to use constructor parameters ([51b86bc](https://github.com/PeculiarVentures/ts-acme/commit/51b86bcfa9c36a3e64f4b113089797a9a41c58e2))
+
+
+### Features
+
+* Use string and date types for order date fields ([62f0f53](https://github.com/PeculiarVentures/ts-acme/commit/62f0f53928cf8095e4dd2fb2f7f6856347740f67))
+* **core:** Improve ConsoleLogger ([ea55e3a](https://github.com/PeculiarVentures/ts-acme/commit/ea55e3a4a341b91cc29d738c6a3b9d740fbde3cc))
+* **server:** Update logs ([4ac4504](https://github.com/PeculiarVentures/ts-acme/commit/4ac4504f5e070f4c1d60a4864f992410a4fb8a1d))
+* **server:** Update logs for order and challenge creation ([4b7ab57](https://github.com/PeculiarVentures/ts-acme/commit/4b7ab573efa5c8269ad8bffb2d0387ac55e2477c))
+
+
+
+
+
 ## [1.2.13](https://github.com/PeculiarVentures/ts-acme/compare/v1.2.12...v1.2.13) (2020-11-03)
 
 

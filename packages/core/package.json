@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/acme-core",
-  "version": "1.2.13",
+  "version": "1.3.0",
   "description": "Core module forAutomatic Certificate Management Environment (ACME) implementing RFC 8555",
   "keywords": [
     "acme"
@@ -42,14 +42,14 @@
   },
   "homepage": "https://github.com/PeculiarVentures/acme-ts#readme",
   "dependencies": {
-    "@peculiar/acme-protocol": "^1.2.3",
+    "@peculiar/acme-protocol": "^1.3.0",
     "@peculiar/asn1-cms": "^2.0.27",
     "@peculiar/asn1-csr": "^2.0.27",
     "@peculiar/asn1-ecc": "^2.0.27",
     "@peculiar/asn1-pkcs9": "^2.0.27",
     "@peculiar/asn1-rsa": "^2.0.27",
     "@peculiar/asn1-schema": "2.0.27",
-    "@peculiar/jose": "^1.2.3",
+    "@peculiar/jose": "^1.3.0",
     "pvtsutils": "1.1.1",
     "reflect-metadata": "^0.1.13",
     "tsyringe": "^4.2.0"
