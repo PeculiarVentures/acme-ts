@@ -80,14 +80,14 @@ export interface OrderCreateParams {
    *
    * NOTE: in the date format defined in RFC3339
    */
-  notBefore?: Date;
+  notBefore?: Date | string;
 
   /**
    * The requested value of the notAfter field in the certificate.
    *
    * NOTE: in the date format defined in RFC3339
    */
-  notAfter?: Date;
+  notAfter?: Date | string;
 
 }
 

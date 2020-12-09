@@ -1,12 +1,17 @@
+import { diLogger, ILogger } from "@peculiar/acme-core";
 import { IBaseRepository, Key } from "@peculiar/acme-data";
+import { container } from "tsyringe";
 import { BaseObject } from "../models";
 
 export abstract class BaseRepository<T extends BaseObject> implements IBaseRepository<T>
 {
   private lastId = 0;
   protected items: T[] = [];
+  public logger = container.resolve<ILogger>(diLogger);
 
   public async findById(id: Key): Promise<T | null> {
+    this.logger.info("Get item by id", { id });
+
     return this.items.find(o => { return o.id == id; }) || null;
   }
 

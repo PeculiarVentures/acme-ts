@@ -1,4 +1,4 @@
-import { injectable, container } from "tsyringe";
+import { injectable, container, Lifecycle } from "tsyringe";
 
 export interface ILogger {
   level: LoggerLevel;
@@ -15,8 +15,16 @@ export enum LoggerLevel {
   debug,
 }
 
+export type LoggerLevelType = keyof typeof LoggerLevel;
+
 export interface LoggerData {
   [key: string]: any;
+}
+
+export interface LoggerInfo {
+  class: string;
+  timestamp: Date;
+  level: LoggerLevelType;
 }
 
 export const diLogger = "ACME.Logger";
@@ -24,11 +32,7 @@ export const diLogger = "ACME.Logger";
 @injectable()
 export class Logger implements ILogger {
 
-  public level: LoggerLevel;
-
-  public constructor(lvl?: LoggerLevel) {
-    this.level = lvl ?? LoggerLevel.info;
-  }
+  public level: LoggerLevel = LoggerLevel.info;
 
   public error(msg: string, obj?: LoggerData): void {
     this.write(LoggerLevel.error, msg, obj);
@@ -45,17 +49,44 @@ export class Logger implements ILogger {
 
   public write(lvl: LoggerLevel, msg: string, obj?: LoggerData) {
     if (this.checkLevel(lvl)) {
-      this.onWrite(lvl, msg, obj);
+      const info: LoggerInfo = {
+        level: LoggerLevel[lvl] as LoggerLevelType,
+        timestamp: new Date(),
+        class: this.caller(),
+      };
+      this.onWrite(info, msg, obj);
     }
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  protected onWrite(lvl: LoggerLevel, msg: string, obj?: LoggerData) {
+  protected onWrite(info: LoggerInfo, msg: string, obj?: LoggerData) {
     // empty
   }
 
   protected checkLevel(lvl: LoggerLevel): boolean {
     return this.level >= lvl;
   }
+
+  protected caller() {
+    try {
+      throw new Error();
+    }
+    catch (e) {
+      const regex = /at ([a-zA-Z0-9_.]+) \(/gm;
+      const stack = e.stack;
+      let matches: RegExpExecArray | null = null;
+      let skipCount = 3;
+      // eslint-disable-next-line no-cond-assign
+      while (matches = regex.exec(stack)) {
+        if (skipCount--) {
+          continue;
+        }
+
+        return matches[1].split(".")[0];
+      }
+
+      return "undefined";
+    }
+  }
 }
 
-container.register(diLogger, Logger);
+container.register(diLogger, Logger, { lifecycle: Lifecycle.Singleton });

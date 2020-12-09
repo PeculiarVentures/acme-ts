@@ -4,64 +4,48 @@ import * as data from "@peculiar/acme-data";
 import { IAuthorizationRepository } from "@peculiar/acme-data";
 import * as dataMemory from "@peculiar/acme-data-memory";
 import * as protocol from "@peculiar/acme-protocol";
-import { AcmeController, diAcmeController, DependencyInjection, diCertificateEnrollmentService } from "@peculiar/acme-server";
+import * as server from "@peculiar/acme-server";
 import { AsnConvert } from "@peculiar/asn1-schema";
 import { GeneralName, id_ce_subjectAltName, SubjectAlternativeName } from "@peculiar/asn1-x509";
 import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
 import { Crypto } from "@peculiar/webcrypto";
 import * as assert from "assert";
-import { CertificateEnrollmentService } from "packages/test-server/src/services";
-import { ITestServerOptions2 } from "packages/test-server/src/services/options";
+import { MemoryEndpointService } from "packages/test-server/src/services";
 import { Convert } from "pvtsutils";
-import { container } from "tsyringe";
+import { container, Lifecycle } from "tsyringe";
 
 const baseAddress = "http://localhost";
 
-context("Server", () => {
+context.only("Server", () => {
 
   const crypto = new Crypto();
-  let controller: AcmeController;
+  let controller: server.AcmeController;
   before(async () => {
     const notBefore = new Date();
     const notAfter = new Date();
     notAfter.setUTCFullYear(notAfter.getUTCFullYear() + 1);
 
-    const rootName = "CN=ACME demo root CA, O=PeculiarVentures LLC";
-    const rootKeys = await crypto.subtle.generateKey(CertificateEnrollmentService.signingAlgorithm, false, ["sign", "verify"]) as CryptoKeyPair;
-
-    const rootCert = await x509.X509CertificateGenerator.create({
-      serialNumber: "01",
-      subject: rootName,
-      issuer: rootName,
-      notBefore,
-      notAfter,
-      signingAlgorithm: CertificateEnrollmentService.signingAlgorithm,
-      publicKey: rootKeys.publicKey,
-      signingKey: rootKeys.privateKey,
-    });
-    rootCert.privateKey = rootKeys.privateKey;
-    DependencyInjection.register(container, {
+    server.DependencyInjection.register(container, {
       baseAddress,
 
       debugMode: true,
       downloadCertificateFormat: "pem",
       hashAlgorithm: "SHA-256",
       expireAuthorizationDays: 1,
-      levelLogger: "error",
       ordersPageSize: 10,
-      formattedResponse: true,
-
-      caCertificate: rootCert,
-      extraCertificateStorage: [rootCert],
-    } as ITestServerOptions2);
-    container.register(diCertificateEnrollmentService, CertificateEnrollmentService);
+      formattedResponse: true
+    });
+    container.register(server.diEndpointService, MemoryEndpointService, { lifecycle: Lifecycle.Singleton });
+    const logger = new core.ConsoleLogger();
+    logger.level = core.LoggerLevel.debug;
+    container.register(core.diLogger, { useValue: logger });
     dataMemory.DependencyInjection.register(container);
-    controller = container.resolve<AcmeController>(diAcmeController);
+    controller = container.resolve<server.AcmeController>(server.diAcmeController);
   });
 
   //#region Helpers
   async function getNonce() {
-    const nonceResp = await controller.getNonce(new core.Request({
+    const nonceResp = await controller.getNonce(new server.Request({
       path: `${baseAddress}/new-nonce`,
       method: "HEAD",
     }));
@@ -91,7 +75,7 @@ context("Server", () => {
     }, crypto);
     await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
 
-    return new core.Request({
+    return new server.Request({
       path: url,
       method: "POST",
       queryParams,
@@ -112,7 +96,7 @@ context("Server", () => {
     }, crypto);
     await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
 
-    const resp = await controller.newAccount(new core.Request({
+    const resp = await controller.newAccount(new server.Request({
       path: `${baseAddress}/new-acct`,
       method: "POST",
       body: jws.toJSON(),
@@ -147,12 +131,12 @@ context("Server", () => {
   //#endregion
 
   it("GET directory", async () => {
-    const resp = await controller.getDirectory(new core.Request({
+    const resp = await controller.getDirectory(new server.Request({
       path: `${baseAddress}/directory`,
       method: "GET",
     }));
 
-    assert.strictEqual(resp.status, 200);
+    assert.strictEqual(resp.status, 200, `Wrong status ${resp.status}. ${resp.content?.toJSON().detail}`);
     assert.strictEqual(resp.content?.type, core.ContentType.json);
 
     const json: protocol.Directory = resp.json();
@@ -165,7 +149,7 @@ context("Server", () => {
   });
 
   it("GET new-nonce", async () => {
-    const resp = await controller.getNonce(new core.Request({
+    const resp = await controller.getNonce(new server.Request({
       path: `${baseAddress}/new-nonce`,
       method: "GET",
     }));
@@ -176,7 +160,7 @@ context("Server", () => {
   });
 
   it("HEAD new-nonce", async () => {
-    const resp = await controller.getNonce(new core.Request({
+    const resp = await controller.getNonce(new server.Request({
       path: `${baseAddress}/new-nonce`,
       method: "HEAD",
     }));
@@ -208,7 +192,7 @@ context("Server", () => {
         }, crypto);
         await jws.sign(alg, keys.privateKey);
 
-        const resp = await controller.newAccount(new core.Request({
+        const resp = await controller.newAccount(new server.Request({
           path: `${baseAddress}/new-acct`,
           method: "POST",
           body: jws.toJSON(),
@@ -232,7 +216,7 @@ context("Server", () => {
         }, crypto);
         await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
 
-        const resp = await controller.newAccount(new core.Request({
+        const resp = await controller.newAccount(new server.Request({
           path: `${baseAddress}/new-acct`,
           method: "POST",
           body: jws.toJSON(),
@@ -262,7 +246,7 @@ context("Server", () => {
         await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
         jws.signature += "a";
 
-        const resp = await controller.newAccount(new core.Request({
+        const resp = await controller.newAccount(new server.Request({
           path: `${baseAddress}/new-acct`,
           method: "POST",
           body: jws.toJSON(),
@@ -381,7 +365,7 @@ context("Server", () => {
       });
 
       it("get directory", async () => {
-        const resp = await controller.getDirectory(new core.Request({
+        const resp = await controller.getDirectory(new server.Request({
           method: "GET",
           path: `${baseAddress}/directory`,
         }));

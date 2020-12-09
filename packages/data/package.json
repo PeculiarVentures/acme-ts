@@ -44,7 +44,7 @@
   "dependencies": {
     "@peculiar/acme-core": "^1.2.13",
     "@peculiar/acme-protocol": "^1.2.3",
-    "@peculiar/asn1-x509": "2.0.23",
+    "@peculiar/asn1-x509": "2.0.27",
     "tsyringe": "^4.3.0"
   }
 }
