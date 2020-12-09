@@ -3,7 +3,7 @@ import { cryptoProvider } from "@peculiar/x509";
 import { Convert } from "pvtsutils";
 
 export interface IBaseDynamoObject {
-  id: Key;
+  id: string;
   index: string;
   parentId: string;
 }
