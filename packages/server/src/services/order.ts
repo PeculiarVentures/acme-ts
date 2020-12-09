@@ -82,10 +82,10 @@ export class OrderService extends BaseService implements types.IOrderService {
   protected async onCreateParams(order: data.IOrder, params: protocol.OrderCreateParams, accountId: data.Key) {
     order.accountId = accountId;
     if (params.notAfter) {
-      order.notAfter = params.notAfter;
+      order.notAfter = new Date(params.notAfter);
     }
     if (params.notBefore) {
-      order.notBefore = params.notBefore;
+      order.notBefore = new Date(params.notBefore);
     }
   }
 
