@@ -156,7 +156,7 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
         throw new MalformedError("Response status is not 200(OK)");
       }
     } else {
-      this.logger.warn("HTTP challenge validation is disabled fo DEBUG mode");
+      this.logger.warn("HTTP challenge validation is disabled for DEBUG mode");
     }
   }
 
