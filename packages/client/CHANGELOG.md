@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.3.0...v1.4.0) (2021-01-19)
+
+**Note:** Version bump only for package @peculiar/acme-client
+
+
+
+
+
 # [1.3.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.13...v1.3.0) (2020-12-09)
 
 **Note:** Version bump only for package @peculiar/acme-client

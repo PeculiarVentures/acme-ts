@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.3.0...v1.4.0) (2021-01-19)
+
+
+### Features
+
+* **core:** Add CACHE_CONTROL ([baa250f](https://github.com/PeculiarVentures/acme-ts/commit/baa250fb52941d0639231525822614623208750b))
+
+
+
+
+
 # [1.3.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.2.13...v1.3.0) (2020-12-09)
 
 
