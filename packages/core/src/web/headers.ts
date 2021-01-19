@@ -10,6 +10,7 @@ export class Headers extends Map<string, string> {
   public static LINK = "Link";
   public static CONTENT_TYPE = "Content-Type";
   public static LOCATION = "Location";
+  public static CACHE_CONTROL = "Cache-Control";
 
   /**
    * Gets Location header
@@ -59,6 +60,20 @@ export class Headers extends Map<string, string> {
       link = value;
     }
     this.set(Headers.LINK, link);
+  }
+
+/**
+   * Gets Cache-Control header
+   */
+  public get cacheControl() {
+    return this.get(Headers.CACHE_CONTROL) || null;
+  }
+  public set cacheControl(value: string | null) {
+    if (!value) {
+      this.delete(Headers.CACHE_CONTROL);
+    } else {
+      this.set(Headers.CACHE_CONTROL, value);
+    }
   }
 
   /**

@@ -57,6 +57,7 @@ export class AcmeController extends BaseService {
 
     try {
       response.headers.replayNonce = await this.nonceService.create();
+      response.headers.cacheControl = "no-store";
 
       if (request.method === "POST") {
         this.logger.debug("Validate token signature");

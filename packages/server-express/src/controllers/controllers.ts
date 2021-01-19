@@ -105,6 +105,7 @@ export class Controllers {
     const link = response.headers.link;
     const location = response.headers.location;
     const replayNonce = response.headers.replayNonce;
+    const cacheControl = response.headers.cacheControl;
 
     if (link) {
       res.setHeader("Link", link);
@@ -114,6 +115,9 @@ export class Controllers {
     }
     if (replayNonce) {
       res.setHeader("Replay-Nonce", replayNonce);
+    }
+    if (cacheControl) {
+      res.setHeader("Cache-Control", cacheControl);
     }
 
     if (response.content) {
