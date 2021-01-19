@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/acme-data",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Base data module forAutomatic Certificate Management Environment (ACME) implementing RFC 8555 framework",
   "keywords": [
     "acme"
@@ -42,8 +42,8 @@
   },
   "homepage": "https://github.com/PeculiarVentures/acme-ts#readme",
   "dependencies": {
-    "@peculiar/acme-core": "^1.4.0",
-    "@peculiar/acme-protocol": "^1.3.0",
+    "@peculiar/acme-core": "^1.4.1",
+    "@peculiar/acme-protocol": "^1.4.1",
     "@peculiar/asn1-x509": "2.0.27",
     "tsyringe": "^4.3.0"
   }
