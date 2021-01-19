@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/acme-server",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Implements server services forAutomatic Certificate Management Environment (ACME) implementing RFC 8555 framework",
   "keywords": [
     "acme"
@@ -42,12 +42,12 @@
   },
   "homepage": "https://github.com/PeculiarVentures/acme-ts#readme",
   "dependencies": {
-    "@peculiar/acme-core": "^1.4.1",
-    "@peculiar/acme-data": "^1.4.1",
-    "@peculiar/acme-protocol": "^1.4.1",
+    "@peculiar/acme-core": "^1.4.2",
+    "@peculiar/acme-data": "^1.4.2",
+    "@peculiar/acme-protocol": "^1.4.2",
     "@peculiar/asn1-schema": "2.0.27",
     "@peculiar/asn1-x509": "2.0.27",
-    "@peculiar/jose": "^1.4.1",
+    "@peculiar/jose": "^1.4.2",
     "@peculiar/webcrypto": "^1.1.4",
     "node-fetch": "^2.6.1",
     "normalize-url": "^5.3.0",
