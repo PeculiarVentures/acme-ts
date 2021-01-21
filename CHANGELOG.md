@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.3](https://github.com/PeculiarVentures/ts-acme/compare/v1.4.2...v1.4.3) (2021-01-21)
+
+
+### Features
+
+* Update logs ([962cb31](https://github.com/PeculiarVentures/ts-acme/commit/962cb31cc262c378c9d21c121f587b8054584c55))
+
+
+
+
+
 ## [1.4.2](https://github.com/PeculiarVentures/ts-acme/compare/v1.4.1...v1.4.2) (2021-01-19)
 
 **Note:** Version bump only for package root
