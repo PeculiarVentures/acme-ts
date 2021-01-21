@@ -84,7 +84,7 @@ export class PhoneChallengeService extends server.BaseService implements server.
 
     await this.challengeRepository.add(challenge);
 
-    this.logger.info(`Challenge ${challenge.id} created`);
+    this.logger.debug(`Challenge ${challenge.id} created`);
 
     return challenge;
   }

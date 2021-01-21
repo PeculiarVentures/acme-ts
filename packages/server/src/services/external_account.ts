@@ -19,7 +19,9 @@ export class ExternalAccountService extends BaseService implements IExternalAcco
     await this.onCreate(externalAccount, account, macKey);
     externalAccount = await this.externalAccountRepository.add(externalAccount);
 
-    this.logger.info(`External account ${externalAccount.id} created`);
+    this.logger.debug(`External account created`, {
+      id: externalAccount.id,
+    });
 
     return externalAccount;
   }

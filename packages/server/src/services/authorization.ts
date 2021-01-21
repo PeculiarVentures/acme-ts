@@ -75,7 +75,8 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
     try {
       await this.challengeService.create(authz, identifier.type);
 
-      this.logger.info(`Authorization created`, {
+      this.logger.debug(`Authorization created`, {
+        account: authz.accountId,
         id: authz.id,
         identifier: {
           type: authz.identifier.type,
@@ -120,7 +121,8 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
     }
 
     if (oldStatus !== item.status) {
-      this.logger.info(`Authorization status changed`, {
+      this.logger.debug(`Authorization status changed`, {
+        account: item.accountId,
         id: item.id,
         newStatus: item.status,
         oldStatus: oldStatus,
@@ -163,7 +165,10 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
 
     const resp = await this.authorizationRepository.update(authz);
 
-    this.logger.info(`Authorization deactivated`, { id });
+    this.logger.debug(`Authorization deactivated`, {
+      account: authz.accountId,
+      id,
+     });
 
     return resp;
   }

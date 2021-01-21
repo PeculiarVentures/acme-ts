@@ -125,13 +125,15 @@ export class AcmeController extends BaseService {
         response.status = e.status;
         response.content = new core.Content(e, this.options.formattedResponse);
 
-        this.logger.error(e.message);
+        this.logger.info(`${e.name}: ${e.message}`);
       } else if (e) {
         response.status = core.HttpStatusCode.internalServerError;
         const error = new core.AcmeError(core.ErrorType.serverInternal, `Unexpected server error exception. ${e.message || e}`, core.HttpStatusCode.internalServerError, e);
         response.content = new core.Content(error, this.options.formattedResponse);
 
-        this.logger.error(e.message);
+        this.logger.error(e.message, {
+          stack: e.stack || null,
+        });
       }
     }
 

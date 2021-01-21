@@ -6,6 +6,7 @@ import { diEndpointService, ICertificateService, IEndpointService } from "./type
 import * as pvtsutils from "pvtsutils";
 import * as x509 from "@peculiar/x509";
 import { FinalizeParams, RevokeReason } from "@peculiar/acme-protocol";
+import { Convert } from "pvtsutils";
 
 @injectable()
 export class CertificateService extends BaseService implements ICertificateService {
@@ -41,7 +42,7 @@ export class CertificateService extends BaseService implements ICertificateServi
 
     const cert = await this.certificateRepository.add(certificate);
 
-    this.logger.info(`Certificate created`, {
+    this.logger.debug(`Certificate created`, {
       order: order?.id || null,
       thumbprint: cert.thumbprint,
       type: certificate.type,
@@ -77,6 +78,8 @@ export class CertificateService extends BaseService implements ICertificateServi
     await this.certificateRepository.update(cert);
 
     this.logger.info(`Certificate revoked`, {
+      account: order.accountId,
+      order: order.id,
       thumbprint: cert.thumbprint,
     });
   }
@@ -135,10 +138,19 @@ export class CertificateService extends BaseService implements ICertificateServi
 
     const type = params.endpoint || this.options.defaultEndpoint;
     const service = this.getEndpoint(type);
-    const cert = await service.enroll(order, requestRaw);
+    const certRaw = await service.enroll(order, requestRaw);
     order.endpoint = type;
 
-    return await this.create(cert, order);
+
+    const cert = await this.create(certRaw, order);
+
+    this.logger.info("Certificate enrolled", {
+      account: order.accountId,
+      order: order.id,
+      certificate: cert.thumbprint,
+    });
+
+    return cert;
   }
 
   /**

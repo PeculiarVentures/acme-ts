@@ -63,7 +63,8 @@ export class OrderService extends BaseService implements types.IOrderService {
       await this.onCreateOrderAuth(order, auth);
     }
 
-    this.logger.info(`Order created`, {
+    this.logger.debug(`Order created`, {
+      account: order.accountId,
       id: order.id,
     });
 
@@ -336,11 +337,6 @@ export class OrderService extends BaseService implements types.IOrderService {
         if (order.status === "processing") {
           order.status = "valid";
           await this.orderRepository.update(order);
-
-          this.logger.info(`Certificate issued successfully`, {
-            order: order.id,
-            certificate: certificate.thumbprint,
-          });
         }
       } catch (error) {
         // TODO Optimize Error assignment

@@ -18,7 +18,8 @@ export class ChallengeService extends BaseService implements IChallengeService {
       challenges = [...challenges, ...await service.challengesCreate(authz)];
     }
 
-    this.logger.info(`Challenges created`, {
+    this.logger.debug(`Challenges created`, {
+      account: authz.accountId,
       authorization: authz.id,
       challenges: challenges.map(o => {
         return {

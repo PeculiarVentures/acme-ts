@@ -166,7 +166,7 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
 
     await this.challengeRepository.add(challenge);
 
-    this.logger.info(`Challenge created`, {
+    this.logger.debug(`Challenge created`, {
       id: challenge.id,
       type: challenge.type,
     });

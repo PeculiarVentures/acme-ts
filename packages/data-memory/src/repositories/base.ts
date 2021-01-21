@@ -10,7 +10,7 @@ export abstract class BaseRepository<T extends BaseObject> implements IBaseRepos
   public logger = container.resolve<ILogger>(diLogger);
 
   public async findById(id: Key): Promise<T | null> {
-    this.logger.info("Get item by id", { id });
+    this.logger.debug("Get item by id", { id });
 
     return this.items.find(o => { return o.id == id; }) || null;
   }

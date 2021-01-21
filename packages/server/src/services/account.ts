@@ -41,6 +41,7 @@ export class AccountService extends BaseService implements IAccountService {
 
     this.logger.info(`Account created`, {
       id: account.id,
+      externalAccount: account.externalAccountId || null,
       thumbprint: account.thumbprint,
      });
 
