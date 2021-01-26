@@ -27,7 +27,7 @@ export interface IServerOptions {
   loggerLevel?: keyof typeof LoggerLevel;
   /**
    * Disables some validations
-   * - Disable HTTP-01 challenge validation
+   * - HTTP-01 challenge validation
    */
   debugMode?: boolean;
   meta?: DirectoryMetadata;
