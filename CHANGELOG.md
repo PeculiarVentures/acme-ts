@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.4.4](https://github.com/PeculiarVentures/ts-acme/compare/v1.4.3...v1.4.4) (2021-01-26)
+
+
+### Features
+
+* **server-express:** Use acmeExpressOtions logger ([b97d30d](https://github.com/PeculiarVentures/ts-acme/commit/b97d30d642f0d1180ba165b0f31455bdcdbd3897))
+
+
+
+
+
 ## [1.4.3](https://github.com/PeculiarVentures/ts-acme/compare/v1.4.2...v1.4.3) (2021-01-21)
 
 
