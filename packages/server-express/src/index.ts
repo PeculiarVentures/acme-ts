@@ -14,6 +14,13 @@ export * from "./routes";
 
 export type IAcmeExpressOptions = Partial<IServerOptions>;
 
+class AcmeExpressOptions {
+  private logger = container.resolve<ILogger>(diLogger);
+  public info(msg: string, ...args: any[]) {
+    this.logger.info(msg, ...args);
+  }
+}
+
 export class AcmeExpress {
 
   public static register(app: express.Express, options: IAcmeExpressOptions = {}) {
@@ -24,7 +31,7 @@ export class AcmeExpress {
     const opt = container.resolve<IServerOptions>(diServerOptions);
 
     app.use(cors({
-      methods:"GET, POST, OPTIONS, HEAD",
+      methods: "GET, POST, OPTIONS, HEAD",
       allowedHeaders: "Content-Type, Authorization, Cache-Control, Replay-Nonce",
       exposedHeaders: "Location, Link, Replay-Nonce"
     }));
@@ -33,10 +40,9 @@ export class AcmeExpress {
     app.use(url.parse(opt.baseAddress).pathname || "/", routers);
 
     //#region Print options
-    const logger = container.resolve<ILogger>(diLogger);
+    const logger = new AcmeExpressOptions();
     const keys = Object.keys(opt);
-    logger.info("Server options:");
-    keys.forEach(key => logger.info(`  ${key}: ${(opt as any)[key]}`));
+    keys.forEach(key => logger.info(`${key}: ${(opt as any)[key]}`));
     //#endregion
   }
 }
