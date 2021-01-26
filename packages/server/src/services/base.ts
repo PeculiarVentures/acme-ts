@@ -25,6 +25,10 @@ export interface IServerOptions {
   expireAuthorizationDays: number;
   downloadCertificateFormat: "pem" | "pkix" | "pkcs7";
   loggerLevel?: keyof typeof LoggerLevel;
+  /**
+   * Disables some validations
+   * - Disable HTTP-01 challenge validation
+   */
   debugMode?: boolean;
   meta?: DirectoryMetadata;
   extraCertificateStorage?: X509Certificate[];
