@@ -6,8 +6,6 @@ import * as dynamoose from "dynamoose";
 import { DynamoDB } from "aws-sdk";
 import { diOptionsService, IOptions, OptionsService } from "./options";
 
-import AWS = require("aws-sdk");
-
 export interface IDynamoOptions {
   client: DynamoDB.ClientConfiguration;
   options: IOptions;
@@ -55,7 +53,7 @@ export class DependencyInjection {
    * Check connections with database
    */
   private static async validate(options: DynamoDB.ClientConfiguration) {
-    const aws = new AWS.DynamoDB(options);
+    const aws = new DynamoDB(options);
     try {
       await aws.listTables().promise();
     } catch (error) {
