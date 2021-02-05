@@ -6,13 +6,18 @@ import * as dynamoose from "dynamoose";
 import { DynamoDB } from "aws-sdk";
 import { diOptionsService, IOptions, OptionsService } from "./options";
 
+import AWS = require("aws-sdk");
+
 export interface IDynamoOptions {
   client: DynamoDB.ClientConfiguration;
   options: IOptions;
 }
 
 export class DependencyInjection {
-  public static register(container: DependencyContainer, options: IDynamoOptions) {
+  public static async registerAsync(container: DependencyContainer, options: IDynamoOptions) {
+
+    await this.validate(options.client);
+
     const ddb = new dynamoose.aws.sdk.DynamoDB(options.client);
 
     // Set DynamoDB instance to the Dynamoose DDB instance
@@ -45,5 +50,16 @@ export class DependencyInjection {
       .register(data.diOrderRepository, repositories.OrderRepository, { lifecycle: Lifecycle.Singleton })
       .register(data.diCertificateRepository, repositories.CertificateRepository, { lifecycle: Lifecycle.Singleton })
       .register(data.diOrderAuthorizationRepository, repositories.OrderAuthorizationRepository, { lifecycle: Lifecycle.Singleton });
+  }
+  /**
+   * Check connections with database
+   */
+  private static async validate(options: DynamoDB.ClientConfiguration) {
+    const aws = new AWS.DynamoDB(options);
+    try {
+      await aws.listTables().promise();
+    } catch (error) {
+      throw new Error(`Can not establish a connection to the database. ${error.message}`);
+    }
   }
 }
