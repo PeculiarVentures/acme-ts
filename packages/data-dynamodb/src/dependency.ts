@@ -5,13 +5,17 @@ import * as models from "./models";
 import * as dynamoose from "dynamoose";
 import { DynamoDB } from "aws-sdk";
 import { diOptionsService, IOptions, OptionsService } from "./options";
+import { SourceLogger } from "@peculiar/acme-core";
 
 export interface IDynamoOptions {
   client: DynamoDB.ClientConfiguration;
   options: IOptions;
 }
 
+class DynamoDbSetup extends SourceLogger { }
+
 export class DependencyInjection {
+
   public static async registerAsync(container: DependencyContainer, options: IDynamoOptions) {
 
     await this.validate(options);
@@ -54,17 +58,17 @@ export class DependencyInjection {
    */
   private static async validate(options: IDynamoOptions) {
     const aws = new DynamoDB(options.client);
+    const tableName = options.options.tableName ?? repositories.BaseRepository.defaultTableName;
+    const logger = new DynamoDbSetup();
     try {
-      await aws.describeTable({ TableName: options.options.tableName ?? repositories.BaseRepository.defaultTableName }).promise();
+      await aws.describeTable({ TableName: tableName }).promise();
     } catch (error) {
       switch (error.code) {
-        case "UnrecognizedClientException":
-          throw new Error(`Bad client parameters. ${error.message}`);
-        case "NetworkingError":
-        case "UnknownEndpoint":
-          throw new Error(`Can not establish a connection to the database. ${error.message}`);
-        default:
+        case "ResourceNotFoundException":
+          logger.warn(`Dynamo table '${tableName}' is not found. Table will be created by Mongoose module`, { aws: error.message });
           break;
+        default:
+          throw new Error(`Can not establish a connection to the database. ${error.message}`);
       }
     }
   }
