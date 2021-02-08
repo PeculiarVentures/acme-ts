@@ -3457,9 +3457,9 @@ duplexify@^3.4.2, duplexify@^3.6.0:
     stream-shift "^1.0.0"
 
 dynamoose@^2.4.1:
-  version "2.4.1"
-  resolved "https://registry.yarnpkg.com/dynamoose/-/dynamoose-2.4.1.tgz#087511feadf3574b9d771f2222f2147468f3e390"
-  integrity sha512-3gUn6aPX6l9RU6pVEzmp3JOn9tPDxQkjqgJDw0POp73eXXBiHSNNCwbUK3P8qvc0T3aKBvcsM3BjikxCOdaQdw==
+  version "2.7.0"
+  resolved "https://registry.yarnpkg.com/dynamoose/-/dynamoose-2.7.0.tgz#59ec9468d619156b837effa7db3589419acb64b5"
+  integrity sha512-3KLmrDtS8ZB7BfXmDBjQbcWOGHW9uL1kanvD18wG7r2q5WJTfX8VqPPBlWDqjtXl0SrvakzGuWOBgSvtLVBXew==
   dependencies:
     aws-sdk "^2.792.0"
     source-map-support "^0.5.19"
