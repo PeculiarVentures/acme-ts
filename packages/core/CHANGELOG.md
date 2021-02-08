@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.1](https://github.com/PeculiarVentures/acme-ts/compare/v1.5.0...v1.5.1) (2021-02-08)
+
+
+### Features
+
+* **core:** Add SourceLogger ([651049a](https://github.com/PeculiarVentures/acme-ts/commit/651049a81912da64d9a9db1a0e845ba036f9f330))
+
+
+
+
+
 ## [1.4.2](https://github.com/PeculiarVentures/acme-ts/compare/v1.4.1...v1.4.2) (2021-01-19)
 
 **Note:** Version bump only for package @peculiar/acme-core

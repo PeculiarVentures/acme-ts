@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/acme-ra",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Express middleware withAutomatic Certificate Management Environment (ACME) implementing RFC 8555 protocol that supports External Account Binding using Bearer tokens and multiple Certificate Authority endpoints",
   "keywords": [
     "acme"
@@ -42,11 +42,11 @@
     "url": "https://github.com/PeculiarVentures/acme-ts/issues"
   },
   "dependencies": {
-    "@peculiar/acme-core": "^1.4.2",
-    "@peculiar/acme-data": "^1.4.2",
-    "@peculiar/acme-express": "^1.5.0",
+    "@peculiar/acme-core": "^1.5.1",
+    "@peculiar/acme-data": "^1.5.1",
+    "@peculiar/acme-express": "^1.5.1",
     "@peculiar/acme-protocol": "^1.4.2",
-    "@peculiar/acme-server": "^1.5.0",
+    "@peculiar/acme-server": "^1.5.1",
     "@peculiar/asn1-schema": "^2.0.27",
     "@peculiar/asn1-x509": "^2.0.27",
     "@peculiar/webcrypto": "^1.1.4",

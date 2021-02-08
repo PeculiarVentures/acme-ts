@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.1](https://github.com/PeculiarVentures/acme-ts/compare/v1.5.0...v1.5.1) (2021-02-08)
+
+
+### Features
+
+* **data-dynamodb:** Change validate func listTables on describeTable ([2c7bd28](https://github.com/PeculiarVentures/acme-ts/commit/2c7bd28aaceea851b1d1cec57249407635acfdd6))
+* **data-dynamodb:** Update cases for validate ([5de64f3](https://github.com/PeculiarVentures/acme-ts/commit/5de64f367d8164e83527df6aa0ce9f2f82cd14f1))
+
+
+
+
+
 # [1.5.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.4.4...v1.5.0) (2021-02-08)
 
 
