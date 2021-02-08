@@ -14,7 +14,7 @@ export interface IDynamoOptions {
 export class DependencyInjection {
   public static async registerAsync(container: DependencyContainer, options: IDynamoOptions) {
 
-    await this.validate(options.client);
+    await this.validate(options);
 
     const ddb = new dynamoose.aws.sdk.DynamoDB(options.client);
 
@@ -52,12 +52,20 @@ export class DependencyInjection {
   /**
    * Check connections with database
    */
-  private static async validate(options: DynamoDB.ClientConfiguration) {
-    const aws = new DynamoDB(options);
+  private static async validate(options: IDynamoOptions) {
+    const aws = new DynamoDB(options.client);
     try {
-      await aws.listTables().promise();
+      await aws.describeTable({ TableName: options.options.tableName ?? repositories.BaseRepository.defaultTableName }).promise();
     } catch (error) {
-      throw new Error(`Can not establish a connection to the database. ${error.message}`);
+      switch (error.code) {
+        case "UnrecognizedClientException":
+          throw new Error(`Bad client parameters. ${error.message}`);
+        case "NetworkingError":
+        case "UnknownEndpoint":
+          throw new Error(`Can not establish a connection to the database. ${error.message}`);
+        default:
+          break;
+      }
     }
   }
 }

@@ -14,13 +14,14 @@ interface IDataTable extends Document {
 
 export abstract class BaseRepository<T extends BaseObject> implements IBaseRepository<T>
 {
+  public static defaultTableName = "ACME";
 
   protected options = container.resolve<OptionsService>(diOptionsService).options;
 
   protected abstract className: string;
   private model?: ModelType<IDataTable>;
   private validator?: T;
-  private tableName = this.options.tableName ?? "ACME";
+  private tableName = this.options.tableName ?? BaseRepository.defaultTableName;
   private tableSchema = new dynamoose.Schema({
     id: {
       type: String,
