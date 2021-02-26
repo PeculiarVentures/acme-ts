@@ -75,6 +75,11 @@ export class Controllers {
     const result = await this.acmeController.postAuthorization(request, authId);
     this.createHttpResponseMessage(result, res);
   }
+  public async createAuthorization(req: Request, res: Response): Promise<void> {
+    const request = this.getAcmeRequest(req);
+    const result = await this.acmeController.createAuthorization(request);
+    this.createHttpResponseMessage(result, res);
+  }
 
   //#region Certificate
   public async getCertificate(req: Request, res: Response, thumbprint: string): Promise<void> {

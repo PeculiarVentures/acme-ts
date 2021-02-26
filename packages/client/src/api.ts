@@ -401,6 +401,20 @@ export class ApiClient extends BaseClient {
     });
   }
 
+  public async newAuthorization(params: protocol.AuthorizationCreateParams) {
+    if (!this.directory.newAuthz) {
+      throw new Error("ACME service doesn't support new-authz controller");
+    }
+    return this.fetch<protocol.Authorization>(this.directory.newAuthz, {
+      method: "POST",
+      kid: this.getAccountId(),
+      nonce: this.nonce,
+      key: this.accountKey.privateKey,
+      body: params,
+      convert: (resp) => resp.json(),
+    });
+  }
+
   public async retryAuthorization(order: ApiResponse<protocol.Authorization>, options?: RetryOptions): Promise<ApiResponse<protocol.Authorization>>;
   public async retryAuthorization(url: string, options?: RetryOptions): Promise<ApiResponse<protocol.Authorization>>;
   public async retryAuthorization(param: string | ApiResponse<protocol.Authorization>, options: RetryOptions = {}) {
