@@ -340,13 +340,9 @@ export class AcmeController extends BaseService {
       // get params
       const params = token.getPayload<protocol.OrderCreateParams>();
 
-      // get order
-      let order = await this.orderService.getActual(account.id, params);
-      if (!order) {
-        // create order
-        order = await this.orderService.create(account.id, params);
-        response.status = 201; // Created
-      }
+      // create order
+      const order = await this.orderService.create(account.id, params);
+      response.status = 201; // Created
 
       // add headers
       response.headers.location = `${this.options.baseAddress}/order/${order.id}`;
