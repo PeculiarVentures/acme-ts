@@ -43,6 +43,9 @@ routers.post('/finalize/:id', (req: Request, res: Response) => {
 routers.post('/authz/:id', (req: Request, res: Response) => {
   container.resolve<Controllers>(diControllers).postAuthorization(req, res, req.params.id);
 });
+routers.post('/new-authz', (req: Request, res: Response) => {
+  container.resolve<Controllers>(diControllers).createAuthorization(req, res);
+});
 routers.post('/challenge/:id', (req: Request, res: Response) => {
   container.resolve<Controllers>(diControllers).postChallenge(req, res, req.params.id);
 });
