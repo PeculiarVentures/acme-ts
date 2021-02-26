@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.2](https://github.com/PeculiarVentures/acme-ts/compare/v1.5.1...v1.5.2) (2021-02-26)
+
+
+### Features
+
+* **server:** New instance of order for new-order controller ([62e4979](https://github.com/PeculiarVentures/acme-ts/commit/62e4979831f5333923912362497f5e2608fc3e23))
+
+
+
+
+
 ## [1.5.1](https://github.com/PeculiarVentures/acme-ts/compare/v1.5.0...v1.5.1) (2021-02-08)
 
 **Note:** Version bump only for package @peculiar/acme-server
