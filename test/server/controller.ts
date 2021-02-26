@@ -16,18 +16,16 @@ import { container, Lifecycle } from "tsyringe";
 
 const baseAddress = "http://localhost";
 
-context.only("Server", () => {
+context("Server", () => {
 
   const crypto = new Crypto();
   let controller: server.AcmeController;
   before(async () => {
-    const notBefore = new Date();
     const notAfter = new Date();
     notAfter.setUTCFullYear(notAfter.getUTCFullYear() + 1);
 
     server.DependencyInjection.register(container, {
       baseAddress,
-
       debugMode: true,
       downloadCertificateFormat: "pem",
       hashAlgorithm: "SHA-256",
@@ -37,7 +35,7 @@ context.only("Server", () => {
     });
     container.register(server.diEndpointService, MemoryEndpointService, { lifecycle: Lifecycle.Singleton });
     const logger = new core.ConsoleLogger();
-    logger.level = core.LoggerLevel.debug;
+    logger.level = core.LoggerLevel.error;
     container.register(core.diLogger, { useValue: logger });
     dataMemory.DependencyInjection.register(container);
     controller = container.resolve<server.AcmeController>(server.diAcmeController);
@@ -738,62 +736,9 @@ context.only("Server", () => {
           client.location!,
           client.keys));
 
-        assert.strictEqual(resp2.status, 200);
-        assert.strictEqual(resp.headers.location, resp2.headers.location);
-      });
-
-      it("create if already exists, another order of identifiers", async () => {
-        // Create new account
-        const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
-        });
-
-        const resp = await controller.createOrder(await createPostRequest(
-          {
-            identifiers: [
-              {
-                type: "dns",
-                value: "some.com"
-              },
-              {
-                type: "dns",
-                value: "some2.com"
-              },
-              {
-                type: "dns",
-                value: "some3.com"
-              }
-            ],
-          } as protocol.OrderCreateParams,
-          `${baseAddress}/new-order`,
-          client.location!,
-          client.keys));
-
-        assert.strictEqual(resp.status, 201);
-
-        const resp2 = await controller.createOrder(await createPostRequest(
-          {
-            identifiers: [
-              {
-                type: "dns",
-                value: "some2.com"
-              },
-              {
-                type: "dns",
-                value: "some3.com"
-              },
-              {
-                type: "dns",
-                value: "some.com"
-              }
-            ],
-          } as protocol.OrderCreateParams,
-          `${baseAddress}/new-order`,
-          client.location!,
-          client.keys));
-
-        assert.strictEqual(resp2.status, 200);
-        assert.strictEqual(resp.headers.location, resp2.headers.location);
+        // Server must create new order
+        assert.strictEqual(resp2.status, 201);
+        assert.notStrictEqual(resp.headers.location, resp2.headers.location);
       });
 
       it("create if already exists and valid", async () => {
