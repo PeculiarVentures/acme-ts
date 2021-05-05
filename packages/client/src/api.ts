@@ -1,4 +1,4 @@
-import { Response, Content, ContentType } from "@peculiar/acme-core";
+import { Response, Content, ContentType, AcmeError, ErrorType } from "@peculiar/acme-core";
 import * as protocol from "@peculiar/acme-protocol";
 import { JsonWebSignature, JsonWebKey } from "@peculiar/jose";
 import { Convert } from "pvtsutils";
@@ -103,7 +103,7 @@ export class ApiClient extends BaseClient {
    * @param url URI
    * @param params Parameters
    */
-  protected async fetch<T = Content>(url: string, params: RequestParams<T>) {
+  protected async fetch<T = Content>(url: string, params: RequestParams<T>): Promise<ApiResponse<T>> {
     if (params.method === "POST" || params.method === "POST-as-GET") {
       if (!this.nonce) {
         await this.getNonce();
@@ -111,12 +111,18 @@ export class ApiClient extends BaseClient {
       params.nonce = this.nonce;
       this.nonce = "";
     }
+    try {
+      const resp = await super.fetch(url, params);
+      this.readNonce(resp);
+      return resp;
+    } catch (error) {
+      if (error instanceof AcmeError && error.type === ErrorType.badNonce) {
+        return this.fetch<T>(url, params);
+      }
 
-    const resp = await super.fetch(url, params);
+      throw error;
+    }
 
-    this.readNonce(resp);
-
-    return resp;
   }
 
   /**
