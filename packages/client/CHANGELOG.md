@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.5.3](https://github.com/PeculiarVentures/acme-ts/compare/v1.5.2...v1.5.3) (2021-05-05)
+
+
+### Bug Fixes
+
+* **client:** add rerequest after badNonce error ([7c1533d](https://github.com/PeculiarVentures/acme-ts/commit/7c1533d6d4b8df2ba69dc25114a482a490f919c9))
+
+
+
+
+
 ## [1.5.2](https://github.com/PeculiarVentures/acme-ts/compare/v1.5.1...v1.5.2) (2021-02-26)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/acme-client",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "Automatic Certificate Management Environment (ACME) client",
   "keywords": [
     "acme"
