@@ -45,13 +45,13 @@
     "@peculiar/acme-core": "^1.5.2",
     "@peculiar/acme-data": "^1.5.2",
     "@peculiar/acme-protocol": "^1.4.2",
-    "@peculiar/asn1-schema": "2.0.27",
-    "@peculiar/asn1-x509": "2.0.27",
+    "@peculiar/asn1-schema": "^2.0.32",
+    "@peculiar/asn1-x509": "^2.0.32",
     "@peculiar/jose": "^1.5.2",
     "@peculiar/webcrypto": "^1.1.6",
     "node-fetch": "^2.6.1",
     "normalize-url": "^5.3.0",
-    "pvtsutils": "1.1.2",
+    "pvtsutils": "^1.1.6",
     "tsyringe": "^4.2.0"
   }
 }
