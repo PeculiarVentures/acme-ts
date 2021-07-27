@@ -100,7 +100,7 @@ context("Server", () => {
       body: jws.toJSON(),
     }));
 
-    if (resp.status === 200 || resp.status === 201) {
+    if (resp.status === core.HttpStatusCode.ok || resp.status === core.HttpStatusCode.created) {
       assert(resp.headers.location, "location header is required");
       assert.strictEqual(resp.headers.location.startsWith(`${baseAddress}/acct/`), true, "Wrong Account location URL");
     }

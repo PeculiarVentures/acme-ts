@@ -9,7 +9,7 @@ export class RaDirectoryService extends DirectoryService {
 
   protected providers = container.resolveAll<IProviderService>(diProviderService);
 
-  protected async onGetDirectory(directory: Directory): Promise<void> {
+  protected override async onGetDirectory(directory: Directory): Promise<void> {
     directory.newEab = `${this.options.baseAddress}/new-eab`;
 
     // Add providers info

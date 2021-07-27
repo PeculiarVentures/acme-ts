@@ -6,7 +6,7 @@ export class AcmeError extends Error {
 
   public constructor(
     public type: string | ErrorType,
-    public message: string = "",
+    public override message: string = "",
     public status: number = HttpStatusCode.internalServerError,
     public inner?: Error,
   ) {
