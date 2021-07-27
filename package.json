@@ -41,7 +41,9 @@
     "build": "lerna run build",
     "rebuild": "lerna run rebuild",
     "clear": "lerna run clear",
-    "upgrade": "yarn upgrade-interactive --latest"
+    "upgrade": "yarn upgrade-interactive --latest",
+    "prepub": "yarn run build",
+    "pub": "lerna publish"
   },
   "mocha": {
     "require": [
