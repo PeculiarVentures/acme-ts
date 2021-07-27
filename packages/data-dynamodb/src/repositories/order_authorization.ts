@@ -6,7 +6,7 @@ export class OrderAuthorizationRepository extends BaseRepository<OrderAuthorizat
 
   protected className = diOrderAuthorization;
 
-  public async add(item: OrderAuthorization) {
+  public override async add(item: OrderAuthorization) {
     const Model = this.getModel();
     const order = await Model.get(item.orderId.toString());
     //@ts-ignore

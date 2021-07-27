@@ -29,7 +29,7 @@ export class RaAuthorizationService extends acmeServer.AuthorizationService {
     }
   }
 
-  protected async onCreateParams(auth: IAuthorization, accountId: Key, identifier: Identifier) {
+  protected override async onCreateParams(auth: IAuthorization, accountId: Key, identifier: Identifier) {
     const account = await this.getAccount(accountId);
     if (!account.externalAccountId) {
       throw new MalformedError("External account doesn't exist");

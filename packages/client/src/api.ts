@@ -103,7 +103,7 @@ export class ApiClient extends BaseClient {
    * @param url URI
    * @param params Parameters
    */
-  protected async fetch<T = Content>(url: string, params: RequestParams<T>): Promise<ApiResponse<T>> {
+  protected override async fetch<T = Content>(url: string, params: RequestParams<T>): Promise<ApiResponse<T>> {
     if (params.method === "POST" || params.method === "POST-as-GET") {
       if (!this.nonce) {
         await this.getNonce();

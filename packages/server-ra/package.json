@@ -50,7 +50,7 @@
     "@peculiar/asn1-schema": "^2.0.32",
     "@peculiar/asn1-x509": "^2.0.32",
     "@peculiar/webcrypto": "^1.1.6",
-    "@peculiar/x509": "^1.3.0",
+    "@peculiar/x509": "^1.3.2",
     "express": "^4.17.1",
     "node-fetch": "^2.6.1",
     "pvtsutils": "^1.1.6",

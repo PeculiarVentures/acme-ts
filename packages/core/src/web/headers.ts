@@ -95,7 +95,7 @@ export class Headers extends Map<string, string> {
    * @param key Header name
    * @param value Header value
    */
-  public set(key: string, value: string) {
+  public override set(key: string, value: string) {
     return super.set(key.toLowerCase(), value);
   }
 
@@ -103,7 +103,7 @@ export class Headers extends Map<string, string> {
    * Returns header string value by name
    * @param key Header name
    */
-  public get(key: string) {
+  public override get(key: string) {
     return super.get(key.toLowerCase());
   }
 
