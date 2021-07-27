@@ -50,7 +50,7 @@
     "@peculiar/jose": "^1.5.4",
     "@peculiar/webcrypto": "^1.1.6",
     "node-fetch": "^2.6.1",
-    "normalize-url": "^7.0.0",
+    "normalize-url": "^5",
     "pvtsutils": "^1.1.6",
     "tsyringe": "^4.2.0"
   }
