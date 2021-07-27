@@ -7,8 +7,8 @@ import { IServerOptions } from "./services";
 import * as data from "@peculiar/acme-data";
 import * as types from "./services/types";
 import * as services from "./services";
-import * as normalizeURL from "normalize-url";
-import * as url from "url";
+import normalizeURL from "normalize-url";
+import { URL } from "url";
 import { DnsChallengeService } from "./services/identifiers";
 
 const BaseAddress = "http://localhost/acme";
@@ -27,9 +27,9 @@ export class DependencyInjection {
     //#region baseAddress
     let baseAddress = options.baseAddress;
     if (baseAddress) {
-      let urlPath = url.parse(baseAddress);
+      let urlPath = new URL(baseAddress);
       if (!urlPath.hostname) {
-        urlPath = url.parse(`http://localhost/${urlPath.pathname}`);
+        urlPath = new URL(`http://localhost/${urlPath.pathname}`);
       }
       baseAddress = normalizeURL(urlPath.href);
     } else {
