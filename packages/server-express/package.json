@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/acme-express",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "description": "Express middleware that addsAutomatic Certificate Management Environment (ACME) implementing RFC 8555 protocol",
   "keywords": [
     "acme"
@@ -42,9 +42,9 @@
     "url": "https://github.com/PeculiarVentures/acme-ts/issues"
   },
   "dependencies": {
-    "@peculiar/acme-core": "^1.5.4",
-    "@peculiar/acme-data": "^1.5.4",
-    "@peculiar/acme-server": "^1.5.4",
+    "@peculiar/acme-core": "^1.5.5",
+    "@peculiar/acme-data": "^1.5.5",
+    "@peculiar/acme-server": "^1.5.5",
     "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
     "cors": "^2.8.5",
