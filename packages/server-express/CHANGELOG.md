@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.5.5...v1.6.0) (2021-08-09)
+
+**Note:** Version bump only for package @peculiar/acme-express
+
+
+
+
+
 ## [1.5.5](https://github.com/PeculiarVentures/acme-ts/compare/v1.5.4...v1.5.5) (2021-07-27)
 
 **Note:** Version bump only for package @peculiar/acme-express

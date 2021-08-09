@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.5.5...v1.6.0) (2021-08-09)
+
+
+### Features
+
+* Support params for getChallenge ([5c1a3c1](https://github.com/PeculiarVentures/acme-ts/commit/5c1a3c160e6e2d47d2d0b33b93364c56a4100b68))
+
+
+
+
+
 ## [1.4.2](https://github.com/PeculiarVentures/acme-ts/compare/v1.4.1...v1.4.2) (2021-01-19)
 
 **Note:** Version bump only for package @peculiar/acme-protocol

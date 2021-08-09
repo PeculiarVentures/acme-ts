@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.6.0](https://github.com/PeculiarVentures/ts-acme/compare/v1.5.5...v1.6.0) (2021-08-09)
+
+
+### Bug Fixes
+
+* **client:** Remove empty fields from newAccount request ([fcc8276](https://github.com/PeculiarVentures/ts-acme/commit/fcc82765374ace63283f8bcab0cb398de46d6d08))
+* ESLint warnings ([1050d82](https://github.com/PeculiarVentures/ts-acme/commit/1050d822de4b1daecd6a307f4dca0266c5d54d2b))
+
+
+### Features
+
+* Support params for getChallenge ([5c1a3c1](https://github.com/PeculiarVentures/ts-acme/commit/5c1a3c160e6e2d47d2d0b33b93364c56a4100b68))
+* **client:** Make ApiCient.create extensible ([50a9b0e](https://github.com/PeculiarVentures/ts-acme/commit/50a9b0ec2a13f34455374cbb8a190f7921b07027))
+
+
+
+
+
 ## [1.5.5](https://github.com/PeculiarVentures/ts-acme/compare/v1.5.4...v1.5.5) (2021-07-27)
 
 
