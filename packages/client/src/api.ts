@@ -71,8 +71,10 @@ export class ApiClient extends BaseClient {
    * @param url URI to ACME directory controller
    * @param options Client options
    */
-  public static async create(accountKey: CryptoKeyPair, url: string, options?: ClientOptions) {
-    const client = new ApiClient(accountKey, url, options);
+  public static async create<T extends ApiClient>(
+    this: new (accountKey: CryptoKeyPair, url: string, options?: ClientOptions) => T,
+    accountKey: CryptoKeyPair, url: string, options?: ClientOptions): Promise<T> {
+    const client = new this(accountKey, url, options);
     client.directory = await client.getDirectory();
 
     return client;
