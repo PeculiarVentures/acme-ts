@@ -6,7 +6,6 @@ import { diEndpointService, ICertificateService, IEndpointService } from "./type
 import * as pvtsutils from "pvtsutils";
 import * as x509 from "@peculiar/x509";
 import { FinalizeParams, RevokeReason } from "@peculiar/acme-protocol";
-import { Convert } from "pvtsutils";
 
 @injectable()
 export class CertificateService extends BaseService implements ICertificateService {

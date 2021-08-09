@@ -1,4 +1,4 @@
-import { IBaseObject, Key } from "@peculiar/acme-data";
+import { IBaseObject } from "@peculiar/acme-data";
 import { cryptoProvider } from "@peculiar/x509";
 import { Convert } from "pvtsutils";
 
