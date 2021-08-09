@@ -71,6 +71,7 @@ export class MemoryEndpointService extends BaseService implements IEndpointServi
     return cert.rawData;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async revoke(order: IOrder, reason: RevokeReason): Promise<void> {
     // nothing
   }

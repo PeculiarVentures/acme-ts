@@ -71,8 +71,10 @@ export class ApiClient extends BaseClient {
    * @param url URI to ACME directory controller
    * @param options Client options
    */
-  public static async create(accountKey: CryptoKeyPair, url: string, options?: ClientOptions) {
-    const client = new ApiClient(accountKey, url, options);
+  public static async create<T extends ApiClient>(
+    this: new (accountKey: CryptoKeyPair, url: string, options?: ClientOptions) => T,
+    accountKey: CryptoKeyPair, url: string, options?: ClientOptions): Promise<T> {
+    const client = new this(accountKey, url, options);
     client.directory = await client.getDirectory();
 
     return client;
@@ -91,7 +93,13 @@ export class ApiClient extends BaseClient {
    */
   protected directory!: protocol.Directory;
 
-  protected constructor(
+  /**
+   * Creates a new instance of the ACME client. Use static method `create` for correct initialization
+   * @param accountKey ACME client key pair
+   * @param url Path to ACME dictionary URL
+   * @param options Options
+   */
+  public constructor(
     public accountKey: CryptoKeyPair,
     public url: string,
     options?: ClientOptions) {
@@ -157,11 +165,17 @@ export class ApiClient extends BaseClient {
    * @param params Request parameters
    */
   public async newAccount(params: AccountCreateParams) {
-    const newParam: protocol.CreateAccountParams = {
-      contact: params.contact,
-      onlyReturnExisting: params.onlyReturnExisting,
-      termsOfServiceAgreed: params.termsOfServiceAgreed
-    };
+    const newParam: protocol.CreateAccountParams = {};
+    if (params.contact) {
+      newParam.contact = params.contact;
+    }
+    if (params.onlyReturnExisting !== undefined) {
+      newParam.onlyReturnExisting = params.onlyReturnExisting;
+    }
+    if (params.termsOfServiceAgreed !== undefined) {
+      newParam.termsOfServiceAgreed = params.termsOfServiceAgreed;
+    }
+
     if (params.externalAccountBinding) {
       newParam.externalAccountBinding = await this.createExternalAccountBinding(params.externalAccountBinding.challenge, params.externalAccountBinding.kid);
     }
@@ -360,21 +374,52 @@ export class ApiClient extends BaseClient {
    * Getting data about challenge.
    * The POST method starts checking on the ACME server side.
    * @param url Challenge URI
-   * @param method Method selector
+   * @param method Method selector. Default is POST-as-GET
+   * @deprecated Should be removed
    */
-  public async getChallenge(url: string, method: "POST" | "POST-as-GET" = "POST-as-GET") {
-    const res = await this.fetch<protocol.Challenge>(url, {
-      method,
-      kid: this.getAccountId(),
-      nonce: this.nonce,
-      key: this.accountKey.privateKey,
-      body: method === "POST" ? {} : undefined,
-      convert: (resp) => resp.json(),
-    });
-    if (method === "POST") {
-      await this.pause(2000);
+  public async getChallenge(url: string, method?: "POST" | "POST-as-GET"): Promise<ApiResponse<protocol.Challenge>>;
+  /**
+   * Gets a challenge
+   * @param url Challenge URL
+   * @param params Parameters
+   */
+  public async getChallenge(url: string, params?: protocol.ChallengeGetParams): Promise<ApiResponse<protocol.Challenge>>;
+  public async getChallenge(url: string, params: "POST" | "POST-as-GET" | protocol.ChallengeGetParams = "POST-as-GET"): Promise<ApiResponse<protocol.Challenge>> {
+    if (typeof params === "string") {
+      // TODO Remove
+      const res = await this.fetch<protocol.Challenge>(url, {
+        method: params as "POST" | "POST-as-GET",
+        kid: this.getAccountId(),
+        nonce: this.nonce,
+        key: this.accountKey.privateKey,
+        body: params === "POST" ? {} : undefined,
+        convert: (resp) => resp.json(),
+      });
+
+      return res;
+    } else if (params) {
+      const res = await this.fetch<protocol.Challenge>(url, {
+        method: "POST",
+        kid: this.getAccountId(),
+        nonce: this.nonce,
+        key: this.accountKey.privateKey,
+        body: params,
+        convert: (resp) => resp.json(),
+      });
+
+      return res;
+    } else {
+      const res = await this.fetch<protocol.Challenge>(url, {
+        method: "POST-as-GET",
+        kid: this.getAccountId(),
+        nonce: this.nonce,
+        key: this.accountKey.privateKey,
+        convert: (resp) => resp.json(),
+      });
+
+      return res;
     }
-    return res;
+
   }
 
   /**
@@ -515,7 +560,7 @@ export class ApiClient extends BaseClient {
       payload: jwk,
     }, this.getCrypto());
     await externalAccountBinding.sign(hmac.algorithm, hmac, this.getCrypto());
-    return externalAccountBinding;
+    return externalAccountBinding.toJSON();
   }
 
   protected decodePem(pem: string): ArrayBuffer[] {
