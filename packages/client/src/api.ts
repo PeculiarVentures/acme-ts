@@ -93,7 +93,13 @@ export class ApiClient extends BaseClient {
    */
   protected directory!: protocol.Directory;
 
-  protected constructor(
+  /**
+   * Creates a new instance of the ACME client. Use static method `create` for correct initialization
+   * @param accountKey ACME client key pair
+   * @param url Path to ACME dictionary URL
+   * @param options Options
+   */
+  public constructor(
     public accountKey: CryptoKeyPair,
     public url: string,
     options?: ClientOptions) {
@@ -159,11 +165,17 @@ export class ApiClient extends BaseClient {
    * @param params Request parameters
    */
   public async newAccount(params: AccountCreateParams) {
-    const newParam: protocol.CreateAccountParams = {
-      contact: params.contact,
-      onlyReturnExisting: params.onlyReturnExisting,
-      termsOfServiceAgreed: params.termsOfServiceAgreed
-    };
+    const newParam: protocol.CreateAccountParams = {};
+    if (params.contact) {
+      newParam.contact = params.contact;
+    }
+    if (params.onlyReturnExisting !== undefined) {
+      newParam.onlyReturnExisting = params.onlyReturnExisting;
+    }
+    if (params.termsOfServiceAgreed !== undefined) {
+      newParam.termsOfServiceAgreed = params.termsOfServiceAgreed;
+    }
+
     if (params.externalAccountBinding) {
       newParam.externalAccountBinding = await this.createExternalAccountBinding(params.externalAccountBinding.challenge, params.externalAccountBinding.kid);
     }
@@ -517,7 +529,7 @@ export class ApiClient extends BaseClient {
       payload: jwk,
     }, this.getCrypto());
     await externalAccountBinding.sign(hmac.algorithm, hmac, this.getCrypto());
-    return externalAccountBinding;
+    return externalAccountBinding.toJSON();
   }
 
   protected decodePem(pem: string): ArrayBuffer[] {
