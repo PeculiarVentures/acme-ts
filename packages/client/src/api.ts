@@ -374,21 +374,52 @@ export class ApiClient extends BaseClient {
    * Getting data about challenge.
    * The POST method starts checking on the ACME server side.
    * @param url Challenge URI
-   * @param method Method selector
+   * @param method Method selector. Default is POST-as-GET
+   * @deprecated Should be removed
    */
-  public async getChallenge(url: string, method: "POST" | "POST-as-GET" = "POST-as-GET") {
-    const res = await this.fetch<protocol.Challenge>(url, {
-      method,
-      kid: this.getAccountId(),
-      nonce: this.nonce,
-      key: this.accountKey.privateKey,
-      body: method === "POST" ? {} : undefined,
-      convert: (resp) => resp.json(),
-    });
-    if (method === "POST") {
-      await this.pause(2000);
+  public async getChallenge(url: string, method?: "POST" | "POST-as-GET"): Promise<ApiResponse<protocol.Challenge>>;
+  /**
+   * Gets a challenge
+   * @param url Challenge URL
+   * @param params Parameters
+   */
+  public async getChallenge(url: string, params?: protocol.ChallengeGetParams): Promise<ApiResponse<protocol.Challenge>>;
+  public async getChallenge(url: string, params: "POST" | "POST-as-GET" | protocol.ChallengeGetParams = "POST-as-GET"): Promise<ApiResponse<protocol.Challenge>> {
+    if (typeof params === "string") {
+      // TODO Remove
+      const res = await this.fetch<protocol.Challenge>(url, {
+        method: params as "POST" | "POST-as-GET",
+        kid: this.getAccountId(),
+        nonce: this.nonce,
+        key: this.accountKey.privateKey,
+        body: params === "POST" ? {} : undefined,
+        convert: (resp) => resp.json(),
+      });
+
+      return res;
+    } else if (params) {
+      const res = await this.fetch<protocol.Challenge>(url, {
+        method: "POST",
+        kid: this.getAccountId(),
+        nonce: this.nonce,
+        key: this.accountKey.privateKey,
+        body: params,
+        convert: (resp) => resp.json(),
+      });
+
+      return res;
+    } else {
+      const res = await this.fetch<protocol.Challenge>(url, {
+        method: "POST-as-GET",
+        kid: this.getAccountId(),
+        nonce: this.nonce,
+        key: this.accountKey.privateKey,
+        convert: (resp) => resp.json(),
+      });
+
+      return res;
     }
-    return res;
+
   }
 
   /**
