@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/acme-core",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "Core module forAutomatic Certificate Management Environment (ACME) implementing RFC 8555",
   "keywords": [
     "acme"
@@ -49,7 +49,7 @@
     "@peculiar/asn1-pkcs9": "^2.0.37",
     "@peculiar/asn1-rsa": "^2.0.37",
     "@peculiar/asn1-schema": "^2.0.37",
-    "@peculiar/jose": "^1.5.4",
+    "@peculiar/jose": "^1.6.1",
     "pvtsutils": "^1.1.7",
     "reflect-metadata": "^0.1.13",
     "tsyringe": "^4.6.0"

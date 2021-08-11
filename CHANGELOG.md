@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.6.1](https://github.com/PeculiarVentures/acme-ts/compare/v1.6.0...v1.6.1) (2021-08-11)
+
+
+### Bug Fixes
+
+* **jose:** Empty payload must present in JSON ([de6c491](https://github.com/PeculiarVentures/acme-ts/commit/de6c491664d0dd308bf3d7f0f250eb95da95f7f2))
+
+
+
+
+
 # [1.6.0](https://github.com/PeculiarVentures/ts-acme/compare/v1.5.5...v1.6.0) (2021-08-09)
 
 
