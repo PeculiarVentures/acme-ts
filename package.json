@@ -57,5 +57,9 @@
     "spec": [
       "test/**/*.ts"
     ]
+  },
+  "resolutions": {
+    "tar": "^6.1.7",
+    "trim-newlines": "^4.0.2"
   }
 }
