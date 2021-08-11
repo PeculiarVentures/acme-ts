@@ -40,7 +40,7 @@ export class JsonWebSignature {
     if (params.protected) {
       this.setProtected(params.protected);
     }
-    if (params.payload) {
+    if (params.payload !== undefined) {
       this.setPayload(params.payload);
     }
   }
@@ -83,7 +83,11 @@ export class JsonWebSignature {
   }
 
   public setPayload(data: any) {
-    this.payload = this.write(data);
+    if (data === "") {
+      this.payload = "";
+    } else {
+      this.payload = this.write(data);
+    }
   }
 
   public getSignature() {
@@ -180,7 +184,7 @@ export class JsonWebSignature {
     if (this.protected) {
       json.protected = this.protected;
     }
-    if (this.payload) {
+    if (this.payload !== undefined) {
       json.payload = this.payload;
     }
     if (this.signature) {

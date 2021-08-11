@@ -36,6 +36,34 @@ context("jose", () => {
 
         const ok = await jws.verify(keys.publicKey);
         assert.strictEqual(ok, true);
+        assert.deepStrictEqual(jws.getPayload(), {csr: "AQAB"});
+      });
+
+      it("RSASSA-PKCS1-v1_5 SHA256", async () => {
+        // generate keys
+        const alg = {
+          name: "RSASSA-PKCS1-v1_5",
+          hash: "SHA-256",
+          publicExponent: new Uint8Array([1, 0, 1]),
+          modulusLength: 2048,
+        } as RsaHashedKeyGenParams;
+        const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as CryptoKeyPair;
+
+        const jws = new JsonWebSignature({}, crypto);
+        jws.setProtected({
+          jwk: await crypto.subtle.exportKey("jwk", keys.publicKey),
+          nonce: "nonce_value",
+          url: "http://test.url",
+        });
+        jws.setPayload("");
+
+        await jws.sign(alg, keys.privateKey);
+
+        jws.parse(jws.toString());
+
+        const ok = await jws.verify(keys.publicKey);
+        assert.strictEqual(ok, true);
+        assert.deepStrictEqual(jws.getPayload(), "");
       });
 
       it("ECDSA SHA384", async () => {
