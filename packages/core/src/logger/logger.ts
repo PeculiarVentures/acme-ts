@@ -71,17 +71,21 @@ export class Logger implements ILogger {
       throw new Error();
     }
     catch (e) {
-      const regex = /at ([a-zA-Z0-9_.]+) \(/gm;
-      const stack = e.stack;
-      let matches: RegExpExecArray | null = null;
-      let skipCount = 3;
-      // eslint-disable-next-line no-cond-assign
-      while (matches = regex.exec(stack)) {
-        if (skipCount--) {
-          continue;
-        }
+      if (e instanceof Error) {
+        const regex = /at ([a-zA-Z0-9_.]+) \(/gm;
+        const stack = e.stack;
+        if (stack) {
+          let matches: RegExpExecArray | null = null;
+          let skipCount = 3;
+          // eslint-disable-next-line no-cond-assign
+          while (matches = regex.exec(stack)) {
+            if (skipCount--) {
+              continue;
+            }
 
-        return matches[1].split(".")[0];
+            return matches[1].split(".")[0];
+          }
+        }
       }
 
       return "undefined";

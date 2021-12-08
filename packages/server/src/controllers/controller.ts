@@ -126,7 +126,7 @@ export class AcmeController extends BaseService {
         response.content = new core.Content(e, this.options.formattedResponse);
 
         this.logger.debug(`${e.name}: ${e.message}`);
-      } else if (e) {
+      } else if (e instanceof Error) {
         response.status = core.HttpStatusCode.internalServerError;
         const error = new core.AcmeError(core.ErrorType.serverInternal, `Unexpected server error exception. ${e.message || e}`, core.HttpStatusCode.internalServerError, e);
         response.content = new core.Content(error, this.options.formattedResponse);
@@ -134,6 +134,12 @@ export class AcmeController extends BaseService {
         this.logger.error(e.message, {
           stack: e.stack || null,
         });
+      } else {
+        response.status = core.HttpStatusCode.internalServerError;
+        const error = new core.AcmeError(core.ErrorType.serverInternal, `Unexpected server error exception. Unknown error`, core.HttpStatusCode.internalServerError);
+        response.content = new core.Content(error, this.options.formattedResponse);
+
+        this.logger.error("Unknown error");
       }
     }
 
@@ -206,7 +212,7 @@ export class AcmeController extends BaseService {
         response.status = 200; // Ok
       }
       catch (e) {
-        if (e.status === 409) {
+        if (e instanceof core.AcmeError && e.status === 409) {
           const conflictAccount = await this.accountService.getByPublicKey(innerProtected.jwk);
           response.headers.location = `${this.options.baseAddress}/acct/${conflictAccount.id}`;
         }

@@ -7,7 +7,7 @@ import { IServerOptions } from "./services";
 import * as data from "@peculiar/acme-data";
 import * as types from "./services/types";
 import * as services from "./services";
-import * as normalizeURL from "normalize-url";
+import normalizeURL from "normalize-url";
 import { URL } from "url";
 import { DnsChallengeService } from "./services/identifiers";
 

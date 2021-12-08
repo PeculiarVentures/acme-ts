@@ -1,4 +1,4 @@
-import { MalformedError } from "@peculiar/acme-core";
+import { HttpStatusCode, MalformedError } from "@peculiar/acme-core";
 import { Identifier } from "@peculiar/acme-protocol";
 import * as acmeData from "@peculiar/acme-data";
 import { injectable, container } from "tsyringe";
@@ -93,7 +93,10 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
         id: authz.id,
       });
 
-      throw new MalformedError("Cannot create challenges", error);
+      if (error instanceof Error) {
+        throw new MalformedError("Cannot create challenges", HttpStatusCode.forbidden, error);
+      }
+      throw new MalformedError("Cannot create challenges");
     }
   }
 
@@ -168,7 +171,7 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
     this.logger.debug(`Authorization deactivated`, {
       account: authz.accountId,
       id,
-     });
+    });
 
     return resp;
   }

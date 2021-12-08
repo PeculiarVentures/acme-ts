@@ -1,6 +1,6 @@
 import { Convert } from "pvtsutils";
 import { PemConverter } from "@peculiar/x509";
-import * as assert from "assert";
+import assert from "assert";
 
 context("helpers", () => {
 

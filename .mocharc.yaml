@@ -1,0 +1,8 @@
+spec:
+  - test/**/*.ts
+require:
+  - tsconfig-paths/register
+  - ts-node/register
+extension:
+  - .ts
+timeout: 5000

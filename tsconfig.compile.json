@@ -7,6 +7,7 @@
     "strict": true,
     "experimentalDecorators": true,
     "resolveJsonModule": true,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "esModuleInterop": true
   }
 }

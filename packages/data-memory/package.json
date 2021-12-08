@@ -45,9 +45,9 @@
     "@peculiar/acme-core": "^1.6.1",
     "@peculiar/acme-data": "^1.6.1",
     "@peculiar/acme-protocol": "^1.6.0",
-    "@peculiar/asn1-x509": "^2.0.32",
+    "@peculiar/asn1-x509": "^2.0.44",
     "@peculiar/jose": "^1.6.1",
-    "pvtsutils": "^1.1.6",
+    "pvtsutils": "^1.2.1",
     "tsyringe": "^4.2.0"
   }
 }

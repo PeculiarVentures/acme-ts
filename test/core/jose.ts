@@ -1,4 +1,4 @@
-import * as assert from "assert";
+import assert from "assert";
 import { cryptoProvider } from "@peculiar/x509";
 import { Crypto } from "@peculiar/webcrypto";
 import { JsonWebSignature } from "@peculiar/jose";
@@ -20,7 +20,7 @@ context("jose", () => {
           publicExponent: new Uint8Array([1, 0, 1]),
           modulusLength: 2048,
         } as RsaHashedKeyGenParams;
-        const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as CryptoKeyPair;
+        const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as Required<CryptoKeyPair>;
 
         const jws = new JsonWebSignature({}, crypto);
         jws.setProtected({
@@ -47,7 +47,7 @@ context("jose", () => {
           publicExponent: new Uint8Array([1, 0, 1]),
           modulusLength: 2048,
         } as RsaHashedKeyGenParams;
-        const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as CryptoKeyPair;
+        const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as Required<CryptoKeyPair>;
 
         const jws = new JsonWebSignature({}, crypto);
         jws.setProtected({
@@ -73,7 +73,7 @@ context("jose", () => {
           hash: "SHA-384",
           namedCurve: "P-384",
         } as EcKeyGenParams;
-        const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as CryptoKeyPair;
+        const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as Required<CryptoKeyPair>;
 
         const jws = new JsonWebSignature({}, crypto);
         jws.setProtected({

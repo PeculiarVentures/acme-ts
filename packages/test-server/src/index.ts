@@ -1,4 +1,4 @@
-import * as express from "express";
+import express from "express";
 import { diLogger, ConsoleLogger } from "@peculiar/acme-core";
 import * as x509 from "@peculiar/x509";
 import { AcmeExpress } from "@peculiar/acme-express";
@@ -24,8 +24,8 @@ async function main() {
   notAfter.setUTCFullYear(notAfter.getUTCFullYear() + 1);
   const rootName = "CN=ACME demo root CA, O=PeculiarVentures LLC";
   const caName = "CN=ACME demo CA, O=PeculiarVentures LLC";
-  const rootKeys = await crypto.subtle.generateKey(CertificateEnrollmentService.signingAlgorithm, false, ["sign", "verify"]) as CryptoKeyPair;
-  const caKeys = await crypto.subtle.generateKey(CertificateEnrollmentService.signingAlgorithm, false, ["sign", "verify"]) as CryptoKeyPair;
+  const rootKeys = await crypto.subtle.generateKey(CertificateEnrollmentService.signingAlgorithm, false, ["sign", "verify"]) as Required<CryptoKeyPair>;
+  const caKeys = await crypto.subtle.generateKey(CertificateEnrollmentService.signingAlgorithm, false, ["sign", "verify"]) as Required<CryptoKeyPair>;
 
   const rootCert = await x509.X509CertificateGenerator.create({
     serialNumber: "01",

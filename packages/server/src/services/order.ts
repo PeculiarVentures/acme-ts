@@ -312,7 +312,11 @@ export class OrderService extends BaseService implements types.IOrderService {
     }
     catch (err) {
       // return invalid order
-      await this.createOrderError(err, certificateEnrollParams.order);
+      await this.createOrderError(
+        err instanceof Error
+          ? err
+          : new Error(`Unknown error '${err}'`),
+        certificateEnrollParams.order);
       return certificateEnrollParams.order;
     }
 
@@ -338,9 +342,13 @@ export class OrderService extends BaseService implements types.IOrderService {
           order.status = "valid";
           await this.orderRepository.update(order);
         }
-      } catch (error) {
+      } catch (err) {
         // TODO Optimize Error assignment
-        await this.createOrderError(error, order);
+        await this.createOrderError(
+          err instanceof Error
+            ? err
+            : new Error(`Unknown error '${err}'`),
+          order);
       }
 
       this.logger.debug(`Order status updated`, {

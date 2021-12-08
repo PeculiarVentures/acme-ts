@@ -105,7 +105,9 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
             }
           } catch (error) {
             challenge.error = container.resolve<data.IError>(data.diError);
-            challenge.error.detail = error.message;
+            challenge.error.detail = error instanceof Error
+              ? error.message
+              : "Unknown error";
             challenge.error.type = core.ErrorType.serverInternal;
             challenge.status = "invalid";
             await this.challengeRepository.update(challenge);

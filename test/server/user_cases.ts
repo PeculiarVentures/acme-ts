@@ -1,8 +1,10 @@
 import { ApiClient } from "@peculiar/acme-client";
 import { Crypto } from "@peculiar/webcrypto";
-import fetch from "node-fetch";
-import * as assert from "assert";
+import assert from "assert";
 import { Worker } from "worker_threads";
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const fetch = require("node-fetch");
 
 context("ACME user cases", () => {
   let worker: Worker | null;
@@ -30,7 +32,7 @@ context("ACME user cases", () => {
   });
 
   it("Create authorization", async () => {
-    const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]);
+    const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as Required<CryptoKeyPair>;
     const client = await ApiClient.create(keys, `${url}/directory`, {
       crypto,
       fetch: (fetch as any),
@@ -66,7 +68,7 @@ context("ACME user cases", () => {
   });
 
   it("Create two orders with the same identifiers", async () => {
-    const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]);
+    const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as Required<CryptoKeyPair>;
     const client = await ApiClient.create(keys, `${url}/directory`, {
       crypto,
       fetch: (fetch as any),

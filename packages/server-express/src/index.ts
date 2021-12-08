@@ -1,7 +1,7 @@
 import * as express from "express";
 import { container } from "tsyringe";
 import * as url from "url";
-import * as cors from "cors";
+import cors from "cors";
 
 import { diLogger, ILogger } from "@peculiar/acme-core";
 import { DependencyInjection as diServer, diServerOptions, IServerOptions } from "@peculiar/acme-server";
