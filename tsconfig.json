@@ -3,7 +3,7 @@
   "compilerOptions": {
     "incremental": true,
     "importHelpers": false,
-    "target": "ES2015",
+    "target": "ES2018",
     "baseUrl": ".",
     "paths": {
       "@peculiar/acme-client": ["./packages/client/src"],
