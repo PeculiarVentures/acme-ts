@@ -2,9 +2,7 @@ import assert from "assert";
 import { Crypto } from "@peculiar/webcrypto";
 import { cryptoProvider } from "@peculiar/x509";
 import { ApiClient } from "@peculiar/acme-client";
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const fetch = require("node-fetch");
+import fetch from "node-fetch";
 
 context("client", () => {
 

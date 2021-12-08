@@ -1,10 +1,8 @@
 import { ApiClient } from "@peculiar/acme-client";
 import { Crypto } from "@peculiar/webcrypto";
 import assert from "assert";
+import fetch from "node-fetch";
 import { Worker } from "worker_threads";
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const fetch = require("node-fetch");
 
 context("ACME user cases", () => {
   let worker: Worker | null;

@@ -3,9 +3,8 @@ import { ApiClient, ApiResponse } from "@peculiar/acme-client";
 import * as protocol from "@peculiar/acme-protocol";
 import { Crypto } from "@peculiar/webcrypto";
 import { cryptoProvider } from "@peculiar/x509";
+import fetch from "node-fetch";
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const fetch = require("node-fetch");
 
 export function checkHeaders(res: ApiResponse<any>) {
   console.log(res.headers.link);
