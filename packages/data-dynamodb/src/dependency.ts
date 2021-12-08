@@ -3,7 +3,7 @@ import * as data from "@peculiar/acme-data";
 import * as repositories from "./repositories";
 import * as models from "./models";
 import * as dynamoose from "dynamoose";
-import { DynamoDB } from "aws-sdk";
+import { AWSError, DynamoDB } from "aws-sdk";
 import { diOptionsService, IOptions, OptionsService } from "./options";
 import { SourceLogger } from "@peculiar/acme-core";
 
@@ -13,6 +13,10 @@ export interface IDynamoOptions {
 }
 
 class DynamoDbSetup extends SourceLogger { }
+
+function isAwsError(error: unknown): error is AWSError {
+  return error instanceof Error && "code" in error;
+}
 
 export class DependencyInjection {
 
@@ -63,13 +67,16 @@ export class DependencyInjection {
     try {
       await aws.describeTable({ TableName: tableName }).promise();
     } catch (error) {
-      switch (error.code) {
-        case "ResourceNotFoundException":
-          logger.warn(`Dynamo table '${tableName}' is not found. Table will be created by Mongoose module`, { aws: error.message });
-          break;
-        default:
-          throw new Error(`Can not establish a connection to the database. ${error.message}`);
+      if (isAwsError(error)) {
+        switch (error.code) {
+          case "ResourceNotFoundException":
+            logger.warn(`Dynamo table '${tableName}' is not found. Table will be created by Mongoose module`, { aws: error.message });
+            break;
+          default:
+            throw new Error(`Can not establish a connection to the database. ${error.message}`);
+        }
       }
     }
+    throw new Error(`Can not establish a connection to the database. Unknown error`);
   }
 }

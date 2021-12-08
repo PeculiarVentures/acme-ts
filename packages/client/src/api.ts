@@ -58,6 +58,10 @@ export enum CRLReasons {
   aACompromise = 10
 }
 
+export interface ApiClientType<T extends ApiClient> {
+  new(accountKey: Required<CryptoKeyPair>, url: string, options?: ClientOptions): T;
+}
+
 /**
  * Class of work with ACME servers
  */
@@ -72,8 +76,8 @@ export class ApiClient extends BaseClient {
    * @param options Client options
    */
   public static async create<T extends ApiClient>(
-    this: new (accountKey: CryptoKeyPair, url: string, options?: ClientOptions) => T,
-    accountKey: CryptoKeyPair, url: string, options?: ClientOptions): Promise<T> {
+    this: ApiClientType<T>,
+    accountKey: Required<CryptoKeyPair>, url: string, options?: ClientOptions): Promise<T> {
     const client = new this(accountKey, url, options);
     client.directory = await client.getDirectory();
 
@@ -100,7 +104,7 @@ export class ApiClient extends BaseClient {
    * @param options Options
    */
   public constructor(
-    public accountKey: CryptoKeyPair,
+    public accountKey: Required<CryptoKeyPair>,
     public url: string,
     options?: ClientOptions) {
     super(options);
@@ -232,7 +236,7 @@ export class ApiClient extends BaseClient {
    * Account key change
    * @param key New key
    */
-  public async changeKey(key: CryptoKeyPair) {
+  public async changeKey(key: Required<CryptoKeyPair>) {
     const kid = this.getAccountId();
     const cryptoProvider = this.getCrypto();
     const innerToken = new JsonWebSignature({

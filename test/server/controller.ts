@@ -9,7 +9,7 @@ import { AsnConvert } from "@peculiar/asn1-schema";
 import { GeneralName, id_ce_subjectAltName, SubjectAlternativeName } from "@peculiar/asn1-x509";
 import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
 import { Crypto } from "@peculiar/webcrypto";
-import * as assert from "assert";
+import assert from "assert";
 import { MemoryEndpointService } from "packages/test-server/src/services";
 import { Convert } from "pvtsutils";
 import { container, Lifecycle } from "tsyringe";
@@ -58,10 +58,10 @@ context("Server", () => {
       publicExponent: new Uint8Array([1, 0, 1]),
       modulusLength: 2048,
     };
-    return await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as CryptoKeyPair;
+    return await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as Required<CryptoKeyPair>;
   }
 
-  async function createPostRequest(params: any, url: string, kid: string, keys: CryptoKeyPair, queryParams: core.QueryParams = {}) {
+  async function createPostRequest(params: any, url: string, kid: string, keys: Required<CryptoKeyPair>, queryParams: core.QueryParams = {}) {
     const jws = new JsonWebSignature({
       payload: params,
       protected: {
@@ -82,7 +82,7 @@ context("Server", () => {
   }
 
   // eslint-disable-next-line @typescript-eslint/member-delimiter-style
-  async function createAccount(params: protocol.AccountCreateParams & { keys?: CryptoKeyPair; }, response?: (resp: core.Response) => void) {
+  async function createAccount(params: protocol.AccountCreateParams & { keys?: Required<CryptoKeyPair>; }, response?: (resp: core.Response) => void) {
     const keys = params.keys || await generateKey();
     const jws = new JsonWebSignature({
       payload: params,
@@ -179,7 +179,7 @@ context("Server", () => {
           publicExponent: new Uint8Array([1, 0, 1]),
           modulusLength: 2048,
         };
-        const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as CryptoKeyPair;
+        const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as Required<CryptoKeyPair>;
         const jws = new JsonWebSignature({
           payload: {
             contact: ["mailto:some@mail.com"],
@@ -520,7 +520,7 @@ context("Server", () => {
 
     context("key rollover", () => {
 
-      async function createNewKey(oldKey: CryptoKey, kid: string, keys?: CryptoKeyPair) {
+      async function createNewKey(oldKey: CryptoKey, kid: string, keys?: Required<CryptoKeyPair>) {
         keys ??= await generateKey();
         const innerToken = new JsonWebSignature({
           protected: {

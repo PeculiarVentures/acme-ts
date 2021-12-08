@@ -1,4 +1,4 @@
-import * as assert from "assert";
+import assert from "assert";
 import { createClient, checkHeaders, checkResAccount, ClientResult } from "./bootstrap";
 import { AcmeError, ErrorType } from "@peculiar/acme-core";
 import { Crypto } from "@peculiar/webcrypto";
@@ -124,7 +124,7 @@ context.skip("Account Management", () => {
       const crypto = new Crypto();
       cryptoProvider.set(crypto);
 
-      const newKey = (await crypto.subtle.generateKey(alg, true, ["sign", "verify"])) as CryptoKeyPair;
+      const newKey = (await crypto.subtle.generateKey(alg, true, ["sign", "verify"])) as Required<CryptoKeyPair>;
       const res = await client.api.changeKey(newKey);
       assert.strictEqual(!!res.headers.link, true);
       checkResAccount(res, 200);
