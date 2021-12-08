@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/acme-client",
-  "version": "1.6.1",
+  "version": "1.7.0",
   "description": "Automatic Certificate Management Environment (ACME) client",
   "keywords": [
     "acme"
@@ -44,10 +44,10 @@
   },
   "homepage": "https://github.com/PeculiarVentures/acme-ts#readme",
   "dependencies": {
-    "@peculiar/acme-core": "^1.6.1",
+    "@peculiar/acme-core": "^1.7.0",
     "@peculiar/acme-protocol": "^1.6.0",
     "@peculiar/asn1-x509": "^2.0.44",
-    "@peculiar/jose": "^1.6.1",
+    "@peculiar/jose": "^1.7.0",
     "pvtsutils": "^1.2.1"
   },
   "devDependencies": {

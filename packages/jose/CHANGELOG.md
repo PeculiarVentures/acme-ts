@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.7.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.6.1...v1.7.0) (2021-12-08)
+
+
+### Features
+
+* Update dependencies ([ce72a04](https://github.com/PeculiarVentures/acme-ts/commit/ce72a049a5fdabc542f6a7589f46dc37375022a3))
+
+
+
+
+
 ## [1.6.1](https://github.com/PeculiarVentures/acme-ts/compare/v1.6.0...v1.6.1) (2021-08-11)
 
 
