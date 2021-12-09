@@ -76,7 +76,7 @@ export class DependencyInjection {
             throw new Error(`Can not establish a connection to the database. ${error.message}`);
         }
       }
+      throw new Error(`Can not establish a connection to the database. ${error}`);
     }
-    throw new Error(`Can not establish a connection to the database. Unknown error`);
   }
 }
