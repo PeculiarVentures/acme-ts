@@ -49,7 +49,7 @@
     "@peculiar/asn1-x509": "^2.0.44",
     "@peculiar/jose": "^1.7.0",
     "@peculiar/webcrypto": "^1.2.3",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^3.1.1",
     "normalize-url": "^5",
     "pvtsutils": "^1.2.1",
     "tsyringe": "^4.2.0"

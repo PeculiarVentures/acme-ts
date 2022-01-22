@@ -52,7 +52,7 @@
     "@peculiar/webcrypto": "^1.2.3",
     "@peculiar/x509": "^1.6.0",
     "express": "^4.17.1",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^3.1.1",
     "pvtsutils": "^1.2.1",
     "tslib": "^2.3.1",
     "tsyringe": "^4.3.0"
