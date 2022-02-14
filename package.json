@@ -50,6 +50,7 @@
     "trim-newlines": "^4.0.2",
     "ansi-regex": "^5.0.1",
     "json-schema": "^0.4.0",
-    "trim-off-newlines": "^1.0.3"
+    "trim-off-newlines": "^1.0.3",
+    "shelljs": "^0.8.5"
   }
 }
