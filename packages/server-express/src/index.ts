@@ -36,7 +36,7 @@ export class AcmeExpress {
       exposedHeaders: "Location, Link, Replay-Nonce"
     }));
 
-    app.use(express.json({ type: "application/jose+json" }));
+    app.use(express.json({ type: "application/jose+json" }) as any);
     app.use(url.parse(opt.baseAddress).pathname || "/", routers);
 
     //#region Print options

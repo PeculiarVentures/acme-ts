@@ -34,3 +34,14 @@ if (!isMainThread) {
     parentPort.postMessage(""); // Send message to the main process
   });
 }
+
+
+process
+  .on("uncaughtException", (e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .on("unhandledRejection", (e) => {
+    console.error(e);
+    process.exit(1);
+  });
