@@ -3,6 +3,7 @@ import { JsonWebAlgorithmConverter } from "./jwa";
 import { JsonWebKey } from "./jwk";
 
 export interface JwsProtectedBase {
+  typ?: string
   alg?: string;
   kid?: string;
   nonce?: string;
