@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/acme-data-dynamodb",
-  "version": "1.7.2",
+  "version": "1.7.4",
   "description": "DynamoDB data module forAutomatic Certificate Management Environment (ACME) implementing RFC 8555 framework",
   "keywords": [
     "acme"

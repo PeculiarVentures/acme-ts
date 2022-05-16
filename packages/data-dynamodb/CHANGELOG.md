@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.4](https://github.com/PeculiarVentures/acme-ts/compare/v1.7.3...v1.7.4) (2022-05-16)
+
+
+### Bug Fixes
+
+* **data-dynamodb:** error on table initialization ([c1785a1](https://github.com/PeculiarVentures/acme-ts/commit/c1785a1577109ee98918b5f1d02920ba7c08f722))
+
+
+
+
+
 ## [1.7.2](https://github.com/PeculiarVentures/acme-ts/compare/v1.7.1...v1.7.2) (2022-02-14)
 
 **Note:** Version bump only for package @peculiar/acme-data-dynamodb
