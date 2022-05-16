@@ -1,5 +1,6 @@
 spec:
   - test/**/*.ts
+  - packages/*/test/**/*.ts
 require:
   - tsconfig-paths/register
   - ts-node/register

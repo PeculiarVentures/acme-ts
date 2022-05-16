@@ -16,12 +16,26 @@ export abstract class BaseRepository<T extends BaseObject> implements IBaseRepos
   }
 
   public async add(item: T): Promise<T> {
-    if (!item.id) {
-      item.id = ++this.lastId;
-      this.items.push(item);
-    } else {
+    if (item.id && await this.findById(item.id)) {
       throw new Error("Element already exists");
+    } else {
+      if (item.id) {
+        this.items.push(item);
+      } else {
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          const id = ++this.lastId;
+          if (await this.findById(id)) {
+            continue;
+          }
+
+          item.id = id;
+          this.items.push(item);
+          break;
+        }
+      }
     }
+
     return item;
   }
 
