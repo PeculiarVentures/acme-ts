@@ -56,6 +56,10 @@ export class DependencyInjection {
       .register(data.diOrderRepository, repositories.OrderRepository, { lifecycle: Lifecycle.Singleton })
       .register(data.diCertificateRepository, repositories.CertificateRepository, { lifecycle: Lifecycle.Singleton })
       .register(data.diOrderAuthorizationRepository, repositories.OrderAuthorizationRepository, { lifecycle: Lifecycle.Singleton });
+
+    // Request some data to init the DynamoDB table
+    const accountRepo = container.resolve<repositories.AccountRepository>(data.diAccountRepository);
+    await accountRepo.findById("some test id");
   }
   /**
    * Check connections with database
@@ -75,8 +79,9 @@ export class DependencyInjection {
           default:
             throw new Error(`Can not establish a connection to the database. ${error.message}`);
         }
+      } else {
+        throw new Error(`Can not establish a connection to the database. ${error}`);
       }
-      throw new Error(`Can not establish a connection to the database. ${error}`);
     }
   }
 }
