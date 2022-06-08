@@ -27,7 +27,7 @@ npm install @peculiar/acme-data-dynamodb
 
 ```ts
 import * as data from "@peculiar/acme-data-dynamodb";
-import { container } from "tsyaringe";
+import { container } from "tsyringe";
 
 // Register services in dependency injection container
 data.DependencyInjection.register(container, {

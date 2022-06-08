@@ -21,7 +21,7 @@ npm install @peculiar/acme-data-memory
 
 ```js
 import * as data from "@peculiar/acme-data-memory";
-import { container } from "tsyaringe";
+import { container } from "tsyringe";
 
 // Register services in dependency injection container
 data.DependencyInjection.register(container);
