@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.5](https://github.com/PeculiarVentures/acme-ts/compare/v1.7.4...v1.7.5) (2022-06-08)
+
+
+### Bug Fixes
+
+* **data-dynamodb:** fromDocument incorrect binary coversion ([866a948](https://github.com/PeculiarVentures/acme-ts/commit/866a948bf61e2415965c8582d3a251b1296da4db))
+
+
+
+
+
 ## [1.7.4](https://github.com/PeculiarVentures/acme-ts/compare/v1.7.3...v1.7.4) (2022-05-16)
 
 
