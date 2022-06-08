@@ -1,6 +1,6 @@
 import { IBaseRepository, Key } from "@peculiar/acme-data";
 import * as dynamoose from "dynamoose";
-import { BaseObject } from "../models";
+import { BaseObject, IBaseDynamoObject } from "../models";
 import { Document } from "dynamoose/dist/Document";
 import { ModelType } from "dynamoose/dist/General";
 import { container } from "tsyringe";
@@ -115,12 +115,10 @@ export abstract class BaseRepository<T extends BaseObject> implements IBaseRepos
     }
   }
 
-  protected fromDocument(data: Document) {
-    const json = data.toJSON();
+  protected fromDocument(data: Record<string, any>) {
     const item = this.getValidator();
-    item.id = json.id;
-    //@ts-ignore
-    item.fromDynamo(json);
+    item.id = data.id;
+    item.fromDynamo(data as IBaseDynamoObject);
     return item;
   }
 }
