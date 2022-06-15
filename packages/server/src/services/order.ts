@@ -194,11 +194,7 @@ export class OrderService extends BaseService implements types.IOrderService {
           // Check Auth statuses
           if (authorizations.find(o => !(o.status === "pending"
             || o.status === "valid"))) {
-            order.status = "invalid";
-            order.error = container.resolve<data.IError>(data.diError);
-            order.error.type = core.ErrorType.malformed;
-            order.error.detail = "One of order authorizations has wrong status";
-            await this.orderRepository.update(order);
+            await this.createOrderError(new core.MalformedError("One of order authorizations has wrong status"), order);
           } else if (authorizations.every(o => o.status === "valid")) {
             order.status = "ready";
             await this.orderRepository.update(order);
@@ -420,12 +416,22 @@ export class OrderService extends BaseService implements types.IOrderService {
    * @param order
    */
   private async createOrderError(err: Error, order: data.IOrder): Promise<void> {
-    const er = container.resolve<data.IError>(data.diError);
+    const error = container.resolve<data.IError>(data.diError);
 
-    order.error = er;
-    order.error.detail = err.message;
-    // todo need parse
-    order.error.type = core.ErrorType.serverInternal;
+    if (err instanceof core.AcmeError) {
+      error.type = err.type as core.ErrorType;
+    } else {
+      error.type = core.ErrorType.serverInternal;
+    }
+    error.detail = err.message;
+    order.error = error;
+
+    this.logger.error(err.message, {
+      orderId: order.id,
+      accountId: order.accountId,
+      stack: err.stack || null,
+      error,
+    });
 
     const oldStatus = order.status;
     order.status = "invalid";

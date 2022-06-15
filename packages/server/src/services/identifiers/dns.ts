@@ -103,13 +103,32 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
               challenge.validated = new Date();
               await this.challengeRepository.update(challenge);
             }
-          } catch (error) {
-            challenge.error = container.resolve<data.IError>(data.diError);
-            challenge.error.detail = error instanceof Error
-              ? error.message
-              : `Unknown error '${error}'`;
-            challenge.error.type = core.ErrorType.serverInternal;
+          } catch (e) {
+            const error: Error = !(e instanceof Error)
+              ? new Error(`Unknown error '${e}'`)
+              : e;
+
+            const err = container.resolve<data.IError>(data.diError);
+            if (error instanceof core.AcmeError) {
+              err.detail = error.message;
+              err.type = error.type as core.ErrorType;
+            } else if (error instanceof Error) {
+              err.detail = error.message;
+              err.type = core.ErrorType.serverInternal;
+            }
+            challenge.error = err;
             challenge.status = "invalid";
+
+            this.logger.error(err.detail,
+              {
+              challenge: {
+                id: challenge.id,
+                type: challenge.type,
+              },
+              stack: error.stack || null,
+              error,
+            });
+
             await this.challengeRepository.update(challenge);
           }
           break;
