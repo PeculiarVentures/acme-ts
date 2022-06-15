@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.7.6](https://github.com/PeculiarVentures/acme-ts/compare/v1.7.5...v1.7.6) (2022-06-15)
+
+
+### Bug Fixes
+
+* **server:** improve error logging for order and challenge ([5ff3d04](https://github.com/PeculiarVentures/acme-ts/commit/5ff3d04d9426347415900b6b2c13f5d0d6be6c56))
+
+
+
+
+
 ## [1.7.2](https://github.com/PeculiarVentures/acme-ts/compare/v1.7.1...v1.7.2) (2022-02-14)
 
 **Note:** Version bump only for package @peculiar/acme-server
