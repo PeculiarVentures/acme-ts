@@ -92,8 +92,8 @@ export abstract class BaseRepository<T extends BaseObject> implements IBaseRepos
   protected async findAllByIndex(parentId: string, index: string) {
     const dataArray: Document[] = await this.getModel().query("parentId").eq(parentId)
       .where("index").beginsWith(index)
-      //@ts-ignore
-      .all().exec();
+      .all()
+      .exec();
     if (dataArray.length) {
       return dataArray.map(o => this.fromDocument(o));
     } else {
@@ -104,9 +104,8 @@ export abstract class BaseRepository<T extends BaseObject> implements IBaseRepos
   protected async findByIndex(parentId: string, index: string) {
     const data: Document[] = await this.getModel().query("parentId").eq(parentId)
       .where("index").beginsWith(index)
-      //@ts-ignore
-      // .sort("descending").limit(1)
       .sort("descending")
+      .limit(1)
       .exec();
     if (data.length) {
       return data.map(o => this.fromDocument(o))[0];
