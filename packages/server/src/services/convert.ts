@@ -136,7 +136,7 @@ export class ConvertService extends BaseService implements IConvertService {
 
   public async toEndpoint(endpoint: IEndpointService): Promise<protocol.Endpoint> {
     const certs = await endpoint.getCaCertificate();
-    const thumbprint = pvtsutils.Convert.ToHex(await certs[0].getThumbprint());
+    const thumbprint = pvtsutils.Convert.ToHex(await this.getHash(certs[0].rawData));
 
     return {
       name: endpoint.type,

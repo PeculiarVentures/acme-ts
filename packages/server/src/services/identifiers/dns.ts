@@ -121,13 +121,13 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
 
             this.logger.error(err.detail,
               {
-              challenge: {
-                id: challenge.id,
-                type: challenge.type,
-              },
-              stack: error.stack || null,
-              error,
-            });
+                challenge: {
+                  id: challenge.id,
+                  type: challenge.type,
+                },
+                stack: error.stack || null,
+                error,
+              });
 
             await this.challengeRepository.update(challenge);
           }
