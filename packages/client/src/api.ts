@@ -446,7 +446,7 @@ export class ApiClient extends BaseClient {
    * Retrieving Authorization Data
    * @param url Authorization URI
    */
-  public async getAuthorization(url: string) {
+  public async getAuthorization(url: string): Promise<ApiResponse<protocol.Authorization>> {
     return this.fetch<protocol.Authorization>(url, {
       method: "POST-as-GET",
       kid: this.getAccountId(),
@@ -470,7 +470,7 @@ export class ApiClient extends BaseClient {
     });
   }
 
-  public async retryAuthorization(order: ApiResponse<protocol.Authorization>, options?: RetryOptions): Promise<ApiResponse<protocol.Authorization>>;
+  public async retryAuthorization(authz: ApiResponse<protocol.Authorization>, options?: RetryOptions): Promise<ApiResponse<protocol.Authorization>>;
   public async retryAuthorization(url: string, options?: RetryOptions): Promise<ApiResponse<protocol.Authorization>>;
   public async retryAuthorization(param: string | ApiResponse<protocol.Authorization>, options: RetryOptions = {}) {
     let authz = typeof param === "string"
@@ -495,38 +495,54 @@ export class ApiClient extends BaseClient {
    * Obtaining a certificate of a complete order
    * @param url
    */
-  public async getCertificate(url: string) {
-    return await this.fetch<ArrayBuffer[]>(url, {
-      method: "POST-as-GET",
-      kid: this.getAccountId(),
-      nonce: this.nonce,
-      key: this.accountKey.privateKey,
-      convert: (resp) => {
-        if (!resp.content) {
-          throw new Error("Cannot get content from ACME response");
-        }
-        switch (resp.content.type) {
-          case ContentType.pem:
-            return this.decodePem(resp.content.toString());
-          case ContentType.pkix:
-            return [resp.content.content];
-          case ContentType.pkcs7:
-            throw new Error("Not implemented");
-          default:
-            throw new Error("Not supported content type for certificate");
-        }
-      },
-    });
+  public async getCertificate(url: string, method: "POST" | "GET" = "POST") {
+    const convert = (resp: Response) => {
+      if (!resp.content) {
+        throw new Error("Cannot get content from ACME response");
+      }
+      switch (resp.content.type) {
+        case ContentType.pem:
+          return this.decodePem(resp.content.toString());
+        case ContentType.pkix:
+          return [resp.content.content];
+        case ContentType.pkcs7:
+          throw new Error("Not implemented");
+        default:
+          throw new Error("Not supported content type for certificate");
+      }
+    };
+
+    const response: ApiResponse<ArrayBuffer[]> = (method === "GET")
+      ? await this.fetch(url, {
+        method,
+        convert,
+      })
+      : await this.fetch(url, {
+        method: "POST-as-GET",
+        kid: this.getAccountId(),
+        nonce: this.nonce,
+        key: this.accountKey.privateKey,
+        convert,
+      });
+
+    return response;
   }
 
-  public async getEndpoint(url: string) {
-    return this.fetch<protocol.Endpoint>(url, {
-      method: "POST-as-GET",
-      kid: this.getAccountId(),
-      nonce: this.nonce,
-      key: this.accountKey.privateKey,
-      convert: (resp) => resp.json(),
-    });
+  public async getEndpoint(url: string, method: "POST" | "GET" = "POST") {
+    const response = method === "GET"
+      ? await this.fetch<protocol.Endpoint>(url, {
+        method: "GET",
+        convert: (resp) => resp.json(),
+      })
+      : await this.fetch<protocol.Endpoint>(url, {
+        method: "POST-as-GET",
+        kid: this.getAccountId(),
+        nonce: this.nonce,
+        key: this.accountKey.privateKey,
+        convert: (resp) => resp.json(),
+      });
+
+    return response;
   }
 
   /**

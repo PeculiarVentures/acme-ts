@@ -499,10 +499,20 @@ export class AcmeController extends BaseService {
   //#endregion
 
   //#region Certificate management
-  public async getCertificate(request: Request, thumbprint: string) {
+  public async getCertificate(request: Request, thumbprint: string, method: "POST" | "GET" = "POST") {
     return this.wrapAction(async (response) => {
-      const account = await this.getAccount(request);
-      const certs = await this.orderService.getCertificate(account.id, thumbprint);
+      let certs: x509.X509Certificates;
+      if (method !== "GET") {
+        const account = await this.getAccount(request);
+        certs = await this.orderService.getCertificate(account.id, thumbprint);
+      } else {
+        // GET request should allow CA certificates getting
+        const cert = await this.certificateService.getByThumbprint(thumbprint);
+        if (cert.type !== "ca") {
+          throw new core.MalformedError("Certificate not found");
+        }
+        certs = await this.certificateService.getChain(cert);
+      }
 
       // The ACME client MAY request other formats by including an Accept
       // header field [RFC7231] in its request.  For example, the client could
@@ -561,9 +571,11 @@ export class AcmeController extends BaseService {
   }
   //#endregion
 
-  public async getEndpoint(request: Request, type: string) {
+  public async getEndpoint(request: Request, type: string, method: "POST" | "GET" = "POST") {
     return this.wrapAction(async (response) => {
-      await this.getAccount(request);
+      if (method !== "GET") {
+        await this.getAccount(request);
+      }
       const endpoint = this.certificateService.getEndpoint(type);
       const certs = await endpoint.getCaCertificate();
 

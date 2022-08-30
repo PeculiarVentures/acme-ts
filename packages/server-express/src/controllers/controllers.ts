@@ -87,6 +87,11 @@ export class Controllers {
     const result = await this.acmeController.getCertificate(request, thumbprint);
     this.createHttpResponseMessage(result, res);
   }
+  public async getCaCertificate(req: Request, res: Response, thumbprint: string): Promise<void> {
+    const request = this.getAcmeRequest(req);
+    const result = await this.acmeController.getCertificate(request, thumbprint, "GET");
+    this.createHttpResponseMessage(result, res);
+  }
   public async revokeCertificate(req: Request, res: Response): Promise<void> {
     const request = this.getAcmeRequest(req);
     const result = await this.acmeController.revokeCertificate(request);
@@ -94,9 +99,9 @@ export class Controllers {
   }
   //#endregion
 
-  public async getEndpoint(req: Request, res: Response, type: string): Promise<void> {
+  public async getEndpoint(req: Request, res: Response, type: string, method: "POST" | "GET" = "POST"): Promise<void> {
     const request = this.getAcmeRequest(req);
-    const result = await this.acmeController.getEndpoint(request, type);
+    const result = await this.acmeController.getEndpoint(request, type, method);
     this.createHttpResponseMessage(result, res);
   }
 
