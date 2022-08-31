@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.7.6...v1.8.0) (2022-08-31)
+
+
+### Features
+
+* support GET controllers ([9ef29a9](https://github.com/PeculiarVentures/acme-ts/commit/9ef29a93095a8fed781340126cbf46223aba69bd))
+
+
+
+
+
 ## [1.7.6](https://github.com/PeculiarVentures/acme-ts/compare/v1.7.5...v1.7.6) (2022-06-15)
 
 

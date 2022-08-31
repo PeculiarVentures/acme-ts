@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/acme-data-memory",
-  "version": "1.7.5",
+  "version": "1.8.0",
   "description": "Memory data module forAutomatic Certificate Management Environment (ACME) implementing RFC 8555 framework",
   "keywords": [
     "acme"
@@ -42,9 +42,9 @@
   },
   "homepage": "https://github.com/PeculiarVentures/acme-ts#readme",
   "dependencies": {
-    "@peculiar/acme-core": "^1.7.2",
-    "@peculiar/acme-data": "^1.7.2",
-    "@peculiar/acme-protocol": "^1.6.0",
+    "@peculiar/acme-core": "^1.8.0",
+    "@peculiar/acme-data": "^1.8.0",
+    "@peculiar/acme-protocol": "^1.8.0",
     "@peculiar/asn1-x509": "^2.0.44",
     "@peculiar/jose": "^1.7.2",
     "pvtsutils": "^1.2.1",

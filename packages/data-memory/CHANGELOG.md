@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.8.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.7.6...v1.8.0) (2022-08-31)
+
+**Note:** Version bump only for package @peculiar/acme-data-memory
+
+
+
+
+
 ## [1.7.5](https://github.com/PeculiarVentures/acme-ts/compare/v1.7.4...v1.7.5) (2022-06-08)
 
 **Note:** Version bump only for package @peculiar/acme-data-memory
