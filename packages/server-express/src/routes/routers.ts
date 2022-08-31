@@ -54,15 +54,18 @@ routers.post('/challenge/:id', (req: Request, res: Response) => {
 routers.post('/cert/:id', (req: Request, res: Response) => {
   container.resolve<Controllers>(diControllers).getCertificate(req, res, req.params.id);
 });
-routers.get('/cert/:id', (req: Request, res: Response) => {
+routers.post('/ca/cert/:id', (req: Request, res: Response) => {
+  container.resolve<Controllers>(diControllers).getCaCertificate(req, res, req.params.id);
+});
+routers.get('/ca/cert/:id', (req: Request, res: Response) => {
   container.resolve<Controllers>(diControllers).getCaCertificate(req, res, req.params.id);
 });
 routers.post('/revoke', (req: Request, res: Response) => {
   container.resolve<Controllers>(diControllers).revokeCertificate(req, res);
 });
 routers.post(`/endpoint/:name`, (req: Request, res: Response) => {
-  container.resolve<Controllers>(diControllers).getEndpoint(req, res, req.params.name, "POST");
+  container.resolve<Controllers>(diControllers).getEndpoint(req, res, req.params.name);
 });
 routers.get(`/endpoint/:name`, (req: Request, res: Response) => {
-  container.resolve<Controllers>(diControllers).getEndpoint(req, res, req.params.name, "GET");
+  container.resolve<Controllers>(diControllers).getEndpoint(req, res, req.params.name);
 });

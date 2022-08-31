@@ -140,7 +140,7 @@ export class ConvertService extends BaseService implements IConvertService {
 
     return {
       name: endpoint.type,
-      certificate: `${this.options.baseAddress}/cert/${thumbprint}`,
+      certificate: `${this.options.baseAddress}/ca/cert/${thumbprint}`,
     };
   }
 }
