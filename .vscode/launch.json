@@ -14,7 +14,6 @@
         "NODE_TLS_REJECT_UNAUTHORIZED": "0"
       },
       "cwd": "${workspaceRoot}",
-      "protocol": "inspector",
       "internalConsoleOptions": "openOnSessionStart"
     },
     {
@@ -35,7 +34,6 @@
       ],
       "outputCapture": "std",
       "cwd": "${workspaceRoot}",
-      "protocol": "inspector",
       "internalConsoleOptions": "openOnSessionStart"
     },
     {
@@ -56,7 +54,6 @@
       ],
       "outputCapture": "std",
       "cwd": "${workspaceRoot}",
-      "protocol": "inspector",
       "internalConsoleOptions": "openOnSessionStart",
     }
   ]

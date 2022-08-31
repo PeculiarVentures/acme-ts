@@ -7,7 +7,6 @@ import fetch from "node-fetch";
 
 
 export function checkHeaders(res: ApiResponse<any>) {
-  console.log(res.headers.link);
   assert.strictEqual(!!res.headers.link, true);
   assert.strictEqual(!!res.headers.location, true);
 }

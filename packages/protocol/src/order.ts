@@ -126,6 +126,9 @@ export interface RevokeCertificateParams {
 }
 
 export interface FinalizeParams {
+  /**
+   * Base64URL encoded PKCS10 certificate request
+   */
   csr: string;
   endpoint?: string;
 }

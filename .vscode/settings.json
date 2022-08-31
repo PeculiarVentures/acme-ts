@@ -1,12 +1,9 @@
 {
   "files.trimTrailingWhitespace": true,
-
   "typescript.format.semicolons": "insert",
   "typescript.preferences.quoteStyle": "double",
-
   "editor.insertSpaces": true,
   "editor.tabSize": 2,
-
   "files.exclude": {
     "**/.git": true,
     "**/.svn": true,
@@ -25,7 +22,6 @@
     "dynamoose",
     "subproblems"
   ],
-
   "conventionalCommits.scopes": [
     "client",
     "core",
@@ -39,5 +35,4 @@
     "server-express",
     "test-server"
   ]
-
 }

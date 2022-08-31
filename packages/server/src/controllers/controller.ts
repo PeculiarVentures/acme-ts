@@ -504,42 +504,46 @@ export class AcmeController extends BaseService {
       const account = await this.getAccount(request);
       const certs = await this.orderService.getCertificate(account.id, thumbprint);
 
-      // The ACME client MAY request other formats by including an Accept
-      // header field [RFC7231] in its request.  For example, the client could
-      // use the media type "application/pkix-cert" [RFC2585] or "application/
-      // pkcs7-mime" [RFC5751] to request the end-entity certificate in DER
-      // format.  Server support for alternate formats is OPTIONAL.  For
-      // formats that can only express a single certificate, the server SHOULD
-      // provide one or more "Link: rel="up"" header fields pointing to an
-      // issuer or issuers so that ACME clients can build a certificate chain
-      // as defined in TLS (see Section 4.4.2 of [RFC8446])
-
-      switch (this.options.downloadCertificateFormat) {
-        case "pem":
-          {
-            const pem = x509.PemConverter.encode(certs.map(o => o.rawData), "certificate");
-            response.content = new core.Content(pem);
-          }
-          break;
-        case "pkix":
-          {
-            if (certs.length > 1) {
-              for (let index = 1; index < certs.length; index++) {
-                const cert = certs[index];
-                const thumbprint = pvtsutils.Convert.ToHex(await cert.getThumbprint());
-                response.headers.setLink(`<${this.options.baseAddress}/cert/${thumbprint}>;rel="up"`);
-              }
-            }
-            response.content = new core.Content(certs[0].rawData, "application/pkix-cert");
-          }
-          break;
-        case "pkcs7":
-          {
-            response.content = new core.Content(certs.export("raw"), "application/pkcs7-mime");
-          }
-          break;
-      }
+      await this.createCertificateResponse(certs, response);
     }, request);
+  }
+
+  protected async createCertificateResponse(certs: x509.X509Certificates, response: core.Response) {
+    // The ACME client MAY request other formats by including an Accept
+    // header field [RFC7231] in its request.  For example, the client could
+    // use the media type "application/pkix-cert" [RFC2585] or "application/
+    // pkcs7-mime" [RFC5751] to request the end-entity certificate in DER
+    // format.  Server support for alternate formats is OPTIONAL.  For
+    // formats that can only express a single certificate, the server SHOULD
+    // provide one or more "Link: rel="up"" header fields pointing to an
+    // issuer or issuers so that ACME clients can build a certificate chain
+    // as defined in TLS (see Section 4.4.2 of [RFC8446])
+
+    switch (this.options.downloadCertificateFormat) {
+      case "pem":
+        {
+          const pem = x509.PemConverter.encode(certs.map(o => o.rawData), "certificate");
+          response.content = new core.Content(pem);
+        }
+        break;
+      case "pkix":
+        {
+          if (certs.length > 1) {
+            for (let index = 1; index < certs.length; index++) {
+              const cert = certs[index];
+              const thumbprint = pvtsutils.Convert.ToHex(await cert.getThumbprint());
+              response.headers.setLink(`<${this.options.baseAddress}/ca/cert/${thumbprint}>;rel="up"`);
+            }
+          }
+          response.content = new core.Content(certs[0].rawData, "application/pkix-cert");
+        }
+        break;
+      case "pkcs7":
+        {
+          response.content = new core.Content(certs.export("raw"), "application/pkcs7-mime");
+        }
+        break;
+    }
   }
 
   public async revokeCertificate(request: Request) {
@@ -563,7 +567,6 @@ export class AcmeController extends BaseService {
 
   public async getEndpoint(request: Request, type: string) {
     return this.wrapAction(async (response) => {
-      await this.getAccount(request);
       const endpoint = this.certificateService.getEndpoint(type);
       const certs = await endpoint.getCaCertificate();
 
@@ -574,12 +577,25 @@ export class AcmeController extends BaseService {
         for (let index = 1; index < certs.length; index++) {
           const cert = certs[index];
           const thumbprint = pvtsutils.Convert.ToHex(await cert.getThumbprint());
-          response.headers.setLink(`<${this.options.baseAddress}/cert/${thumbprint}>;rel="up"`);
+          response.headers.setLink(`<${this.options.baseAddress}/ca/cert/${thumbprint}>;rel="up"`);
         }
       }
 
       response.content = new core.Content(await this.convertService.toEndpoint(endpoint));
 
+    }, request);
+  }
+
+  public async getCaCertificate(request: Request, thumbprint: string) {
+    return this.wrapAction(async (response) => {
+      // Request should allow CA certificates getting
+      const cert = await this.certificateService.getByThumbprint(thumbprint);
+      if (cert.type !== "ca") {
+        throw new core.MalformedError("Certificate not found");
+      }
+      const certs = await this.certificateService.getChain(cert);
+
+      await this.createCertificateResponse(certs, response);
     }, request);
   }
 
