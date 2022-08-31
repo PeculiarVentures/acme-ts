@@ -115,7 +115,7 @@ export class ApiClient extends BaseClient {
    * @param url URI
    * @param params Parameters
    */
-  protected override async fetch<T = Content>(url: string, params: RequestParams<T>): Promise<ApiResponse<T>> {
+  public override async fetch<T = Content>(url: string, params: RequestParams<T>): Promise<ApiResponse<T>> {
     if (params.method === "POST" || params.method === "POST-as-GET") {
       if (!this.nonce) {
         await this.getNonce();
@@ -491,11 +491,7 @@ export class ApiClient extends BaseClient {
     return authz;
   }
 
-  /**
-   * Obtaining a certificate of a complete order
-   * @param url
-   */
-  public async getCertificate(url: string, method: "POST" | "GET" = "POST") {
+  public async internalGetCertificate(url: string, method: "POST" | "GET") {
     const convert = (resp: Response) => {
       if (!resp.content) {
         throw new Error("Cannot get content from ACME response");
@@ -534,28 +530,39 @@ export class ApiClient extends BaseClient {
     return response;
   }
 
-  public async getEndpoint(url: string, method: "POST" | "GET" = "POST") {
+  /**
+   * Obtaining a certificate of a complete order
+   * @param url
+   */
+  public async getCertificate(url: string) {
+    return this.internalGetCertificate(url, "POST");
+  }
+
+  public async getCaCertificate(url: string) {
+    return this.internalGetCertificate(url, "GET");
+  }
+
+  public async getEndpoint(url: string) {
     let response: ApiResponse<protocol.Endpoint>;
-    switch (method) {
-      case "GET":
-        response = await this.fetch<protocol.Endpoint>(url, {
-          method: "GET",
-          convert: (resp) => resp.json(),
-        });
-        break;
-      case "POST":
-      default:
-        response = await this.fetch<protocol.Endpoint>(url, {
-          method: "POST-as-GET",
-          kid: this.getAccountId(),
-          nonce: this.nonce,
-          key: this.accountKey.privateKey,
-          convert: (resp) => resp.json(),
-        });
+    if (this.accountId) {
+      response = await this.fetch<protocol.Endpoint>(url, {
+        method: "POST-as-GET",
+        kid: this.getAccountId(),
+        nonce: this.nonce,
+        key: this.accountKey.privateKey,
+        convert: (resp) => resp.json(),
+      });
+    } else {
+      response = await this.fetch<protocol.Endpoint>(url, {
+        method: "GET",
+        convert: (resp) => resp.json(),
+      });
     }
 
     return response;
   }
+
+  // public async getCaCertificate()
 
   /**
    * Getting replay-nonce parameter response from the header
