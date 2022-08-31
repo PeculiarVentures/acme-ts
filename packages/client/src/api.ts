@@ -562,8 +562,6 @@ export class ApiClient extends BaseClient {
     return response;
   }
 
-  // public async getCaCertificate()
-
   /**
    * Getting replay-nonce parameter response from the header
    * @param response
