@@ -512,35 +512,47 @@ export class ApiClient extends BaseClient {
       }
     };
 
-    const response: ApiResponse<ArrayBuffer[]> = (method === "GET")
-      ? await this.fetch(url, {
-        method,
-        convert,
-      })
-      : await this.fetch(url, {
-        method: "POST-as-GET",
-        kid: this.getAccountId(),
-        nonce: this.nonce,
-        key: this.accountKey.privateKey,
-        convert,
-      });
+    let response: ApiResponse<ArrayBuffer[]>;
+    switch (method) {
+      case "GET":
+        response = await this.fetch(url, {
+          method,
+          convert,
+        });
+        break;
+      case "POST":
+      default:
+        response = await this.fetch(url, {
+          method: "POST-as-GET",
+          kid: this.getAccountId(),
+          nonce: this.nonce,
+          key: this.accountKey.privateKey,
+          convert,
+        });
+    }
 
     return response;
   }
 
   public async getEndpoint(url: string, method: "POST" | "GET" = "POST") {
-    const response = method === "GET"
-      ? await this.fetch<protocol.Endpoint>(url, {
-        method: "GET",
-        convert: (resp) => resp.json(),
-      })
-      : await this.fetch<protocol.Endpoint>(url, {
-        method: "POST-as-GET",
-        kid: this.getAccountId(),
-        nonce: this.nonce,
-        key: this.accountKey.privateKey,
-        convert: (resp) => resp.json(),
-      });
+    let response: ApiResponse<protocol.Endpoint>;
+    switch (method) {
+      case "GET":
+        response = await this.fetch<protocol.Endpoint>(url, {
+          method: "GET",
+          convert: (resp) => resp.json(),
+        });
+        break;
+      case "POST":
+      default:
+        response = await this.fetch<protocol.Endpoint>(url, {
+          method: "POST-as-GET",
+          kid: this.getAccountId(),
+          nonce: this.nonce,
+          key: this.accountKey.privateKey,
+          convert: (resp) => resp.json(),
+        });
+    }
 
     return response;
   }

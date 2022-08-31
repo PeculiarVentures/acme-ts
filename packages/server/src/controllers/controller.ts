@@ -502,16 +502,21 @@ export class AcmeController extends BaseService {
   public async getCertificate(request: Request, thumbprint: string, method: "POST" | "GET" = "POST") {
     return this.wrapAction(async (response) => {
       let certs: x509.X509Certificates;
-      if (method !== "GET") {
-        const account = await this.getAccount(request);
-        certs = await this.orderService.getCertificate(account.id, thumbprint);
-      } else {
-        // GET request should allow CA certificates getting
-        const cert = await this.certificateService.getByThumbprint(thumbprint);
-        if (cert.type !== "ca") {
-          throw new core.MalformedError("Certificate not found");
+      switch (method) {
+        case "GET": {
+          // GET request should allow CA certificates getting
+          const cert = await this.certificateService.getByThumbprint(thumbprint);
+          if (cert.type !== "ca") {
+            throw new core.MalformedError("Certificate not found");
+          }
+          certs = await this.certificateService.getChain(cert);
+          break;
         }
-        certs = await this.certificateService.getChain(cert);
+        case "POST": {
+          const account = await this.getAccount(request);
+          certs = await this.orderService.getCertificate(account.id, thumbprint);
+          break;
+        }
       }
 
       // The ACME client MAY request other formats by including an Accept
