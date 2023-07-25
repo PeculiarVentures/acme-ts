@@ -10,6 +10,7 @@ export interface IAuthorizationDynamo extends IBaseDynamoObject {
   expires?: string;
   wildcard?: boolean;
   status: AuthorizationStatus;
+  orders?: string[];
 }
 
 export class Authorization extends BaseObject implements IAuthorization {
@@ -26,6 +27,7 @@ export class Authorization extends BaseObject implements IAuthorization {
   public wildcard?: boolean;
   public accountId: Key;
   public status: AuthorizationStatus;
+  public orders?: Key[];
 
   public constructor(params: Partial<Authorization> = {}) {
     super(params);
@@ -50,6 +52,10 @@ export class Authorization extends BaseObject implements IAuthorization {
     if (this.wildcard) {
       dynamo.wildcard = this.wildcard;
     }
+    if (this.orders) {
+      dynamo.orders = this.orders.map((a) => a.toString());
+    }
+
     return dynamo;
   }
 
@@ -60,6 +66,9 @@ export class Authorization extends BaseObject implements IAuthorization {
     }
     if (data.wildcard) {
       this.wildcard = data.wildcard;
+    }
+    if (data.orders) {
+      this.orders = data.orders.map((a) => a.toString());
     }
     this.accountId = data.parentId;
     this.status = data.status;
