@@ -21,12 +21,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Setup DynamoDB Local
-        uses: rrainn/dynamodb-action@v2.0.1
-        with:
-          port: 8000
-          cors: "*"
-
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
@@ -58,6 +52,8 @@ jobs:
 
       - name: Runt tests
         run: npm test
+        env:
+          AWS_SDK_LOAD_CONFIG: 0
 
       # - name: Coveralls
       #   uses: coverallsapp/github-action@master
