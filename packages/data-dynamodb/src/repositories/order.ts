@@ -1,5 +1,6 @@
-import { IOrderRepository, IOrderList, diOrder, Key } from "@peculiar/acme-data";
+import { IOrderRepository, IOrderList, diOrder, Key, diCertificateRepository, ICertificate, ICertificateRepository } from "@peculiar/acme-data";
 import { QueryParams } from "@peculiar/acme-core";
+import { container } from "tsyringe";
 import { BaseRepository } from "./base";
 import { Order } from "../models";
 
@@ -7,8 +8,14 @@ export class OrderRepository extends BaseRepository<Order> implements IOrderRepo
   protected className = diOrder;
 
   public async findByThumbprint(thumbprint: string) {
-    const cert = await this.getModel().get(thumbprint);
-    return await this.findById(cert.toJSON().orderId);
+    const certRepo = container.resolve<ICertificateRepository>(diCertificateRepository);
+
+    const cert = await certRepo.findByThumbprint(thumbprint);
+    if (!cert || !cert.orderId) {
+      return null;
+    }
+
+    return await this.findById(cert.orderId);
   }
 
   public async lastByIdentifier(accountId: string, identifier: string) {
