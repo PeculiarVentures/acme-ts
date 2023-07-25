@@ -1,4 +1,4 @@
-import { IOrderRepository, IOrderList, diOrder, Key, diCertificateRepository, ICertificate, ICertificateRepository } from "@peculiar/acme-data";
+import { IOrderRepository, IOrderList, diOrder, Key, diCertificateRepository, ICertificateRepository } from "@peculiar/acme-data";
 import { QueryParams } from "@peculiar/acme-core";
 import { container } from "tsyringe";
 import { BaseRepository } from "./base";
