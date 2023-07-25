@@ -39,7 +39,7 @@ export interface IOrder extends IBaseObject {
   error?: IError;
 
   /**
-   * Enrolled certificate
+   * Thumbprint of the enrolled certificate.
    */
   certificate?: string;
 
