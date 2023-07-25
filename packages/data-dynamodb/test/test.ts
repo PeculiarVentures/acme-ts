@@ -28,6 +28,8 @@ describe("DynamoDB Repositories", () => {
       client: {
         region: "local",
         endpoint: `http://localhost:${dynamoLocalPort}`,
+        accessKeyId: "xxxxxx",
+        secretAccessKey: "xxxxxx",
       },
       options: {
         tableName: "acme-test",
