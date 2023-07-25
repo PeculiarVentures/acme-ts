@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.1](https://github.com/PeculiarVentures/acme-ts/compare/v1.8.0...v1.8.1) (2023-07-25)
+
+
+### Bug Fixes
+
+* change implementation of OrderAuthz repository ([3549b68](https://github.com/PeculiarVentures/acme-ts/commit/3549b68c3c4038750014086c3b57c1ee73c6cee4))
+* incorrect implementation of f`OrderRepository.indByThumbprint` ([c25e0ce](https://github.com/PeculiarVentures/acme-ts/commit/c25e0ce33df4e5fc1911150552412c99da29d119))
+
+
+
+
+
 # [1.8.0](https://github.com/PeculiarVentures/acme-ts/compare/v1.7.6...v1.8.0) (2022-08-31)
 
 
