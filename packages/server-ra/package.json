@@ -49,7 +49,7 @@
     "@peculiar/acme-server": "^1.8.0",
     "@peculiar/asn1-schema": "^2.0.44",
     "@peculiar/asn1-x509": "^2.0.44",
-    "@peculiar/webcrypto": "^1.2.3",
+    "@peculiar/webcrypto": "^1.4.3",
     "@peculiar/x509": "^1.6.0",
     "express": "^4.17.1",
     "node-fetch": "^2.6.1",

@@ -73,7 +73,7 @@ export class JsonWebKey implements globalThis.JsonWebKey {
    * Gets thumbprint of JWK
    * @param alg Default SHA256
    */
-  public async getThumbprint(alg: Algorithms = Algorithms.SHA256) {
+  public async getThumbprint(alg: Algorithms = Algorithms.SHA256): Promise<string> {
 
     // eslint-disable-next-line @typescript-eslint/member-delimiter-style
     const listKeys: { [key: string]: string; } = {};

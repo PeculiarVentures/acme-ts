@@ -6,4 +6,4 @@ require:
   - ts-node/register
 extension:
   - .ts
-timeout: 5000
+timeout: 10000

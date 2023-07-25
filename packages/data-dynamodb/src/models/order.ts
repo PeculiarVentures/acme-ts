@@ -10,6 +10,7 @@ export interface IOrderDynamo extends IBaseDynamoObject {
   notAfter?: string;
   error?: IError;
   certificate?: string;
+  authorizations?: string[];
 }
 
 export class Order extends BaseObject implements IOrder {
@@ -21,6 +22,7 @@ export class Order extends BaseObject implements IOrder {
   public error?: IError;
   public certificate?: string;
   public accountId?: Key;
+  public authorizations?: Key[];
 
   public constructor(params: Partial<Order> = {}) {
     super(params);
@@ -52,6 +54,10 @@ export class Order extends BaseObject implements IOrder {
     if (this.certificate) {
       dynamo.certificate = this.certificate;
     }
+    if (this.authorizations) {
+      dynamo.authorizations = this.authorizations.map((a) => a.toString());
+    }
+
     return dynamo;
   }
 
@@ -76,6 +82,8 @@ export class Order extends BaseObject implements IOrder {
     if (data.parentId) {
       this.accountId = data.parentId;
     }
-
+    if (data.authorizations) {
+      this.authorizations = data.authorizations.map((a) => a.toString());
+    }
   }
 }

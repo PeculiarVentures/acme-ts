@@ -30,7 +30,7 @@ if (!isMainThread) {
   acmeData.DependencyInjection.register(container);
   container.register(acmeServer.diEndpointService, MemoryEndpointService, { lifecycle: Lifecycle.Singleton });
 
-  app.listen(4000, () => {
+  app.listen(4321, () => {
     parentPort.postMessage(""); // Send message to the main process
   });
 }

@@ -1,0 +1,69 @@
+name: release
+
+on:
+  # push:
+  #   branches:
+  #     - main
+  pull_request:
+    branches:
+      - main
+    types: [closed]
+
+env:
+  CI: true
+  ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Pull Request Merged
+        if: github.event.pull_request.merged == false
+        run: |
+          echo 'The pull request has not been merged'
+          exit 1
+
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Initialize the repository
+        uses: ./.github/actions/repo-init
+        with:
+          token: ${{ secrets.NODE_AUTH_TOKEN }}
+
+      - name: Build
+        run: npm run build
+
+      - name: Get Prev Version
+        shell: bash -ex {0}
+        run: |
+          PREV_VERSION=$(node -p 'require("./lerna.json").version')
+          echo "::set-env name=PREV_VERSION::${PREV_VERSION}"
+
+      - name: Bump versions and publish packages
+        run: |
+          npx lerna version --yes --conventional-commits --create-release github --message 'chore(release): publish'
+          npx lerna publish from-package --yes
+
+      - name: Get Current Version
+        shell: bash -ex {0}
+        run: |
+          CURRENT_VERSION=$(node -p 'require("./lerna.json").version')
+          echo "::set-env name=CURRENT_VERSION::${CURRENT_VERSION}"
+
+      - name: Create comment
+        uses: actions/github-script@0.8.0
+        if: env.PREV_VERSION != env.CURRENT_VERSION
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'NPM package v${{ env.CURRENT_VERSION }} has been published 🎉'
+            })
