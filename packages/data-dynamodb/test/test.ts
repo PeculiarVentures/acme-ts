@@ -19,7 +19,7 @@ import { JsonWebKey } from "@peculiar/jose";
 import { Logger, diLogger } from "@peculiar/acme-core";
 const dynamoLocalPort = 8000;
 
-describe.skip("DynamoDB Repositories", () => {
+describe("DynamoDB Repositories", () => {
   // NOTE: this test is skipped because it does not work on GitHub Actions
   // https://github.com/PeculiarVentures/acme-ts/actions/runs/5661747667/job/15340303282?pr=40#step:7:170
   before(async () => {
