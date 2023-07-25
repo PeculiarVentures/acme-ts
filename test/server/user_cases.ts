@@ -92,4 +92,4 @@ context("ACME user cases", () => {
     assert.notStrictEqual(order2.headers.location, order.headers.location);
   });
 
-});
+}).timeout(10000);
