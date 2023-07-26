@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/acme-protocol",
-  "version": "1.8.0",
+  "version": "1.8.2",
   "description": "Protocol objects forAutomatic Certificate Management Environment (ACME) implementing RFC 8555 framework",
   "keywords": [
     "acme"
