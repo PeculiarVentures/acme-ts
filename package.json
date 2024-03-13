@@ -17,7 +17,7 @@
     "dynamodb-local": "^0.0.32",
     "eslint": "^8.4.1",
     "express": "^4.17.1",
-    "lerna": "^4.0.0",
+    "lerna": "^8.1.2",
     "mocha": "^10.2.0",
     "rimraf": "^3.0.2",
     "ts-node": "^10.4.0",
