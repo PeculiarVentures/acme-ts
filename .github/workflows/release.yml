@@ -46,8 +46,11 @@ jobs:
 
       - name: Bump versions and publish packages
         run: |
+          npm whoami --registry https://registry.npmjs.org/
           npx lerna version --yes --conventional-commits --create-release github --message 'chore(release): publish'
           npx lerna publish from-package --yes
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
 
       - name: Get Current Version
         shell: bash -ex {0}
