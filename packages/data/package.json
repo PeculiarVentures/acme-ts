@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/acme-data",
-  "version": "1.8.2",
+  "version": "1.8.3",
   "description": "Base data module forAutomatic Certificate Management Environment (ACME) implementing RFC 8555 framework",
   "keywords": [
     "acme"
