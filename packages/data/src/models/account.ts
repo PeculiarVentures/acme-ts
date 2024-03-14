@@ -14,7 +14,6 @@ export interface IAccount extends IBaseObject {
   thumbprint: string;
   termsOfServiceAgreed?: boolean;
   externalAccountId?: Key;
-  providerIdentifier?: string;
   contacts?: string[];
   createdAt: Date;
 }
