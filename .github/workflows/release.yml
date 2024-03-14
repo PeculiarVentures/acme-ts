@@ -1,9 +1,6 @@
 name: release
 
 on:
-  # push:
-  #   branches:
-  #     - main
   pull_request:
     branches:
       - master
@@ -26,7 +23,7 @@ jobs:
           echo 'The pull request has not been merged'
           exit 1
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -46,8 +43,11 @@ jobs:
 
       - name: Bump versions and publish packages
         run: |
+          npm whoami --registry https://registry.npmjs.org/
           npx lerna version --yes --conventional-commits --create-release github --message 'chore(release): publish'
           npx lerna publish from-package --yes
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
 
       - name: Get Current Version
         shell: bash -ex {0}
@@ -56,14 +56,14 @@ jobs:
           echo "::set-env name=CURRENT_VERSION::${CURRENT_VERSION}"
 
       - name: Create comment
-        uses: actions/github-script@0.8.0
+        uses: actions/github-script@v7
         if: env.PREV_VERSION != env.CURRENT_VERSION
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            github.issues.createComment({
+            github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: 'NPM package v${{ env.CURRENT_VERSION }} has been published 🎉'
+              body: 'NPM package v${{env.CURRENT_VERSION}} has been published 🎉'
             })

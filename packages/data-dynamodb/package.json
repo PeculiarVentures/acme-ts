@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/acme-data-dynamodb",
-  "version": "1.8.2",
+  "version": "1.8.3",
   "description": "DynamoDB data module forAutomatic Certificate Management Environment (ACME) implementing RFC 8555 framework",
   "keywords": [
     "acme"
@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@peculiar/acme-core": "^1.8.2",
-    "@peculiar/acme-data": "^1.8.2",
+    "@peculiar/acme-data": "^1.8.3",
     "@peculiar/acme-protocol": "^1.8.2",
     "@peculiar/jose": "^1.8.2",
     "aws-sdk": "^2.1044.0",
