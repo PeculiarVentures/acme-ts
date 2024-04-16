@@ -28,5 +28,4 @@ export interface IExternalAccount extends IBaseObject {
   expires?: Date;
   account: any;
   status: ExternalAccountStatus;
-  providerIdentifier?: string;
 }
