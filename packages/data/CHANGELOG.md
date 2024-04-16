@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.8.4](https://github.com/PeculiarVentures/acme-ts/compare/v1.8.3...v1.8.4) (2024-04-16)
+
+
+### Reverts
+
+* Revert "chore(data): Extend account, externalAccount interfaces" ([3e7d3af](https://github.com/PeculiarVentures/acme-ts/commit/3e7d3afe3d13e83cdb1db174133a51c6cb9b3c28))
+
+
+
+
+
 ## [1.8.3](https://github.com/PeculiarVentures/acme-ts/compare/v1.8.2...v1.8.3) (2024-03-13)
 
 **Note:** Version bump only for package @peculiar/acme-data
