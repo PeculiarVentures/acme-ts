@@ -1,4 +1,4 @@
-import { Request, Response, Express } from 'express';
+import { Request, Response, Express } from "express";
 import { diLogger, ConsoleLogger } from "@peculiar/acme-core";
 import { cryptoProvider } from "@peculiar/x509";
 import { AcmeExpress, diControllers } from "@peculiar/acme-express";
@@ -13,9 +13,7 @@ export * from "./controllers";
 export * from "./services";
 
 export class AcmeRa {
-
   public static register(app: Express, options: Partial<acmeServer.IServerOptions>) {
-
     const crypto = new Crypto();
     cryptoProvider.set(crypto);
 

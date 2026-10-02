@@ -61,5 +61,4 @@ export class Account extends BaseObject implements IAccount {
       this.externalAccountId = data.externalAccountId;
     }
   }
-
 }

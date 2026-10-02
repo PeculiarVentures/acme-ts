@@ -9,7 +9,6 @@ import { cryptoProvider } from "@peculiar/x509";
 
 @injectable()
 export class ExternalAccountService extends BaseService implements IExternalAccountService {
-
   protected externalAccountRepository = container.resolve<IExternalAccountRepository>(diExternalAccountRepository);
 
   public async create(account: any) {
@@ -84,5 +83,4 @@ export class ExternalAccountService extends BaseService implements IExternalAcco
 
     return externalAccount;
   }
-
 }

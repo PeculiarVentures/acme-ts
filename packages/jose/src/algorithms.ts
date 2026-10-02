@@ -47,5 +47,5 @@ export enum Algorithms {
   A256CTR = "A256CTR",
   HS1 = "HS1",
   SHA1 = "SHA1",
-  SHA256 = "SHA256"
+  SHA256 = "SHA256",
 }

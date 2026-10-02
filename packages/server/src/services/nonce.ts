@@ -6,7 +6,6 @@ import { BadNonceError } from "@peculiar/acme-core";
 
 @injectable()
 export class NonceService extends BaseService implements INonceService {
-
   protected nonceRepository = container.resolve<INonceRepository>(diNonceRepository);
 
   public async create() {
@@ -20,5 +19,4 @@ export class NonceService extends BaseService implements INonceService {
     }
     await this.nonceRepository.remove(nonce);
   }
-
 }

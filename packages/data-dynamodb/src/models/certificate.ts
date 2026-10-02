@@ -12,7 +12,6 @@ export interface ICertificateDynamo extends IBaseDynamoObject {
 }
 
 export class Certificate extends BaseObject implements ICertificate {
-
   public thumbprint: string;
   public orderId?: string;
   public rawData: ArrayBuffer;
@@ -47,7 +46,7 @@ export class Certificate extends BaseObject implements ICertificate {
       status: this.status,
       rawData: Convert.ToBase64(this.rawData),
     };
-    if(this.orderId){
+    if (this.orderId) {
       cert.orderId = this.orderId;
     }
     if (this.reason) {
@@ -55,6 +54,4 @@ export class Certificate extends BaseObject implements ICertificate {
     }
     return cert;
   }
-
 }
-

@@ -1,6 +1,6 @@
 {
   "recommendations": [
-      "dbaeumer.vscode-eslint",
+      "oxc.oxc-vscode",
       "streetsidesoftware.code-spell-checker",
       "vivaxy.vscode-conventional-commits"
   ]

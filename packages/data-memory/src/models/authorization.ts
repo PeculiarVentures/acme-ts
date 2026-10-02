@@ -12,5 +12,4 @@ export class Authorization extends BaseObject implements IAuthorization {
   public constructor(params: Partial<Authorization> = {}) {
     super(params);
   }
-
 }

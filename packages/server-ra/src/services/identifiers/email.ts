@@ -17,14 +17,14 @@ export class EmailChallengeService extends server.BaseService implements server.
     const identifiersCsr = this.getEmails(csr);
     const problems: core.AcmeError[] = [];
 
-    identifiers.forEach(i => {
-      if (!identifiersCsr.find(o => i.value.toLowerCase() === o.toLowerCase())) {
+    identifiers.forEach((i) => {
+      if (!identifiersCsr.find((o) => i.value.toLowerCase() === o.toLowerCase())) {
         problems.push(new core.MalformedError(`Email name '${i.value}' from order not found in CSR`));
       }
     });
 
-    identifiersCsr.forEach(i => {
-      if (!identifiers.find(o => o.value.toLowerCase() === i.toLowerCase())) {
+    identifiersCsr.forEach((i) => {
+      if (!identifiers.find((o) => o.value.toLowerCase() === i.toLowerCase())) {
         problems.push(new core.MalformedError(`Email name '${i}' from CSR not found in order`));
       }
     });
@@ -36,7 +36,7 @@ export class EmailChallengeService extends server.BaseService implements server.
     const names: string[] = [];
 
     const name = new x509.Name(csr.subject);
-    name.toJSON().forEach(o => {
+    name.toJSON().forEach((o) => {
       const dns = o["E"];
       if (dns && dns.length) {
         for (const o2 of dns) {
@@ -48,7 +48,7 @@ export class EmailChallengeService extends server.BaseService implements server.
     const ext = csr.getExtension(id_ce_subjectAltName);
     if (ext) {
       const san = AsnConvert.parse(ext.value, SubjectAlternativeName);
-      san.forEach(o => {
+      san.forEach((o) => {
         if (o.rfc822Name) {
           names.push(o.rfc822Name);
         }
@@ -59,8 +59,9 @@ export class EmailChallengeService extends server.BaseService implements server.
   }
 
   public async identifierValidate(identifier: data.IIdentifier): Promise<core.AcmeError[]> {
-    // eslint-disable-next-line no-control-regex
-    const pattern = /^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$/g;
+    const pattern =
+      // eslint-disable-next-line no-control-regex
+      /^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$/g;
 
     const problems: core.AcmeError[] = [];
     if (!pattern.test(identifier.value)) {
@@ -108,5 +109,4 @@ export class EmailChallengeService extends server.BaseService implements server.
     this.getCrypto().getRandomValues(httpToken);
     challenge.token = pvtsutils.Convert.ToBase64Url(httpToken);
   }
-
 }

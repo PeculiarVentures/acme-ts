@@ -9,7 +9,6 @@ import { FinalizeParams, RevokeReason } from "@peculiar/acme-protocol";
 
 @injectable()
 export class CertificateService extends BaseService implements ICertificateService {
-
   /**
    * CA certificates cache
    */
@@ -22,7 +21,7 @@ export class CertificateService extends BaseService implements ICertificateServi
    * @param rawData
    * @param order
    */
-  public async create(rawData: ArrayBuffer, order?: data.IOrder,): Promise<data.ICertificate> {
+  public async create(rawData: ArrayBuffer, order?: data.IOrder): Promise<data.ICertificate> {
     const certificate = container.resolve<data.ICertificate>(data.diCertificate);
     certificate.rawData = rawData;
     certificate.thumbprint = pvtsutils.Convert.ToHex(await this.getHash(rawData));
@@ -140,7 +139,6 @@ export class CertificateService extends BaseService implements ICertificateServi
     const certRaw = await service.enroll(order, requestRaw);
     order.endpoint = type;
 
-
     const cert = await this.create(certRaw, order);
 
     this.logger.info("Certificate enrolled", {
@@ -173,13 +171,13 @@ export class CertificateService extends BaseService implements ICertificateServi
     let chain: x509.X509Certificates;
     try {
       chain = await chainBuilder.build(x509Cert);
-    } catch (error) {
+    } catch {
       await this.reloadCaCache();
       chain = await chainBuilder.build(x509Cert);
     }
 
     this.logger.debug(`Chain for certificate`, {
-      thumbprint: cert.thumbprint
+      thumbprint: cert.thumbprint,
     });
 
     return chain;
@@ -191,7 +189,7 @@ export class CertificateService extends BaseService implements ICertificateServi
    */
   protected async reloadCaCache() {
     // add ca to cache from repository
-    const caCerts = await this.certificateRepository.findCaCertificates() || [];
+    const caCerts = (await this.certificateRepository.findCaCertificates()) || [];
     for (const caCert of caCerts) {
       this.caCerts.set(caCert.thumbprint, new x509.X509Certificate(caCert.rawData));
     }
@@ -246,7 +244,7 @@ export class CertificateService extends BaseService implements ICertificateServi
         type,
       });
 
-      const endpoint = endpoints.filter(o => o.type === type);
+      const endpoint = endpoints.filter((o) => o.type === type);
       if (!endpoint.length) {
         throw new MalformedError(`Unsupported endpoint type '${type}'`);
       }
@@ -256,7 +254,6 @@ export class CertificateService extends BaseService implements ICertificateServi
 
       res = endpoint[0];
     } else {
-
       this.logger.debug("Get first certificate enrollment endpoint");
 
       res = endpoints[0];

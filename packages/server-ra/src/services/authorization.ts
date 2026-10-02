@@ -6,7 +6,6 @@ import { container, injectable } from "tsyringe";
 
 @injectable()
 export class RaAuthorizationService extends acmeServer.AuthorizationService {
-
   private account: IAccount | null = null;
   private eab: IExternalAccount | null = null;
 

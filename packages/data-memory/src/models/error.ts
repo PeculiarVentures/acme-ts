@@ -10,5 +10,4 @@ export class Error extends BaseObject implements IError {
   public constructor(params: Partial<Error> = {}) {
     super(params);
   }
-
 }

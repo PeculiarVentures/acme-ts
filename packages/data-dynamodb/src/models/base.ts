@@ -11,9 +11,7 @@ export interface IBaseDynamoObject {
 export abstract class BaseObject implements IBaseObject {
   public id = Convert.ToBase64Url(cryptoProvider.get().getRandomValues(new Uint8Array(20)));
 
-  public constructor(
-    params: Partial<BaseObject> = {}
-  ) {
+  public constructor(params: Partial<BaseObject> = {}) {
     Object.assign(this, params);
   }
   public abstract fromDynamo(data: IBaseDynamoObject): void;

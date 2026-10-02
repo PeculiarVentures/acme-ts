@@ -11,7 +11,6 @@ import { RaConvertService } from "../services/convert";
 
 @injectable()
 export class RaControllers extends Controllers {
-
   protected providerService = container.resolve<ProviderService>(diAuthProviderService);
   protected externalAccountService = container.resolve<server.ExternalAccountService>(server.diExternalAccountService);
   protected raConverterService = container.resolve<RaConvertService>(server.diConvertService);
@@ -32,7 +31,8 @@ export class RaControllers extends Controllers {
           instance: this.instance,
           v: this.options.version || "0.0.0",
         },
-        this.acmeController.options.formattedResponse);
+        this.acmeController.options.formattedResponse,
+      );
       res.status = 200;
     }, request);
     this.createHttpResponseMessage(result, res);
@@ -50,12 +50,9 @@ export class RaControllers extends Controllers {
       }
 
       const externalAccount = await this.externalAccountService.create(profile);
-      res.content = new Content(this.raConverterService.toEabChallenge(externalAccount),
-        this.acmeController.options.formattedResponse);
+      res.content = new Content(this.raConverterService.toEabChallenge(externalAccount), this.acmeController.options.formattedResponse);
       res.status = 201; // Created
     }, request);
     this.createHttpResponseMessage(result, res);
   }
-
-
 }

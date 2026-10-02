@@ -1,7 +1,6 @@
 import { Logger, LoggerData, LoggerInfo } from "./logger";
 
 export class ConsoleLogger extends Logger {
-
   protected override onWrite(info: LoggerInfo, msg: string, obj?: LoggerData) {
     msg = `${`[${info.level}]`.padEnd(7, " ")} ${info.timestamp.toISOString()} ${info.class}: ${msg}`;
     switch (info.level) {
@@ -36,5 +35,4 @@ export class ConsoleLogger extends Logger {
         break;
     }
   }
-
 }

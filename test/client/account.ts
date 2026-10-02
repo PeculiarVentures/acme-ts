@@ -6,12 +6,11 @@ import { cryptoProvider } from "@peculiar/x509";
 
 context.skip("Account Management", () => {
   context("new account", () => {
-
     let client: ClientResult;
 
     const contactErrors = [
       "urn:ietf:params:acme:error:invalidEmail", // Let's Encrypt
-      "urn:ietf:params:acme:error:unsupportedContact" // RFC8555
+      "urn:ietf:params:acme:error:unsupportedContact", // RFC8555
     ];
 
     function assertUnsupportedContact(error: AcmeError) {
@@ -31,39 +30,51 @@ context.skip("Account Management", () => {
         // `termsOfServiceAgreed` in create account request
         return this.skip();
       }
-      await assert.rejects(client.api.newAccount({
-        contact: ["mailto:microshine@mail.ru"],
-        termsOfServiceAgreed: false,
-      }), (err: AcmeError) => {
-        assert.strictEqual(err.status, 400);
-        assert.strictEqual(err.type, ErrorType.malformed);
-        return true;
-      });
+      await assert.rejects(
+        client.api.newAccount({
+          contact: ["mailto:microshine@mail.ru"],
+          termsOfServiceAgreed: false,
+        }),
+        (err: AcmeError) => {
+          assert.strictEqual(err.status, 400);
+          assert.strictEqual(err.type, ErrorType.malformed);
+          return true;
+        },
+      );
     });
 
     it("Error: find not exist account", async () => {
-      await assert.rejects(client.api.newAccount({
-        contact: ["mailto:microshine@mail.ru"],
-        onlyReturnExisting: true,
-      }), (err: AcmeError) => {
-        assert.strictEqual(err.status, 400);
-        assert.strictEqual(err.type, ErrorType.accountDoesNotExist);
-        return true;
-      });
+      await assert.rejects(
+        client.api.newAccount({
+          contact: ["mailto:microshine@mail.ru"],
+          onlyReturnExisting: true,
+        }),
+        (err: AcmeError) => {
+          assert.strictEqual(err.status, 400);
+          assert.strictEqual(err.type, ErrorType.accountDoesNotExist);
+          return true;
+        },
+      );
     });
 
     it("Error: create account with unsupported contact", async () => {
-      await assert.rejects(client.api.newAccount({
-        contact: ["mailt:microshine@mail.ru"],
-        termsOfServiceAgreed: true,
-      }), assertUnsupportedContact);
+      await assert.rejects(
+        client.api.newAccount({
+          contact: ["mailt:microshine@mail.ru"],
+          termsOfServiceAgreed: true,
+        }),
+        assertUnsupportedContact,
+      );
     });
 
     it("Error: create account with invalid contact", async () => {
-      await assert.rejects(client.api.newAccount({
-        contact: ["mailto:micro shine"],
-        termsOfServiceAgreed: true,
-      }), assertUnsupportedContact);
+      await assert.rejects(
+        client.api.newAccount({
+          contact: ["mailto:micro shine"],
+          termsOfServiceAgreed: true,
+        }),
+        assertUnsupportedContact,
+      );
     });
 
     it("create account without email", async () => {
@@ -82,10 +93,8 @@ context.skip("Account Management", () => {
       checkHeaders(res);
       checkResAccount(res, 201);
     });
-
   });
   context("existing account", () => {
-
     let client: ClientResult;
 
     before(async () => {
@@ -135,16 +144,23 @@ context.skip("Account Management", () => {
       assert.strictEqual(!!res.headers.link, true);
       assert.strictEqual(res.status, 200);
 
-      await assert.rejects(client.api.newAccount({
-        termsOfServiceAgreed: true,
-      }), (err: AcmeError) => {
-        assert.strictEqual([
-          403, // Let's Encrypt
-          401, // RFC8555
-        ].includes(err.status), true, "Error status doesn't match to requirements");
-        assert.strictEqual(err.type, ErrorType.unauthorized);
-        return true;
-      });
+      await assert.rejects(
+        client.api.newAccount({
+          termsOfServiceAgreed: true,
+        }),
+        (err: AcmeError) => {
+          assert.strictEqual(
+            [
+              403, // Let's Encrypt
+              401, // RFC8555
+            ].includes(err.status),
+            true,
+            "Error status doesn't match to requirements",
+          );
+          assert.strictEqual(err.type, ErrorType.unauthorized);
+          return true;
+        },
+      );
     });
   });
 });

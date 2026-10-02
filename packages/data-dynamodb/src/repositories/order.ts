@@ -26,7 +26,7 @@ export class OrderRepository extends BaseRepository<Order> implements IOrderRepo
   public async getList(accountId: Key, page: QueryParams, size: number) {
     const items = await this.findAllByIndex(accountId.toString(), `order#`);
     const orderLIst: IOrderList = {
-      items: items.filter(o => o.status !== "invalid"),
+      items: items.filter((o) => o.status !== "invalid"),
       next: false,
     };
     return orderLIst;

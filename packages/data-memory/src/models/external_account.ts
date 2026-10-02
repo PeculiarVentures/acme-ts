@@ -10,5 +10,4 @@ export class ExternalAccount extends BaseObject implements IExternalAccount {
   public constructor(params: Partial<ExternalAccount> = {}) {
     super(params);
   }
-
 }

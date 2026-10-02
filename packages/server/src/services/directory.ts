@@ -6,10 +6,7 @@ import { MalformedError } from "@peculiar/acme-core";
 
 @injectable()
 export class DirectoryService extends BaseService implements IDirectoryService {
-
-  protected endpoints = container.isRegistered(diEndpointService)
-    ? container.resolveAll<IEndpointService>(diEndpointService)
-    : [];
+  protected endpoints = container.isRegistered(diEndpointService) ? container.resolveAll<IEndpointService>(diEndpointService) : [];
 
   public async getDirectory() {
     const url = this.options.baseAddress;
@@ -32,7 +29,7 @@ export class DirectoryService extends BaseService implements IDirectoryService {
     if (!this.endpoints.length) {
       throw new MalformedError("No endpoints found");
     } else {
-      const types = this.endpoints.map(o => `${this.options.baseAddress}/endpoint/${o.type}`);
+      const types = this.endpoints.map((o) => `${this.options.baseAddress}/endpoint/${o.type}`);
       if (!directory.meta) {
         directory.meta = {
           endpoints: types,
@@ -47,8 +44,7 @@ export class DirectoryService extends BaseService implements IDirectoryService {
     return directory;
   }
 
-  protected async onGetDirectory(directory: Directory): Promise<void> {
-    directory;
+  protected async onGetDirectory(_directory: Directory): Promise<void> {
+    return;
   }
-
 }

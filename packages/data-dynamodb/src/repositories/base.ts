@@ -12,8 +12,7 @@ interface IDataTable extends Document {
   parentId: string;
 }
 
-export abstract class BaseRepository<T extends BaseObject> implements IBaseRepository<T>
-{
+export abstract class BaseRepository<T extends BaseObject> implements IBaseRepository<T> {
   public static defaultTableName = "ACME";
 
   protected options = container.resolve<OptionsService>(diOptionsService).options;
@@ -22,25 +21,28 @@ export abstract class BaseRepository<T extends BaseObject> implements IBaseRepos
   private model?: ModelType<IDataTable>;
   private validator?: T;
   private tableName = this.options.tableName ?? BaseRepository.defaultTableName;
-  private tableSchema = new dynamoose.Schema({
-    id: {
-      type: String,
-      hashKey: true
-    },
-    index: {
-      type: String,
-    },
-    parentId: {
-      type: String,
+  private tableSchema = new dynamoose.Schema(
+    {
+      id: {
+        type: String,
+        hashKey: true,
+      },
       index: {
-        name: "index",
-        global: true,
-        rangeKey: "index",
-      }
+        type: String,
+      },
+      parentId: {
+        type: String,
+        index: {
+          name: "index",
+          global: true,
+          rangeKey: "index",
+        },
+      },
     },
-  }, {
-    saveUnknown: true,
-  });
+    {
+      saveUnknown: true,
+    },
+  );
 
   public async findById(id: Key) {
     const data = await this.getModel().get(id.toString());
@@ -90,25 +92,18 @@ export abstract class BaseRepository<T extends BaseObject> implements IBaseRepos
   }
 
   protected async findAllByIndex(parentId: string, index: string) {
-    const dataArray: Document[] = await this.getModel().query("parentId").eq(parentId)
-      .where("index").beginsWith(index)
-      .all()
-      .exec();
+    const dataArray: Document[] = await this.getModel().query("parentId").eq(parentId).where("index").beginsWith(index).all().exec();
     if (dataArray.length) {
-      return dataArray.map(o => this.fromDocument(o));
+      return dataArray.map((o) => this.fromDocument(o));
     } else {
       return [];
     }
   }
 
   protected async findByIndex(parentId: string, index: string) {
-    const data: Document[] = await this.getModel().query("parentId").eq(parentId)
-      .where("index").beginsWith(index)
-      .sort("descending")
-      .limit(1)
-      .exec();
+    const data: Document[] = await this.getModel().query("parentId").eq(parentId).where("index").beginsWith(index).sort("descending").limit(1).exec();
     if (data.length) {
-      return data.map(o => this.fromDocument(o))[0];
+      return data.map((o) => this.fromDocument(o))[0];
     } else {
       return null;
     }

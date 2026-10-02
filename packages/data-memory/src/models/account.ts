@@ -15,5 +15,4 @@ export class Account extends BaseObject implements IAccount {
   public constructor(params: Partial<Account> = {}) {
     super(params);
   }
-
 }

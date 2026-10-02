@@ -12,5 +12,4 @@ export class Certificate extends BaseObject implements ICertificate {
   public constructor(params: Partial<Certificate> = {}) {
     super(params);
   }
-
 }

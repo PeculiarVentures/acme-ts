@@ -4,7 +4,6 @@ import { BaseRepository } from "./base";
 import { JsonWebKey } from "@peculiar/jose";
 
 export class AccountRepository extends BaseRepository<Account> implements IAccountRepository {
-
   protected className = diAccount;
 
   public async findByPublicKey(publicKey: JsonWebKey) {

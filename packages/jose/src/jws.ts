@@ -3,7 +3,7 @@ import { JsonWebAlgorithmConverter } from "./jwa";
 import { JsonWebKey } from "./jwk";
 
 export interface JwsProtectedBase {
-  typ?: string
+  typ?: string;
   alg?: string;
   kid?: string;
   nonce?: string;
@@ -32,12 +32,14 @@ export interface JwsConstructorParams {
  * See [RFC7515](https://www.rfc-editor.org/rfc/rfc7515.html)
  */
 export class JsonWebSignature {
-
   public protected = "e30";
   public payload = "";
   public signature = "";
 
-  public constructor(params: JwsConstructorParams = {}, private cryptoProvider?: Crypto) {
+  public constructor(
+    params: JwsConstructorParams = {},
+    private cryptoProvider?: Crypto,
+  ) {
     if (params.protected) {
       this.setProtected(params.protected);
     }
@@ -76,9 +78,7 @@ export class JsonWebSignature {
   public tryGetPayload<T>() {
     try {
       return this.getPayload<T>();
-    }
-    catch
-    {
+    } catch {
       return null;
     }
   }
@@ -102,9 +102,7 @@ export class JsonWebSignature {
   private read(data: string) {
     const bytes = Convert.FromBase64Url(data);
     const json = Convert.ToUtf8String(bytes);
-    return json === ""
-      ? ""
-      : JSON.parse(json);
+    return json === "" ? "" : JSON.parse(json);
   }
 
   private write(data: any) {

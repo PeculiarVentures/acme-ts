@@ -4,14 +4,11 @@ import { Crypto } from "@peculiar/webcrypto";
 import { JsonWebSignature } from "@peculiar/jose";
 
 context("jose", () => {
-
   const crypto = new Crypto();
   cryptoProvider.set(crypto);
 
   context("jws", () => {
-
     context("sign/verify", () => {
-
       it("RSASSA-PKCS1-v1_5 SHA256", async () => {
         // generate keys
         const alg = {
@@ -20,7 +17,7 @@ context("jose", () => {
           publicExponent: new Uint8Array([1, 0, 1]),
           modulusLength: 2048,
         } as RsaHashedKeyGenParams;
-        const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as Required<CryptoKeyPair>;
+        const keys = (await crypto.subtle.generateKey(alg, false, ["sign", "verify"])) as Required<CryptoKeyPair>;
 
         const jws = new JsonWebSignature({}, crypto);
         jws.setProtected({
@@ -36,7 +33,7 @@ context("jose", () => {
 
         const ok = await jws.verify(keys.publicKey);
         assert.strictEqual(ok, true);
-        assert.deepStrictEqual(jws.getPayload(), {csr: "AQAB"});
+        assert.deepStrictEqual(jws.getPayload(), { csr: "AQAB" });
       });
 
       it("RSASSA-PKCS1-v1_5 SHA256", async () => {
@@ -47,7 +44,7 @@ context("jose", () => {
           publicExponent: new Uint8Array([1, 0, 1]),
           modulusLength: 2048,
         } as RsaHashedKeyGenParams;
-        const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as Required<CryptoKeyPair>;
+        const keys = (await crypto.subtle.generateKey(alg, false, ["sign", "verify"])) as Required<CryptoKeyPair>;
 
         const jws = new JsonWebSignature({}, crypto);
         jws.setProtected({
@@ -73,7 +70,7 @@ context("jose", () => {
           hash: "SHA-384",
           namedCurve: "P-384",
         } as EcKeyGenParams;
-        const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as Required<CryptoKeyPair>;
+        const keys = (await crypto.subtle.generateKey(alg, false, ["sign", "verify"])) as Required<CryptoKeyPair>;
 
         const jws = new JsonWebSignature({}, crypto);
         jws.setProtected({
@@ -98,7 +95,7 @@ context("jose", () => {
           hash: "SHA-512",
           length: 256,
         } as HmacKeyGenParams;
-        const key = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as CryptoKey;
+        const key = (await crypto.subtle.generateKey(alg, false, ["sign", "verify"])) as CryptoKey;
 
         const jws = new JsonWebSignature({}, crypto);
         jws.setProtected({
@@ -114,9 +111,6 @@ context("jose", () => {
         const ok = await jws.verify(key);
         assert.strictEqual(ok, true);
       });
-
     });
-
   });
-
 });

@@ -5,7 +5,6 @@ export interface ContentTypeHeader {
 }
 
 export class Headers extends Map<string, string> {
-
   public static REPLAY_NONCE = "Replay-Nonce";
   public static LINK = "Link";
   public static CONTENT_TYPE = "Content-Type";
@@ -47,7 +46,7 @@ export class Headers extends Map<string, string> {
   public get link() {
     const header = this.get(Headers.LINK);
     if (header) {
-      return header.split(",").map(o => o.trim());
+      return header.split(",").map((o) => o.trim());
     }
     return null;
   }
@@ -62,7 +61,7 @@ export class Headers extends Map<string, string> {
     this.set(Headers.LINK, link);
   }
 
-/**
+  /**
    * Gets Cache-Control header
    */
   public get cacheControl() {
@@ -120,5 +119,4 @@ export class Headers extends Map<string, string> {
       this.set(key, value);
     }
   }
-
 }

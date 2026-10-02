@@ -17,7 +17,7 @@ context("ACME user cases", () => {
 
   before((done) => {
     worker = new Worker(`${__dirname}/worker.js`, {
-      workerData: { url }
+      workerData: { url },
     })
       .on("message", () => done())
       .on("error", done);
@@ -30,10 +30,10 @@ context("ACME user cases", () => {
   });
 
   it("Create authorization", async () => {
-    const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as Required<CryptoKeyPair>;
+    const keys = (await crypto.subtle.generateKey(alg, false, ["sign", "verify"])) as Required<CryptoKeyPair>;
     const client = await ApiClient.create(keys, `${url}/directory`, {
       crypto,
-      fetch: (fetch as any),
+      fetch: fetch as any,
     });
 
     await client.newAccount({});
@@ -42,14 +42,14 @@ context("ACME user cases", () => {
       identifier: {
         type: "dns",
         value: "some.domain.com",
-      }
+      },
     });
     assert.strictEqual(authz.status, 201);
     const authz2 = await client.newAuthorization({
       identifier: {
         type: "dns",
         value: "some.domain.com",
-      }
+      },
     });
     assert.strictEqual(authz2.status, 200);
 
@@ -60,36 +60,31 @@ context("ACME user cases", () => {
           type: "dns",
           value: "some.domain.com",
         },
-      ]
+      ],
     });
     assert.strictEqual(order.content.authorizations[0], authz.headers.location);
   });
 
   it("Create two orders with the same identifiers", async () => {
-    const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as Required<CryptoKeyPair>;
+    const keys = (await crypto.subtle.generateKey(alg, false, ["sign", "verify"])) as Required<CryptoKeyPair>;
     const client = await ApiClient.create(keys, `${url}/directory`, {
       crypto,
-      fetch: (fetch as any),
+      fetch: fetch as any,
     });
 
     await client.newAccount({
-      termsOfServiceAgreed: true
+      termsOfServiceAgreed: true,
     });
 
     const order = await client.newOrder({
-      identifiers: [
-        { type: "dns", value: "some.test.com" }
-      ]
+      identifiers: [{ type: "dns", value: "some.test.com" }],
     });
     assert.strictEqual(order.status, 201);
 
     const order2 = await client.newOrder({
-      identifiers: [
-        { type: "dns", value: "some.test.com" }
-      ]
+      identifiers: [{ type: "dns", value: "some.test.com" }],
     });
     assert.strictEqual(order2.status, 201);
     assert.notStrictEqual(order2.headers.location, order.headers.location);
   });
-
 });

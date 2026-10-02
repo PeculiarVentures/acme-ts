@@ -14,11 +14,9 @@ export interface IAuthorizationDynamo extends IBaseDynamoObject {
 }
 
 export class Authorization extends BaseObject implements IAuthorization {
-
   public static async getHashIdentifier(identifier: IIdentifier) {
     const strIdentifiers = `${identifier.type}:${identifier.value}`.toLowerCase();
-    const hashIdentifier = await cryptoProvider.get()
-      .subtle.digest("SHA-1", pvtsutils.Convert.FromUtf8String(strIdentifiers));
+    const hashIdentifier = await cryptoProvider.get().subtle.digest("SHA-1", pvtsutils.Convert.FromUtf8String(strIdentifiers));
     return Convert.ToHex(hashIdentifier);
   }
 

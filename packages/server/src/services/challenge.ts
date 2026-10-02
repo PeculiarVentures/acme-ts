@@ -8,20 +8,19 @@ import * as x509 from "@peculiar/x509";
 
 @injectable()
 export class ChallengeService extends BaseService implements IChallengeService {
-
   protected challengeRepository = container.resolve<data.IChallengeRepository>(data.diChallengeRepository);
 
   public async create(authz: IAuthorization, type: string): Promise<data.IChallenge[]> {
     const services = await this.getValidator(type);
     let challenges: data.IChallenge[] = [];
     for (const service of services) {
-      challenges = [...challenges, ...await service.challengesCreate(authz)];
+      challenges = [...challenges, ...(await service.challengesCreate(authz))];
     }
 
     this.logger.debug(`Challenges created`, {
       account: authz.accountId,
       authorization: authz.id,
-      challenges: challenges.map(o => {
+      challenges: challenges.map((o) => {
         return {
           id: o.id,
           type: o.type,
@@ -43,7 +42,7 @@ export class ChallengeService extends BaseService implements IChallengeService {
         id: challenge.id,
         type: challenge.type,
         status: challenge.status,
-      }
+      },
     });
 
     return challenge;
@@ -62,7 +61,7 @@ export class ChallengeService extends BaseService implements IChallengeService {
         }
       }
       if (problems.length) {
-        err.subproblems = [...err.subproblems || [], ...problems];
+        err.subproblems = [...(err.subproblems || []), ...problems];
       }
     }
 
@@ -73,27 +72,29 @@ export class ChallengeService extends BaseService implements IChallengeService {
 
   public async challengeValidate(challenge: data.IChallenge, type: string): Promise<void> {
     const services = await this.getValidator(type);
-    await Promise.all(services.map(async o => await o.challengeValidate(challenge)));
+    await Promise.all(services.map(async (o) => await o.challengeValidate(challenge)));
   }
 
   public async csrValidate(identifiers: data.IIdentifier[], csrStr: string): Promise<void> {
     let csr: x509.Pkcs10CertificateRequest;
     try {
       csr = new x509.Pkcs10CertificateRequest(csrStr);
-    } catch (error) {
+    } catch {
       throw new core.BadCSRError("Cannot parse CSR");
     }
     const err = new core.BadCSRError("Validate CSR failed");
     const validators = this.getValidatorAll();
-    await Promise.all(validators.map(async o => {
-      const items = identifiers.filter(i => i.type === o.type);
-      if (items.length) {
-        const problems = await o.csrValidate(items, csr);
-        if (problems.length) {
-          err.subproblems = [...err.subproblems || [], ...problems];
+    await Promise.all(
+      validators.map(async (o) => {
+        const items = identifiers.filter((i) => i.type === o.type);
+        if (items.length) {
+          const problems = await o.csrValidate(items, csr);
+          if (problems.length) {
+            err.subproblems = [...(err.subproblems || []), ...problems];
+          }
         }
-      }
-    }));
+      }),
+    );
     if (err.subproblems) {
       throw err;
     }
@@ -109,13 +110,13 @@ export class ChallengeService extends BaseService implements IChallengeService {
       authorization: {
         id,
       },
-      challenges: challenges.map(o => {
+      challenges: challenges.map((o) => {
         return {
           id: o.id,
           type: o.type,
           status: o.status,
         };
-      })
+      }),
     });
 
     return challenges;
@@ -128,19 +129,19 @@ export class ChallengeService extends BaseService implements IChallengeService {
   protected getValidator(identifier: IIdentifier | string): IIdentifierService[] {
     const validators = this.getValidatorAll();
     let type: string;
-    if (typeof (identifier) === "string") {
+    if (typeof identifier === "string") {
       type = identifier;
     } else {
       type = identifier.type;
     }
-    const validator = validators.filter(o => o.type === type);
+    const validator = validators.filter((o) => o.type === type);
     if (!validator.length) {
       throw new core.UnsupportedIdentifierError(`Unsupported identifier type '${type}'`);
     }
 
     this.logger.debug("Get validator", {
       type,
-      validators: validator.map(o => {
+      validators: validator.map((o) => {
         return {
           type: o.constructor.name,
         };

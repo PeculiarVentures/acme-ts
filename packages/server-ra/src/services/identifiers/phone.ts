@@ -17,14 +17,14 @@ export class PhoneChallengeService extends server.BaseService implements server.
     const identifiersCsr = this.getPhones(csr);
     const problems: core.AcmeError[] = [];
 
-    identifiers.forEach(i => {
-      if (!identifiersCsr.find(o => i.value.toLowerCase() === o.toLowerCase())) {
+    identifiers.forEach((i) => {
+      if (!identifiersCsr.find((o) => i.value.toLowerCase() === o.toLowerCase())) {
         problems.push(new core.MalformedError(`Phone number '${i.value}' from order not found in CSR`));
       }
     });
 
-    identifiersCsr.forEach(i => {
-      if (!identifiers.find(o => o.value.toLowerCase() === i.toLowerCase())) {
+    identifiersCsr.forEach((i) => {
+      if (!identifiers.find((o) => o.value.toLowerCase() === i.toLowerCase())) {
         problems.push(new core.MalformedError(`Phone number '${i}' from CSR not found in order`));
       }
     });
@@ -36,7 +36,7 @@ export class PhoneChallengeService extends server.BaseService implements server.
     const names: string[] = [];
 
     const name = new x509.Name(csr.subject);
-    name.toJSON().forEach(o => {
+    name.toJSON().forEach((o) => {
       const tel = o["2.5.4.20"];
       if (tel && tel.length) {
         for (const o2 of tel) {
@@ -48,8 +48,8 @@ export class PhoneChallengeService extends server.BaseService implements server.
     const ext = csr.getExtension(id_ce_subjectAltName);
     if (ext) {
       const san = AsnConvert.parse(ext.value, SubjectAlternativeName);
-      san.forEach(o => {
-        if (o.uniformResourceIdentifier && /^tel:/.test(o.uniformResourceIdentifier)) {
+      san.forEach((o) => {
+        if (o.uniformResourceIdentifier?.startsWith("tel:")) {
           names.push(o.uniformResourceIdentifier);
         }
       });
@@ -103,5 +103,4 @@ export class PhoneChallengeService extends server.BaseService implements server.
     this.getCrypto().getRandomValues(httpToken);
     challenge.token = pvtsutils.Convert.ToBase64Url(httpToken);
   }
-
 }

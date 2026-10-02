@@ -6,14 +6,36 @@ import * as DynamoDbLocal from "dynamodb-local";
 import { Lifecycle, container } from "tsyringe";
 import { DependencyInjection } from "../src/dependency";
 import {
-  IAccount, IAccountRepository, diAccount, diAccountRepository,
-  IAuthorization, IAuthorizationRepository, diAuthorization, diAuthorizationRepository,
-  ICertificate, ICertificateRepository, diCertificate, diCertificateRepository,
-  IChallenge, IChallengeRepository, diChallenge, diChallengeRepository,
-  IExternalAccount, IExternalAccountRepository, diExternalAccount, diExternalAccountRepository,
-  INonceRepository, diNonceRepository,
-  IOrderAuthorization, IOrderAuthorizationRepository, diOrderAuthorization, diOrderAuthorizationRepository,
-  IOrder, diOrder, IOrderRepository, diOrderRepository,
+  IAccount,
+  IAccountRepository,
+  diAccount,
+  diAccountRepository,
+  IAuthorization,
+  IAuthorizationRepository,
+  diAuthorization,
+  diAuthorizationRepository,
+  ICertificate,
+  ICertificateRepository,
+  diCertificate,
+  diCertificateRepository,
+  IChallenge,
+  IChallengeRepository,
+  diChallenge,
+  diChallengeRepository,
+  IExternalAccount,
+  IExternalAccountRepository,
+  diExternalAccount,
+  diExternalAccountRepository,
+  INonceRepository,
+  diNonceRepository,
+  IOrderAuthorization,
+  IOrderAuthorizationRepository,
+  diOrderAuthorization,
+  diOrderAuthorizationRepository,
+  IOrder,
+  diOrder,
+  IOrderRepository,
+  diOrderRepository,
 } from "@peculiar/acme-data";
 import { JsonWebKey } from "@peculiar/jose";
 import { Logger, diLogger } from "@peculiar/acme-core";
@@ -279,7 +301,7 @@ describe("DynamoDB Repositories", () => {
         const challengesFound = await challengeRepo.findByAuthorization(challenge.authorizationId);
         assert.ok(challengesFound);
         assert.equal(challengesFound.length, 1);
-        assert.equal(challengesFound.filter(o => o.id === challenge.id).length, 1);
+        assert.equal(challengesFound.filter((o) => o.id === challenge.id).length, 1);
       });
     });
   });

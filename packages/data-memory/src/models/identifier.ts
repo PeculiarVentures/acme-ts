@@ -8,5 +8,4 @@ export class Identifier extends BaseObject implements IIdentifier {
   public constructor(params: Partial<Identifier> = {}) {
     super(params);
   }
-
 }

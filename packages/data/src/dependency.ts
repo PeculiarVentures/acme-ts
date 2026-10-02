@@ -3,9 +3,7 @@ import * as models from "./models";
 import * as repository from "./repositories";
 
 @injectable()
-export class Empty {
-
-}
+export class Empty {}
 
 export class DependencyInjection {
   public static register(container: DependencyContainer) {
@@ -27,6 +25,5 @@ export class DependencyInjection {
       .register(repository.diOrderRepository, Empty)
       .register(repository.diCertificateRepository, Empty)
       .register(repository.diChallengeRepository, Empty);
-
   }
 }

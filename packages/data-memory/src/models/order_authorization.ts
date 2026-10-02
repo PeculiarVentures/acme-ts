@@ -8,5 +8,4 @@ export class OrderAuthorization extends BaseObject implements IOrderAuthorizatio
   public constructor(params: Partial<OrderAuthorization> = {}) {
     super(params);
   }
-
 }

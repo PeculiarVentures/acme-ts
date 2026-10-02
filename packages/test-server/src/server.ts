@@ -30,10 +30,7 @@ export async function run(port: number) {
   } as Partial<ITestServerOptions2>);
 
   diData.register(container);
-  const memoryEndpoint = await MemoryEndpointService.create([
-    "CN=Memory Root CA, O=Test",
-    "CN=Memory CA, O=Test",
-  ]);
+  const memoryEndpoint = await MemoryEndpointService.create(["CN=Memory Root CA, O=Test", "CN=Memory CA, O=Test"]);
   container.register(diEndpointService, { useValue: memoryEndpoint });
 
   await new Promise<void>((resolve, reject) => {

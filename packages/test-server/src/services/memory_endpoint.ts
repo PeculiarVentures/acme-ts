@@ -13,7 +13,6 @@ function randomSerial(size = 10, crypto = x509.cryptoProvider.get()) {
 
 @injectable()
 export class MemoryEndpointService extends BaseService implements IEndpointService {
-
   public static async create(names?: string[]): Promise<IEndpointService> {
     const srv = new MemoryEndpointService(names);
     await srv.getCaCert();
@@ -21,9 +20,7 @@ export class MemoryEndpointService extends BaseService implements IEndpointServi
     return srv;
   }
 
-  public constructor(
-    public names: string[] = ["Test Root CA"],
-  ) {
+  public constructor(public names: string[] = ["Test Root CA"]) {
     super();
   }
 
@@ -35,28 +32,29 @@ export class MemoryEndpointService extends BaseService implements IEndpointServi
     let length = names.length;
     for (const name of names) {
       const keys = await this.getCrypto().subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, false, ["sign", "verify"]);
-      const cert: x509.X509Certificate = await x509.X509CertificateGenerator.create({
-        serialNumber: randomSerial(),
-        subject: name,
-        issuer: issuer !== null ? issuer.issuerName : name,
-        notBefore: new Date(),
-        notAfter: new Date(Date.now() + 1000 * 60 * 60 * 24), // 24 hours of validity
-        extensions: [
-          new x509.BasicConstraintsExtension(true, length--, true),
-        ],
-        signingAlgorithm: { name: "ECDSA", hash: "SHA-256" },
-        publicKey: keys.publicKey,
-        signingKey: (() => {
-          if (issuer) {
-            if (!issuer.privateKey) {
-              throw new Error("CA certificate doesn't have a private key");
+      const cert: x509.X509Certificate = await x509.X509CertificateGenerator.create(
+        {
+          serialNumber: randomSerial(),
+          subject: name,
+          issuer: issuer !== null ? issuer.issuerName : name,
+          notBefore: new Date(),
+          notAfter: new Date(Date.now() + 1000 * 60 * 60 * 24), // 24 hours of validity
+          extensions: [new x509.BasicConstraintsExtension(true, length--, true)],
+          signingAlgorithm: { name: "ECDSA", hash: "SHA-256" },
+          publicKey: keys.publicKey,
+          signingKey: (() => {
+            if (issuer) {
+              if (!issuer.privateKey) {
+                throw new Error("CA certificate doesn't have a private key");
+              }
+              return issuer.privateKey;
             }
-            return issuer.privateKey;
-          }
 
-          return keys.privateKey;
-        })(),
-      }, this.getCrypto());
+            return keys.privateKey;
+          })(),
+        },
+        this.getCrypto(),
+      );
       cert.privateKey = keys.privateKey;
 
       const certSrv = container.resolve<ICertificateService>(diCertificateService);
@@ -95,19 +93,20 @@ export class MemoryEndpointService extends BaseService implements IEndpointServi
     const notAfter = new Date();
     notAfter.setUTCMonth(notAfter.getUTCMonth() + 1);
 
-    const cert = await x509.X509CertificateGenerator.create({
-      serialNumber: randomSerial(),
-      subject: req.subject,
-      issuer: ca.subject,
-      notBefore,
-      notAfter,
-      extensions: [
-        new x509.BasicConstraintsExtension(false),
-      ],
-      signingAlgorithm: ca.signatureAlgorithm,
-      publicKey: await req.publicKey.export(this.getCrypto()),
-      signingKey: ca.privateKey!,
-    }, this.getCrypto());
+    const cert = await x509.X509CertificateGenerator.create(
+      {
+        serialNumber: randomSerial(),
+        subject: req.subject,
+        issuer: ca.subject,
+        notBefore,
+        notAfter,
+        extensions: [new x509.BasicConstraintsExtension(false)],
+        signingAlgorithm: ca.signatureAlgorithm,
+        publicKey: await req.publicKey.export(this.getCrypto()),
+        signingKey: ca.privateKey!,
+      },
+      this.getCrypto(),
+    );
     return cert.rawData;
   }
 
@@ -115,5 +114,4 @@ export class MemoryEndpointService extends BaseService implements IEndpointServi
   public async revoke(order: IOrder, reason: RevokeReason): Promise<void> {
     // nothing
   }
-
 }

@@ -4,9 +4,7 @@ import * as dataMemory from "@peculiar/acme-data-memory";
 import { container } from "tsyringe";
 
 context("Data Memory Repositories", () => {
-
   context("Adding", () => {
-
     it("default id usage", async () => {
       const scope = container.createChildContainer();
       dataMemory.DependencyInjection.register(scope);
@@ -46,7 +44,5 @@ context("Data Memory Repositories", () => {
       await eabRep.add(eab4);
       assert.strictEqual(eab4.id, 4);
     });
-
   });
-
 });

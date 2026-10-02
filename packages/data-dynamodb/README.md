@@ -41,6 +41,7 @@ data.DependencyInjection.register(container, {
 ## Data structure
 
 ### Account
+
 ```ts
 {
   id:                   { "S": String },
@@ -65,6 +66,7 @@ data.DependencyInjection.register(container, {
 ```
 
 ### Order
+
 ```ts
 {
   id:             { "S": String },
@@ -85,6 +87,7 @@ data.DependencyInjection.register(container, {
 ```
 
 ### Certificate
+
 ```ts
 {
   id:       { "S": String }, //CertificateThumbprint
@@ -94,6 +97,7 @@ data.DependencyInjection.register(container, {
 ```
 
 ### Authorization
+
 ```ts
 {
   id:         { "S": String },
@@ -111,6 +115,7 @@ data.DependencyInjection.register(container, {
 ```
 
 ### Challenge
+
 ```ts
 {
   id:        { "S": String },

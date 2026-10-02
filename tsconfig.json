@@ -19,7 +19,5 @@
       "@peculiar/jose": ["./packages/jose/src"]
     }
   },
-  "exclude": [
-    "packages/*/build"
-  ]
+  "exclude": ["packages/*/build"]
 }

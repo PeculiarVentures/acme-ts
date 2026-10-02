@@ -17,7 +17,6 @@ import { container, Lifecycle } from "tsyringe";
 const baseAddress = "http://localhost";
 
 context("Server", () => {
-
   const crypto = new Crypto();
   let controller: server.AcmeController;
   before(async () => {
@@ -31,7 +30,7 @@ context("Server", () => {
       hashAlgorithm: "SHA-256",
       expireAuthorizationDays: 1,
       ordersPageSize: 10,
-      formattedResponse: true
+      formattedResponse: true,
     });
     container.register(server.diEndpointService, MemoryEndpointService, { lifecycle: Lifecycle.Singleton });
     const logger = new core.ConsoleLogger();
@@ -43,10 +42,12 @@ context("Server", () => {
 
   //#region Helpers
   async function getNonce() {
-    const nonceResp = await controller.getNonce(new server.Request({
-      path: `${baseAddress}/new-nonce`,
-      method: "HEAD",
-    }));
+    const nonceResp = await controller.getNonce(
+      new server.Request({
+        path: `${baseAddress}/new-nonce`,
+        method: "HEAD",
+      }),
+    );
     assert(nonceResp.headers.replayNonce, "replayNonce is required");
     return nonceResp.headers.replayNonce;
   }
@@ -58,19 +59,22 @@ context("Server", () => {
       publicExponent: new Uint8Array([1, 0, 1]),
       modulusLength: 2048,
     };
-    return await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as Required<CryptoKeyPair>;
+    return (await crypto.subtle.generateKey(alg, false, ["sign", "verify"])) as Required<CryptoKeyPair>;
   }
 
   async function createPostRequest(params: any, url: string, kid: string, keys: Required<CryptoKeyPair>, queryParams: core.QueryParams = {}) {
-    const jws = new JsonWebSignature({
-      payload: params,
-      protected: {
-        nonce: await getNonce(),
-        url,
-        kid,
-        jwk: await crypto.subtle.exportKey("jwk", keys.publicKey),
-      }
-    }, crypto);
+    const jws = new JsonWebSignature(
+      {
+        payload: params,
+        protected: {
+          nonce: await getNonce(),
+          url,
+          kid,
+          jwk: await crypto.subtle.exportKey("jwk", keys.publicKey),
+        },
+      },
+      crypto,
+    );
     await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
 
     return new server.Request({
@@ -82,23 +86,28 @@ context("Server", () => {
   }
 
   // eslint-disable-next-line @typescript-eslint/member-delimiter-style
-  async function createAccount(params: protocol.AccountCreateParams & { keys?: Required<CryptoKeyPair>; }, response?: (resp: core.Response) => void) {
-    const keys = params.keys || await generateKey();
-    const jws = new JsonWebSignature({
-      payload: params,
-      protected: {
-        nonce: await getNonce(),
-        url: `${baseAddress}/new-acct`,
-        jwk: await crypto.subtle.exportKey("jwk", keys.publicKey),
-      }
-    }, crypto);
+  async function createAccount(params: protocol.AccountCreateParams & { keys?: Required<CryptoKeyPair> }, response?: (resp: core.Response) => void) {
+    const keys = params.keys || (await generateKey());
+    const jws = new JsonWebSignature(
+      {
+        payload: params,
+        protected: {
+          nonce: await getNonce(),
+          url: `${baseAddress}/new-acct`,
+          jwk: await crypto.subtle.exportKey("jwk", keys.publicKey),
+        },
+      },
+      crypto,
+    );
     await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
 
-    const resp = await controller.newAccount(new server.Request({
-      path: `${baseAddress}/new-acct`,
-      method: "POST",
-      body: jws.toJSON(),
-    }));
+    const resp = await controller.newAccount(
+      new server.Request({
+        path: `${baseAddress}/new-acct`,
+        method: "POST",
+        body: jws.toJSON(),
+      }),
+    );
 
     if (resp.status === core.HttpStatusCode.ok || resp.status === core.HttpStatusCode.created) {
       assert(resp.headers.location, "location header is required");
@@ -129,10 +138,12 @@ context("Server", () => {
   //#endregion
 
   it("GET directory", async () => {
-    const resp = await controller.getDirectory(new server.Request({
-      path: `${baseAddress}/directory`,
-      method: "GET",
-    }));
+    const resp = await controller.getDirectory(
+      new server.Request({
+        path: `${baseAddress}/directory`,
+        method: "GET",
+      }),
+    );
 
     assert.strictEqual(resp.status, 200, `Wrong status ${resp.status}. ${resp.content?.toJSON().detail}`);
     assert.strictEqual(resp.content?.type, core.ContentType.json);
@@ -147,10 +158,12 @@ context("Server", () => {
   });
 
   it("GET new-nonce", async () => {
-    const resp = await controller.getNonce(new server.Request({
-      path: `${baseAddress}/new-nonce`,
-      method: "GET",
-    }));
+    const resp = await controller.getNonce(
+      new server.Request({
+        path: `${baseAddress}/new-nonce`,
+        method: "GET",
+      }),
+    );
 
     assert.strictEqual(resp.status, 204);
 
@@ -158,10 +171,12 @@ context("Server", () => {
   });
 
   it("HEAD new-nonce", async () => {
-    const resp = await controller.getNonce(new server.Request({
-      path: `${baseAddress}/new-nonce`,
-      method: "HEAD",
-    }));
+    const resp = await controller.getNonce(
+      new server.Request({
+        path: `${baseAddress}/new-nonce`,
+        method: "HEAD",
+      }),
+    );
 
     assert.strictEqual(resp.status, 200);
 
@@ -169,9 +184,7 @@ context("Server", () => {
   });
 
   context("account", () => {
-
     context("new-account", () => {
-
       it("wrong nonce", async () => {
         const alg: RsaHashedKeyGenParams = {
           name: "RSASSA-PKCS1-v1_5",
@@ -179,22 +192,27 @@ context("Server", () => {
           publicExponent: new Uint8Array([1, 0, 1]),
           modulusLength: 2048,
         };
-        const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as Required<CryptoKeyPair>;
-        const jws = new JsonWebSignature({
-          payload: {
-            contact: ["mailto:some@mail.com"],
-          } as protocol.AccountCreateParams,
-          protected: {
-            nonce: "1234567890",
-          }
-        }, crypto);
+        const keys = (await crypto.subtle.generateKey(alg, false, ["sign", "verify"])) as Required<CryptoKeyPair>;
+        const jws = new JsonWebSignature(
+          {
+            payload: {
+              contact: ["mailto:some@mail.com"],
+            } as protocol.AccountCreateParams,
+            protected: {
+              nonce: "1234567890",
+            },
+          },
+          crypto,
+        );
         await jws.sign(alg, keys.privateKey);
 
-        const resp = await controller.newAccount(new server.Request({
-          path: `${baseAddress}/new-acct`,
-          method: "POST",
-          body: jws.toJSON(),
-        }));
+        const resp = await controller.newAccount(
+          new server.Request({
+            path: `${baseAddress}/new-acct`,
+            method: "POST",
+            body: jws.toJSON(),
+          }),
+        );
 
         assert.strictEqual(resp.status, 400);
 
@@ -204,21 +222,26 @@ context("Server", () => {
 
       it("empty url", async () => {
         const keys = await generateKey();
-        const jws = new JsonWebSignature({
-          payload: {
-            contact: ["mailto:some@mail.com"],
-          } as protocol.AccountCreateParams,
-          protected: {
-            nonce: await getNonce(),
-          }
-        }, crypto);
+        const jws = new JsonWebSignature(
+          {
+            payload: {
+              contact: ["mailto:some@mail.com"],
+            } as protocol.AccountCreateParams,
+            protected: {
+              nonce: await getNonce(),
+            },
+          },
+          crypto,
+        );
         await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
 
-        const resp = await controller.newAccount(new server.Request({
-          path: `${baseAddress}/new-acct`,
-          method: "POST",
-          body: jws.toJSON(),
-        }));
+        const resp = await controller.newAccount(
+          new server.Request({
+            path: `${baseAddress}/new-acct`,
+            method: "POST",
+            body: jws.toJSON(),
+          }),
+        );
 
         assert.strictEqual(resp.status, 401);
         assert.strictEqual(!!resp.headers.replayNonce, true);
@@ -231,24 +254,29 @@ context("Server", () => {
         const keys = await generateKey();
         const nonce = await getNonce();
 
-        const jws = new JsonWebSignature({
-          payload: {
-            contact: ["mailto:some@mail.com"],
-          } as protocol.AccountCreateParams,
-          protected: {
-            nonce,
-            url: `${baseAddress}/new-acct`,
-            jwk: await crypto.subtle.exportKey("jwk", keys.publicKey),
-          }
-        }, crypto);
+        const jws = new JsonWebSignature(
+          {
+            payload: {
+              contact: ["mailto:some@mail.com"],
+            } as protocol.AccountCreateParams,
+            protected: {
+              nonce,
+              url: `${baseAddress}/new-acct`,
+              jwk: await crypto.subtle.exportKey("jwk", keys.publicKey),
+            },
+          },
+          crypto,
+        );
         await jws.sign({ name: "RSASSA-PKCS1-v1_5" }, keys.privateKey);
         jws.signature += "a";
 
-        const resp = await controller.newAccount(new server.Request({
-          path: `${baseAddress}/new-acct`,
-          method: "POST",
-          body: jws.toJSON(),
-        }));
+        const resp = await controller.newAccount(
+          new server.Request({
+            path: `${baseAddress}/new-acct`,
+            method: "POST",
+            body: jws.toJSON(),
+          }),
+        );
 
         assert.strictEqual(resp.status, 401);
         assert.strictEqual(!!resp.headers.replayNonce, true);
@@ -258,12 +286,15 @@ context("Server", () => {
       });
 
       it("create with contacts", async () => {
-        const client = await createAccount({
-          contact: ["mailto:some@mail.com"],
-        }, (resp) => {
-          assert.strictEqual(resp.status, 201);
-          assert(resp.headers.location);
-        });
+        const client = await createAccount(
+          {
+            contact: ["mailto:some@mail.com"],
+          },
+          (resp) => {
+            assert.strictEqual(resp.status, 201);
+            assert(resp.headers.location);
+          },
+        );
 
         assert.deepStrictEqual(client.account.contact, ["mailto:some@mail.com"]);
         assert.deepStrictEqual(client.account.termsOfServiceAgreed, undefined);
@@ -332,7 +363,6 @@ context("Server", () => {
           const json = resp.json<protocol.Account>();
           assert.strictEqual(json.status, "valid");
         });
-
       });
 
       it("get existing account onlyReturnExisting:false", async () => {
@@ -351,22 +381,21 @@ context("Server", () => {
           const json = resp.json<protocol.Account>();
           assert.strictEqual(json.status, "valid");
         });
-
       });
-
     });
 
     context("terms agreement", () => {
-
       before(() => {
         controller.options.meta = { termsOfService: `${baseAddress}/terms.pdf` };
       });
 
       it("get directory", async () => {
-        const resp = await controller.getDirectory(new server.Request({
-          method: "GET",
-          path: `${baseAddress}/directory`,
-        }));
+        const resp = await controller.getDirectory(
+          new server.Request({
+            method: "GET",
+            path: `${baseAddress}/directory`,
+          }),
+        );
 
         assert.strictEqual(resp.status, 200);
 
@@ -396,23 +425,23 @@ context("Server", () => {
       after(() => {
         delete controller.options.meta;
       });
-
     });
 
     context("POST account", () => {
-
       it("update contacts", async () => {
         const client = await createAccount({}, (resp) => {
           assert.strictEqual(resp.status, 201);
         });
-        const resp = await controller.postAccount(await createPostRequest(
-          {
-            contact: ["mailto:some-new@mail.com"],
-          } as protocol.AccountUpdateParams,
-          client.location!,
-          client.location!,
-          client.keys,
-        ));
+        const resp = await controller.postAccount(
+          await createPostRequest(
+            {
+              contact: ["mailto:some-new@mail.com"],
+            } as protocol.AccountUpdateParams,
+            client.location!,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         assert.strictEqual(resp.status, 200);
 
@@ -425,14 +454,16 @@ context("Server", () => {
         const client = await createAccount({}, (resp) => {
           assert.strictEqual(resp.status, 201);
         });
-        const resp = await controller.postAccount(await createPostRequest(
-          {
-            contact: [],
-          } as protocol.AccountUpdateParams,
-          client.location!,
-          client.location!,
-          client.keys,
-        ));
+        const resp = await controller.postAccount(
+          await createPostRequest(
+            {
+              contact: [],
+            } as protocol.AccountUpdateParams,
+            client.location!,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         assert.strictEqual(resp.status, 200);
 
@@ -445,14 +476,16 @@ context("Server", () => {
         const client = await createAccount({}, (resp) => {
           assert.strictEqual(resp.status, 201);
         });
-        const resp = await controller.postAccount(await createPostRequest(
-          {
-            contact: ["mailto:wrong email$address_com"],
-          } as protocol.AccountUpdateParams,
-          client.location!,
-          client.location!,
-          client.keys,
-        ));
+        const resp = await controller.postAccount(
+          await createPostRequest(
+            {
+              contact: ["mailto:wrong email$address_com"],
+            } as protocol.AccountUpdateParams,
+            client.location!,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         assert.strictEqual(resp.status, 400);
 
@@ -464,14 +497,16 @@ context("Server", () => {
         const client = await createAccount({}, (resp) => {
           assert.strictEqual(resp.status, 201);
         });
-        const resp = await controller.postAccount(await createPostRequest(
-          {
-            contact: ["wrong email$address_com"],
-          } as protocol.AccountUpdateParams,
-          client.location!,
-          client.location!,
-          client.keys,
-        ));
+        const resp = await controller.postAccount(
+          await createPostRequest(
+            {
+              contact: ["wrong email$address_com"],
+            } as protocol.AccountUpdateParams,
+            client.location!,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         assert.strictEqual(resp.status, 400);
 
@@ -485,14 +520,16 @@ context("Server", () => {
         });
 
         {
-          const resp = await controller.postAccount(await createPostRequest(
-            {
-              status: "deactivated",
-            } as protocol.AccountUpdateParams,
-            client.location!,
-            client.location!,
-            client.keys,
-          ));
+          const resp = await controller.postAccount(
+            await createPostRequest(
+              {
+                status: "deactivated",
+              } as protocol.AccountUpdateParams,
+              client.location!,
+              client.location!,
+              client.keys,
+            ),
+          );
 
           assert.strictEqual(resp.status, 200);
 
@@ -502,12 +539,7 @@ context("Server", () => {
 
         {
           // send request to deactivated account
-          const resp = await controller.postAccount(await createPostRequest(
-            {} as protocol.AccountUpdateParams,
-            client.location!,
-            client.location!,
-            client.keys,
-          ));
+          const resp = await controller.postAccount(await createPostRequest({} as protocol.AccountUpdateParams, client.location!, client.location!, client.keys));
 
           assert.strictEqual(resp.status, 401);
 
@@ -515,23 +547,24 @@ context("Server", () => {
           assert.strictEqual(json.type, core.ErrorType.unauthorized);
         }
       });
-
     });
 
     context("key rollover", () => {
-
       async function createNewKey(oldKey: CryptoKey, kid: string, keys?: Required<CryptoKeyPair>) {
         keys ??= await generateKey();
-        const innerToken = new JsonWebSignature({
-          protected: {
-            url: `${baseAddress}/key-change`,
-            jwk: new JsonWebKey(crypto, await crypto.subtle.exportKey("jwk", keys.publicKey)),
+        const innerToken = new JsonWebSignature(
+          {
+            protected: {
+              url: `${baseAddress}/key-change`,
+              jwk: new JsonWebKey(crypto, await crypto.subtle.exportKey("jwk", keys.publicKey)),
+            },
+            payload: {
+              account: kid,
+              oldKey: new JsonWebKey(crypto, await crypto.subtle.exportKey("jwk", oldKey)),
+            },
           },
-          payload: {
-            account: kid,
-            oldKey: new JsonWebKey(crypto, await crypto.subtle.exportKey("jwk", oldKey)),
-          }
-        }, crypto);
+          crypto,
+        );
         await innerToken.sign({ hash: "SHA-256", ...keys.privateKey.algorithm }, keys.privateKey);
         return innerToken;
       }
@@ -541,12 +574,7 @@ context("Server", () => {
           assert.strictEqual(resp.status, 201);
         });
         const innerToken = await createNewKey(client.keys.publicKey, client.location!);
-        const resp = await controller.keyChange(await createPostRequest(
-          innerToken.toJSON(),
-          `${baseAddress}/key-change`,
-          client.location!,
-          client.keys,
-        ));
+        const resp = await controller.keyChange(await createPostRequest(innerToken.toJSON(), `${baseAddress}/key-change`, client.location!, client.keys));
 
         assert.strictEqual(resp.status, 200);
         assert.strictEqual(resp.headers.location, client.location);
@@ -563,12 +591,7 @@ context("Server", () => {
           assert.strictEqual(resp.status, 201);
         });
         const innerToken = await createNewKey(client.keys.publicKey, client.location!, client2.keys);
-        const resp = await controller.keyChange(await createPostRequest(
-          innerToken.toJSON(),
-          `${baseAddress}/key-change`,
-          client.location!,
-          client.keys,
-        ));
+        const resp = await controller.keyChange(await createPostRequest(innerToken.toJSON(), `${baseAddress}/key-change`, client.location!, client.keys));
 
         assert.strictEqual(resp.status, 409);
         assert.strictEqual(resp.headers.location, client2.location);
@@ -585,12 +608,7 @@ context("Server", () => {
         const header = innerToken.getProtected();
         delete header.jwk;
         innerToken.setProtected(header);
-        const resp = await controller.keyChange(await createPostRequest(
-          innerToken.toJSON(),
-          `${baseAddress}/key-change`,
-          client.location!,
-          client.keys,
-        ));
+        const resp = await controller.keyChange(await createPostRequest(innerToken.toJSON(), `${baseAddress}/key-change`, client.location!, client.keys));
 
         assert.strictEqual(resp.status, 403);
 
@@ -606,12 +624,7 @@ context("Server", () => {
         const header = innerToken.getProtected();
         delete header.jwk;
         innerToken.setProtected(header);
-        const resp = await controller.keyChange(await createPostRequest(
-          innerToken.toJSON(),
-          `${baseAddress}/key-change`,
-          client.location!,
-          client.keys,
-        ));
+        const resp = await controller.keyChange(await createPostRequest(innerToken.toJSON(), `${baseAddress}/key-change`, client.location!, client.keys));
 
         assert.strictEqual(resp.status, 403);
 
@@ -625,12 +638,7 @@ context("Server", () => {
         });
         const innerToken = await createNewKey(client.keys.publicKey, client.location!);
         innerToken.signature = "wrongSignatureValue";
-        const resp = await controller.keyChange(await createPostRequest(
-          innerToken.toJSON(),
-          `${baseAddress}/key-change`,
-          client.location!,
-          client.keys,
-        ));
+        const resp = await controller.keyChange(await createPostRequest(innerToken.toJSON(), `${baseAddress}/key-change`, client.location!, client.keys));
 
         assert.strictEqual(resp.status, 403);
 
@@ -644,25 +652,17 @@ context("Server", () => {
         });
         const innerToken = await createNewKey(client.keys.publicKey, client.location!);
         innerToken.signature = "wrongSignatureValue";
-        const resp = await controller.keyChange(await createPostRequest(
-          innerToken.toJSON(),
-          `${baseAddress}/key-change`,
-          client.location!,
-          client.keys,
-        ));
+        const resp = await controller.keyChange(await createPostRequest(innerToken.toJSON(), `${baseAddress}/key-change`, client.location!, client.keys));
 
         assert.strictEqual(resp.status, 403);
 
         const json = resp.json<protocol.Error>();
         assert.strictEqual(json.type, core.ErrorType.malformed);
       });
-
     });
-
   });
 
   context("order", async () => {
-
     async function changeAuthzStatus(location: string, status: protocol.AuthorizationStatus) {
       const authzRepo = container.resolve<data.IAuthorizationRepository>(data.diAuthorizationRepository);
       const authz = await authzRepo.findById(getId(location));
@@ -672,25 +672,27 @@ context("Server", () => {
     }
 
     context("create", () => {
-
       it("create", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
           assert.strictEqual(resp.status, 201);
         });
 
-        const resp = await controller.createOrder(await createPostRequest(
-          {
-            identifiers: [
-              {
-                type: "dns",
-                value: "some.com"
-              }
-            ],
-          } as protocol.OrderCreateParams,
-          `${baseAddress}/new-order`,
-          client.location!,
-          client.keys));
+        const resp = await controller.createOrder(
+          await createPostRequest(
+            {
+              identifiers: [
+                {
+                  type: "dns",
+                  value: "some.com",
+                },
+              ],
+            } as protocol.OrderCreateParams,
+            `${baseAddress}/new-order`,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         assert.strictEqual(resp.status, 201);
         assert.strictEqual(/http:\/\/localhost\/order\/[^/]/.test(resp.headers.location!), true, "Order response wrong Location header");
@@ -708,33 +710,39 @@ context("Server", () => {
           assert.strictEqual(resp.status, 201);
         });
 
-        const resp = await controller.createOrder(await createPostRequest(
-          {
-            identifiers: [
-              {
-                type: "dns",
-                value: "some.com"
-              }
-            ],
-          } as protocol.OrderCreateParams,
-          `${baseAddress}/new-order`,
-          client.location!,
-          client.keys));
+        const resp = await controller.createOrder(
+          await createPostRequest(
+            {
+              identifiers: [
+                {
+                  type: "dns",
+                  value: "some.com",
+                },
+              ],
+            } as protocol.OrderCreateParams,
+            `${baseAddress}/new-order`,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         assert.strictEqual(resp.status, 201);
 
-        const resp2 = await controller.createOrder(await createPostRequest(
-          {
-            identifiers: [
-              {
-                type: "dns",
-                value: "some.com"
-              }
-            ],
-          } as protocol.OrderCreateParams,
-          `${baseAddress}/new-order`,
-          client.location!,
-          client.keys));
+        const resp2 = await controller.createOrder(
+          await createPostRequest(
+            {
+              identifiers: [
+                {
+                  type: "dns",
+                  value: "some.com",
+                },
+              ],
+            } as protocol.OrderCreateParams,
+            `${baseAddress}/new-order`,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         // Server must create new order
         assert.strictEqual(resp2.status, 201);
@@ -747,18 +755,21 @@ context("Server", () => {
           assert.strictEqual(resp.status, 201);
         });
 
-        const resp = await controller.createOrder(await createPostRequest(
-          {
-            identifiers: [
-              {
-                type: "dns",
-                value: "some.com"
-              }
-            ],
-          } as protocol.OrderCreateParams,
-          `${baseAddress}/new-order`,
-          client.location!,
-          client.keys));
+        const resp = await controller.createOrder(
+          await createPostRequest(
+            {
+              identifiers: [
+                {
+                  type: "dns",
+                  value: "some.com",
+                },
+              ],
+            } as protocol.OrderCreateParams,
+            `${baseAddress}/new-order`,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         assert.strictEqual(resp.status, 201);
 
@@ -769,19 +780,21 @@ context("Server", () => {
         order.status = "valid";
         orderRepo.update(order);
 
-
-        const resp2 = await controller.createOrder(await createPostRequest(
-          {
-            identifiers: [
-              {
-                type: "dns",
-                value: "some.com"
-              }
-            ],
-          } as protocol.OrderCreateParams,
-          `${baseAddress}/new-order`,
-          client.location!,
-          client.keys));
+        const resp2 = await controller.createOrder(
+          await createPostRequest(
+            {
+              identifiers: [
+                {
+                  type: "dns",
+                  value: "some.com",
+                },
+              ],
+            } as protocol.OrderCreateParams,
+            `${baseAddress}/new-order`,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         assert.strictEqual(resp2.status, 201);
       });
@@ -792,18 +805,21 @@ context("Server", () => {
           assert.strictEqual(resp.status, 201);
         });
 
-        const resp = await controller.createOrder(await createPostRequest(
-          {
-            identifiers: [
-              {
-                type: "dns",
-                value: "some.com"
-              }
-            ],
-          } as protocol.OrderCreateParams,
-          `${baseAddress}/new-order`,
-          client.location!,
-          client.keys));
+        const resp = await controller.createOrder(
+          await createPostRequest(
+            {
+              identifiers: [
+                {
+                  type: "dns",
+                  value: "some.com",
+                },
+              ],
+            } as protocol.OrderCreateParams,
+            `${baseAddress}/new-order`,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         assert.strictEqual(resp.status, 201);
 
@@ -822,19 +838,21 @@ context("Server", () => {
         authz.status = "valid";
         authzRepo.update(authz);
 
-
-        const resp2 = await controller.createOrder(await createPostRequest(
-          {
-            identifiers: [
-              {
-                type: "dns",
-                value: "some.com"
-              }
-            ],
-          } as protocol.OrderCreateParams,
-          `${baseAddress}/new-order`,
-          client.location!,
-          client.keys));
+        const resp2 = await controller.createOrder(
+          await createPostRequest(
+            {
+              identifiers: [
+                {
+                  type: "dns",
+                  value: "some.com",
+                },
+              ],
+            } as protocol.OrderCreateParams,
+            `${baseAddress}/new-order`,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         assert.strictEqual(resp2.status, 201);
 
@@ -849,15 +867,16 @@ context("Server", () => {
           assert.strictEqual(resp.status, 201);
         });
 
-        const resp = await controller.createOrder(await createPostRequest(
-          {
-            identifiers: [
-              { type: "wrong", value: "some.com" },
-            ],
-          } as protocol.OrderCreateParams,
-          `${baseAddress}/new-order`,
-          client.location!,
-          client.keys));
+        const resp = await controller.createOrder(
+          await createPostRequest(
+            {
+              identifiers: [{ type: "wrong", value: "some.com" }],
+            } as protocol.OrderCreateParams,
+            `${baseAddress}/new-order`,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         assert.strictEqual(resp.status, 403);
 
@@ -871,44 +890,45 @@ context("Server", () => {
           assert.strictEqual(resp.status, 201);
         });
 
-        const resp = await controller.createOrder(await createPostRequest(
-          {
-            identifiers: [
-              { type: "dns", value: "wrong domain name" },
-            ],
-          } as protocol.OrderCreateParams,
-          `${baseAddress}/new-order`,
-          client.location!,
-          client.keys));
+        const resp = await controller.createOrder(
+          await createPostRequest(
+            {
+              identifiers: [{ type: "dns", value: "wrong domain name" }],
+            } as protocol.OrderCreateParams,
+            `${baseAddress}/new-order`,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         assert.strictEqual(resp.status, 403);
 
         const error = resp.json<protocol.Error>();
         assert.strictEqual(error.type, core.ErrorType.malformed);
       });
-
     });
 
     context("get", () => {
-
       context("status", () => {
-
         it("authz: valid, valid ", async () => {
           // Create new account
           const client = await createAccount({}, (resp) => {
             assert.strictEqual(resp.status, 201);
           });
 
-          const resp = await controller.createOrder(await createPostRequest(
-            {
-              identifiers: [
-                { type: "dns", value: "some.com" },
-                { type: "dns", value: "some2.com" },
-              ],
-            } as protocol.OrderCreateParams,
-            `${baseAddress}/new-order`,
-            client.location!,
-            client.keys));
+          const resp = await controller.createOrder(
+            await createPostRequest(
+              {
+                identifiers: [
+                  { type: "dns", value: "some.com" },
+                  { type: "dns", value: "some2.com" },
+                ],
+              } as protocol.OrderCreateParams,
+              `${baseAddress}/new-order`,
+              client.location!,
+              client.keys,
+            ),
+          );
 
           assert.strictEqual(resp.status, 201);
           const id = getId(resp.headers.location);
@@ -919,11 +939,7 @@ context("Server", () => {
           changeAuthzStatus(order.authorizations[0], "valid");
           changeAuthzStatus(order.authorizations[1], "valid");
 
-          const resp2 = await controller.postOrder(await createPostRequest(
-            "",
-            `${baseAddress}/order/${id}`,
-            client.location!,
-            client.keys), id);
+          const resp2 = await controller.postOrder(await createPostRequest("", `${baseAddress}/order/${id}`, client.location!, client.keys), id);
           assert.strictEqual(resp2.status, 200);
 
           const order2 = resp2.json<protocol.Order>();
@@ -936,16 +952,19 @@ context("Server", () => {
             assert.strictEqual(resp.status, 201);
           });
 
-          const resp = await controller.createOrder(await createPostRequest(
-            {
-              identifiers: [
-                { type: "dns", value: "some.com" },
-                { type: "dns", value: "some2.com" },
-              ],
-            } as protocol.OrderCreateParams,
-            `${baseAddress}/new-order`,
-            client.location!,
-            client.keys));
+          const resp = await controller.createOrder(
+            await createPostRequest(
+              {
+                identifiers: [
+                  { type: "dns", value: "some.com" },
+                  { type: "dns", value: "some2.com" },
+                ],
+              } as protocol.OrderCreateParams,
+              `${baseAddress}/new-order`,
+              client.location!,
+              client.keys,
+            ),
+          );
 
           assert.strictEqual(resp.status, 201);
           const id = getId(resp.headers.location);
@@ -955,11 +974,7 @@ context("Server", () => {
 
           changeAuthzStatus(order.authorizations[0], "valid");
 
-          const resp2 = await controller.postOrder(await createPostRequest(
-            "",
-            `${baseAddress}/order/${id}`,
-            client.location!,
-            client.keys), id);
+          const resp2 = await controller.postOrder(await createPostRequest("", `${baseAddress}/order/${id}`, client.location!, client.keys), id);
           assert.strictEqual(resp2.status, 200);
 
           const order2 = resp2.json<protocol.Order>();
@@ -972,16 +987,19 @@ context("Server", () => {
             assert.strictEqual(resp.status, 201);
           });
 
-          const resp = await controller.createOrder(await createPostRequest(
-            {
-              identifiers: [
-                { type: "dns", value: "some.com" },
-                { type: "dns", value: "some2.com" },
-              ],
-            } as protocol.OrderCreateParams,
-            `${baseAddress}/new-order`,
-            client.location!,
-            client.keys));
+          const resp = await controller.createOrder(
+            await createPostRequest(
+              {
+                identifiers: [
+                  { type: "dns", value: "some.com" },
+                  { type: "dns", value: "some2.com" },
+                ],
+              } as protocol.OrderCreateParams,
+              `${baseAddress}/new-order`,
+              client.location!,
+              client.keys,
+            ),
+          );
 
           assert.strictEqual(resp.status, 201);
           const id = getId(resp.headers.location);
@@ -992,24 +1010,17 @@ context("Server", () => {
           changeAuthzStatus(order.authorizations[0], "valid");
           changeAuthzStatus(order.authorizations[1], "invalid");
 
-          const resp2 = await controller.postOrder(await createPostRequest(
-            "",
-            `${baseAddress}/order/${id}`,
-            client.location!,
-            client.keys), id);
+          const resp2 = await controller.postOrder(await createPostRequest("", `${baseAddress}/order/${id}`, client.location!, client.keys), id);
           assert.strictEqual(resp2.status, 200);
 
           const order2 = resp2.json<protocol.Order>();
           assert.strictEqual(order2.status, "invalid");
           assert(order2.error);
         });
-
       });
-
     });
 
     context("finalize", () => {
-
       it("wrong CSR message", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
@@ -1017,13 +1028,16 @@ context("Server", () => {
         });
 
         // create order
-        const resp = await controller.createOrder(await createPostRequest(
-          {
-            identifiers: [{ type: "dns", value: "some.com" }],
-          } as protocol.OrderCreateParams,
-          `${baseAddress}/new-order`,
-          client.location!,
-          client.keys));
+        const resp = await controller.createOrder(
+          await createPostRequest(
+            {
+              identifiers: [{ type: "dns", value: "some.com" }],
+            } as protocol.OrderCreateParams,
+            `${baseAddress}/new-order`,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         assert.strictEqual(resp.status, 201);
         const order = resp.json<protocol.Order>();
@@ -1031,13 +1045,17 @@ context("Server", () => {
 
         await changeAuthzStatus(order.authorizations[0], "valid");
 
-        const resp2 = await controller.finalizeOrder(await createPostRequest(
-          {
-            csr: "AaAaAaAaAaAaAaAaAaAaAaAa",
-          } as protocol.FinalizeParams,
-          `${baseAddress}/finalize/${orderId}`,
-          client.location!,
-          client.keys), orderId);
+        const resp2 = await controller.finalizeOrder(
+          await createPostRequest(
+            {
+              csr: "AaAaAaAaAaAaAaAaAaAaAaAa",
+            } as protocol.FinalizeParams,
+            `${baseAddress}/finalize/${orderId}`,
+            client.location!,
+            client.keys,
+          ),
+          orderId,
+        );
 
         assert.strictEqual(resp2.status, 403);
         const error = resp2.json<protocol.Error>();
@@ -1051,16 +1069,19 @@ context("Server", () => {
         });
 
         // create order
-        const resp = await controller.createOrder(await createPostRequest(
-          {
-            identifiers: [
-              { type: "dns", value: "some.com" },
-              { type: "dns", value: "some2.com" },
-            ],
-          } as protocol.OrderCreateParams,
-          `${baseAddress}/new-order`,
-          client.location!,
-          client.keys));
+        const resp = await controller.createOrder(
+          await createPostRequest(
+            {
+              identifiers: [
+                { type: "dns", value: "some.com" },
+                { type: "dns", value: "some2.com" },
+              ],
+            } as protocol.OrderCreateParams,
+            `${baseAddress}/new-order`,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         assert.strictEqual(resp.status, 201);
         const order = resp.json<protocol.Order>();
@@ -1069,13 +1090,17 @@ context("Server", () => {
         await changeAuthzStatus(order.authorizations[0], "valid");
         await changeAuthzStatus(order.authorizations[1], "valid");
 
-        const resp2 = await controller.finalizeOrder(await createPostRequest(
-          {
-            csr: "MIICRzCCAS8CAQAwAjEAMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArut7tLrb1BEHXImMTWipet+3/J2isn7mBv278oP7YyOkmX/Vzxvk9nvSc/B1wh6kSo6nfaxYacNNSP3r+WQYaTeLm5TsDbUfCJYtvvTuYH0GVTM8Qm7QhMZKnyUy/D60WNcRM4pnBDSEMpKppi7HhfL37DZpQnsQfr9r8LQPWZ9t/mf+FsSeWyQOQcz+ob6cODfNQIvbzpaXXdNpKIHLPW+/e4af5/WlZ9wL5Sy7kOf4X6nErdl74s1vSji9goANSQkd5TbswtFPRNybikrrisz0HtsIq2uTGDY6t3iOEHTe5qe/ux4anjbSqKVuIQEQWQOKb4h+mHTc+EC5yknihQIDAQABoAAwDQYJKoZIhvcNAQELBQADggEBAE7TU20ui1MLtxLM0UZMytYAjC7vtXxB5Vl6bzHUzZkVFW6oTeizqDxjeBtZ1SqErpgdyvzMvFSxF6f+679kl1/Zs2V0IPa4y58he3wTT/M1xCBN/bITY2cA4ETozbtK4cGoi6jY/0j8NcxTLfiBgwhE3ap+9GzLtWEhHWCXmpsohbvAktXSh1tLh4xmgoQoePEBSPbnaOmsonyzscKiBMASDvjrFdNbtD0uY2v/wYXwtRGvV/Q/O3lLWEosE4NdnZmgId4bm7ru48WucSnxuEJAkKUjDLrN0uqY/tKfX4Zy9w8Y/o+hk3QzNBVa3ZUvzDhVAmamQflvw3lXMm/JG4U=",
-          } as protocol.FinalizeParams,
-          `${baseAddress}/finalize/${orderId}`,
-          client.location!,
-          client.keys), orderId);
+        const resp2 = await controller.finalizeOrder(
+          await createPostRequest(
+            {
+              csr: "MIICRzCCAS8CAQAwAjEAMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArut7tLrb1BEHXImMTWipet+3/J2isn7mBv278oP7YyOkmX/Vzxvk9nvSc/B1wh6kSo6nfaxYacNNSP3r+WQYaTeLm5TsDbUfCJYtvvTuYH0GVTM8Qm7QhMZKnyUy/D60WNcRM4pnBDSEMpKppi7HhfL37DZpQnsQfr9r8LQPWZ9t/mf+FsSeWyQOQcz+ob6cODfNQIvbzpaXXdNpKIHLPW+/e4af5/WlZ9wL5Sy7kOf4X6nErdl74s1vSji9goANSQkd5TbswtFPRNybikrrisz0HtsIq2uTGDY6t3iOEHTe5qe/ux4anjbSqKVuIQEQWQOKb4h+mHTc+EC5yknihQIDAQABoAAwDQYJKoZIhvcNAQELBQADggEBAE7TU20ui1MLtxLM0UZMytYAjC7vtXxB5Vl6bzHUzZkVFW6oTeizqDxjeBtZ1SqErpgdyvzMvFSxF6f+679kl1/Zs2V0IPa4y58he3wTT/M1xCBN/bITY2cA4ETozbtK4cGoi6jY/0j8NcxTLfiBgwhE3ap+9GzLtWEhHWCXmpsohbvAktXSh1tLh4xmgoQoePEBSPbnaOmsonyzscKiBMASDvjrFdNbtD0uY2v/wYXwtRGvV/Q/O3lLWEosE4NdnZmgId4bm7ru48WucSnxuEJAkKUjDLrN0uqY/tKfX4Zy9w8Y/o+hk3QzNBVa3ZUvzDhVAmamQflvw3lXMm/JG4U=",
+            } as protocol.FinalizeParams,
+            `${baseAddress}/finalize/${orderId}`,
+            client.location!,
+            client.keys,
+          ),
+          orderId,
+        );
 
         assert.strictEqual(resp2.status, 403);
         const error = resp2.json<protocol.Error>();
@@ -1091,16 +1116,19 @@ context("Server", () => {
         });
 
         // create order
-        const resp = await controller.createOrder(await createPostRequest(
-          {
-            identifiers: [
-              { type: "dns", value: "some.com" },
-              { type: "dns", value: "info.some.com" },
-            ],
-          } as protocol.OrderCreateParams,
-          `${baseAddress}/new-order`,
-          client.location!,
-          client.keys));
+        const resp = await controller.createOrder(
+          await createPostRequest(
+            {
+              identifiers: [
+                { type: "dns", value: "some.com" },
+                { type: "dns", value: "info.some.com" },
+              ],
+            } as protocol.OrderCreateParams,
+            `${baseAddress}/new-order`,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         assert.strictEqual(resp.status, 201);
         const order = resp.json<protocol.Order>();
@@ -1115,25 +1143,30 @@ context("Server", () => {
           publicExponent: new Uint8Array([1, 0, 1]),
           modulusLength: 2048,
         };
-        const keys = await crypto.subtle.generateKey(keyAlg, false, ["sign", "verify"]) as CryptoKeyPair;
+        const keys = (await crypto.subtle.generateKey(keyAlg, false, ["sign", "verify"])) as CryptoKeyPair;
         const req = await x509.Pkcs10CertificateRequestGenerator.create({
           name: "CN=some.com",
           keys,
           signingAlgorithm: { name: "RSASSA-PKCS1-v1_5" },
           extensions: [
-            new x509.Extension(id_ce_subjectAltName, false, AsnConvert.serialize(new SubjectAlternativeName([
-              new GeneralName({ dNSName: "info.some.com" }),
-              new GeneralName({ dNSName: "*.some.com" }),
-            ])))
-          ]
+            new x509.Extension(
+              id_ce_subjectAltName,
+              false,
+              AsnConvert.serialize(new SubjectAlternativeName([new GeneralName({ dNSName: "info.some.com" }), new GeneralName({ dNSName: "*.some.com" })])),
+            ),
+          ],
         });
-        const resp2 = await controller.finalizeOrder(await createPostRequest(
-          {
-            csr: Convert.ToBase64Url(req.rawData),
-          } as protocol.FinalizeParams,
-          `${baseAddress}/finalize/${orderId}`,
-          client.location!,
-          client.keys), orderId);
+        const resp2 = await controller.finalizeOrder(
+          await createPostRequest(
+            {
+              csr: Convert.ToBase64Url(req.rawData),
+            } as protocol.FinalizeParams,
+            `${baseAddress}/finalize/${orderId}`,
+            client.location!,
+            client.keys,
+          ),
+          orderId,
+        );
 
         assert.strictEqual(resp2.status, 403);
         const error = resp2.json<protocol.Error>();
@@ -1141,11 +1174,9 @@ context("Server", () => {
         assert(error.subproblems);
         assert.strictEqual(error.subproblems.length, 2);
       });
-
     });
 
     context("list", () => {
-
       it("pagination", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
@@ -1153,13 +1184,16 @@ context("Server", () => {
         });
 
         async function createOrder(dns: string, status: protocol.OrderStatus = "pending") {
-          const resp = await controller.createOrder(await createPostRequest(
-            {
-              identifiers: [{ type: "dns", value: dns }],
-            } as protocol.OrderCreateParams,
-            `${baseAddress}/new-order`,
-            client.location!,
-            client.keys));
+          const resp = await controller.createOrder(
+            await createPostRequest(
+              {
+                identifiers: [{ type: "dns", value: dns }],
+              } as protocol.OrderCreateParams,
+              `${baseAddress}/new-order`,
+              client.location!,
+              client.keys,
+            ),
+          );
           assert.strictEqual(resp.status, 201);
 
           const id = getId(resp.headers.location);
@@ -1175,7 +1209,6 @@ context("Server", () => {
           }
 
           return id;
-
         }
 
         const id01 = await createOrder("some1.com");
@@ -1202,15 +1235,10 @@ context("Server", () => {
         const id22 = await createOrder("some22.com");
         const id23 = await createOrder("some23.com");
 
-        const resp = await controller.postOrders(await createPostRequest(
-          "",
-          `${baseAddress}/orders`,
-          client.location!,
-          client.keys));
+        const resp = await controller.postOrders(await createPostRequest("", `${baseAddress}/orders`, client.location!, client.keys));
         assert.strictEqual(resp.status, 200);
 
         if (resp.headers.link) {
-
           assert.deepStrictEqual(resp.json(), {
             orders: [
               `${baseAddress}/order/${id01}`,
@@ -1223,23 +1251,13 @@ context("Server", () => {
               `${baseAddress}/order/${id09}`,
               `${baseAddress}/order/${id10}`,
               `${baseAddress}/order/${id11}`,
-            ]
+            ],
           });
-          assert.deepStrictEqual(resp.headers.link, [
-            `<${baseAddress}/orders?cursor=1>;rel="next"`,
-          ]);
+          assert.deepStrictEqual(resp.headers.link, [`<${baseAddress}/orders?cursor=1>;rel="next"`]);
 
-          const resp2 = await controller.postOrders(await createPostRequest(
-            "",
-            `${baseAddress}/orders?cursor=1`,
-            client.location!,
-            client.keys,
-            { cursor: ["1"] }));
+          const resp2 = await controller.postOrders(await createPostRequest("", `${baseAddress}/orders?cursor=1`, client.location!, client.keys, { cursor: ["1"] }));
           assert.strictEqual(resp2.status, 200);
-          assert.deepStrictEqual(resp2.headers.link, [
-            `<${baseAddress}/orders?cursor=0>;rel="previous"`,
-            `<${baseAddress}/orders?cursor=2>;rel="next"`,
-          ]);
+          assert.deepStrictEqual(resp2.headers.link, [`<${baseAddress}/orders?cursor=0>;rel="previous"`, `<${baseAddress}/orders?cursor=2>;rel="next"`]);
           assert.deepStrictEqual(resp2.json(), {
             orders: [
               `${baseAddress}/order/${id12}`,
@@ -1252,7 +1270,7 @@ context("Server", () => {
               `${baseAddress}/order/${id19}`,
               `${baseAddress}/order/${id20}`,
               `${baseAddress}/order/${id21}`,
-            ]
+            ],
           });
         } else {
           const j = resp.json();
@@ -1283,30 +1301,30 @@ context("Server", () => {
           ];
           assert.strictEqual(j.orders.length, ar.length);
           j.orders.forEach((order: string) => {
-            assert(ar.find(o => o === order));
+            assert(ar.find((o) => o === order));
           });
         }
       });
-
     });
-
   });
 
   context("authorization", () => {
-
     it("create new", async () => {
       // Create new account
       const client = await createAccount({}, (resp) => {
         assert.strictEqual(resp.status, 201);
       });
 
-      const resp = await controller.createAuthorization(await createPostRequest(
-        {
-          identifier: { type: "dns", value: "some.com" },
-        } as protocol.AuthorizationCreateParams,
-        `${baseAddress}/new-authz`,
-        client.location!,
-        client.keys));
+      const resp = await controller.createAuthorization(
+        await createPostRequest(
+          {
+            identifier: { type: "dns", value: "some.com" },
+          } as protocol.AuthorizationCreateParams,
+          `${baseAddress}/new-authz`,
+          client.location!,
+          client.keys,
+        ),
+      );
 
       assert.strictEqual(resp.status, 201);
       assert.strictEqual(/http:\/\/localhost\/authz\/[^/]/.test(resp.headers.location!), true, "Authorization response wrong Location header");
@@ -1318,7 +1336,6 @@ context("Server", () => {
     });
 
     context("status", () => {
-
       async function changeChallengeStatus(location: string, status: protocol.ChallengeStatus) {
         const challengeRepo = container.resolve<data.IChallengeRepository>(data.diChallengeRepository);
         const challenge = await challengeRepo.findById(getId(location));
@@ -1333,13 +1350,16 @@ context("Server", () => {
           assert.strictEqual(resp.status, 201);
         });
 
-        const resp = await controller.createAuthorization(await createPostRequest(
-          {
-            identifier: { type: "dns", value: "some.com" },
-          } as protocol.AuthorizationCreateParams,
-          `${baseAddress}/new-authz`,
-          client.location!,
-          client.keys));
+        const resp = await controller.createAuthorization(
+          await createPostRequest(
+            {
+              identifier: { type: "dns", value: "some.com" },
+            } as protocol.AuthorizationCreateParams,
+            `${baseAddress}/new-authz`,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         assert.strictEqual(resp.status, 201);
 
@@ -1347,11 +1367,7 @@ context("Server", () => {
         const authzId = getId(resp.headers.location);
         await changeChallengeStatus(authz.challenges[0].url, challengeStatus);
 
-        const resp2 = await controller.postAuthorization(await createPostRequest(
-          {} as protocol.AuthorizationCreateParams,
-          `${baseAddress}/authz/${authzId}`,
-          client.location!,
-          client.keys), authzId);
+        const resp2 = await controller.postAuthorization(await createPostRequest({} as protocol.AuthorizationCreateParams, `${baseAddress}/authz/${authzId}`, client.location!, client.keys), authzId);
 
         assert.strictEqual(resp2.status, 200);
 
@@ -1377,13 +1393,16 @@ context("Server", () => {
           assert.strictEqual(resp.status, 201);
         });
 
-        const resp = await controller.createAuthorization(await createPostRequest(
-          {
-            identifier: { type: "dns", value: "some.com" },
-          } as protocol.AuthorizationCreateParams,
-          `${baseAddress}/new-authz`,
-          client.location!,
-          client.keys));
+        const resp = await controller.createAuthorization(
+          await createPostRequest(
+            {
+              identifier: { type: "dns", value: "some.com" },
+            } as protocol.AuthorizationCreateParams,
+            `${baseAddress}/new-authz`,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         assert.strictEqual(resp.status, 201);
 
@@ -1396,34 +1415,32 @@ context("Server", () => {
         authzItem.expires = new Date("2019/01/01");
         await authzRepo.update(authzItem);
 
-        const resp2 = await controller.postAuthorization(await createPostRequest(
-          {} as protocol.AuthorizationCreateParams,
-          `${baseAddress}/authz/${authzId}`,
-          client.location!,
-          client.keys), authzId);
+        const resp2 = await controller.postAuthorization(await createPostRequest({} as protocol.AuthorizationCreateParams, `${baseAddress}/authz/${authzId}`, client.location!, client.keys), authzId);
 
         assert.strictEqual(resp2.status, 200);
 
         const authz = resp2.json<protocol.Authorization>();
         assert.strictEqual(authz.status, "expired");
       });
-
     });
 
     context("POST authz", () => {
-
       it("deactivate", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
           assert.strictEqual(resp.status, 201);
         });
 
-        const resp = await controller.createOrder(await createPostRequest({
-          identifiers: [{ type: "dns", value: "some.com" }],
-        } as protocol.OrderCreateParams,
-          `${baseAddress}/new-order`,
-          client.location!,
-          client.keys));
+        const resp = await controller.createOrder(
+          await createPostRequest(
+            {
+              identifiers: [{ type: "dns", value: "some.com" }],
+            } as protocol.OrderCreateParams,
+            `${baseAddress}/new-order`,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         assert.strictEqual(resp.status, 201);
         assert(resp.headers.location);
@@ -1433,14 +1450,17 @@ context("Server", () => {
         const authzLocation = order.authorizations[0];
         const authzId = getId(authzLocation);
 
-
-        const resp2 = await controller.postAuthorization(await createPostRequest(
-          {
-            status: "deactivated",
-          } as protocol.AuthorizationUpdateParams,
-          authzLocation,
-          client.location!,
-          client.keys), authzId);
+        const resp2 = await controller.postAuthorization(
+          await createPostRequest(
+            {
+              status: "deactivated",
+            } as protocol.AuthorizationUpdateParams,
+            authzLocation,
+            client.location!,
+            client.keys,
+          ),
+          authzId,
+        );
 
         assert.strictEqual(resp2.status, 200);
 
@@ -1448,11 +1468,7 @@ context("Server", () => {
         assert.strictEqual(authz.status, "deactivated");
 
         // validate order status
-        const resp3 = await controller.postOrder(await createPostRequest(
-          {},
-          resp.headers.location,
-          client.location!,
-          client.keys), orderId);
+        const resp3 = await controller.postOrder(await createPostRequest({}, resp.headers.location, client.location!, client.keys), orderId);
 
         assert.strictEqual(resp.status, 201);
 
@@ -1467,12 +1483,16 @@ context("Server", () => {
         });
 
         // create order
-        const resp = await controller.createOrder(await createPostRequest({
-          identifiers: [{ type: "dns", value: "some.com" }],
-        } as protocol.OrderCreateParams,
-          `${baseAddress}/new-order`,
-          client.location!,
-          client.keys));
+        const resp = await controller.createOrder(
+          await createPostRequest(
+            {
+              identifiers: [{ type: "dns", value: "some.com" }],
+            } as protocol.OrderCreateParams,
+            `${baseAddress}/new-order`,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         assert.strictEqual(resp.status, 201);
         assert(resp.headers.location);
@@ -1482,37 +1502,42 @@ context("Server", () => {
         const authzId = getId(authzLocation);
 
         // deactivate authz
-        const resp2 = await controller.postAuthorization(await createPostRequest(
-          {
-            status: "deactivated",
-          } as protocol.AuthorizationUpdateParams,
-          authzLocation,
-          client.location!,
-          client.keys), authzId);
+        const resp2 = await controller.postAuthorization(
+          await createPostRequest(
+            {
+              status: "deactivated",
+            } as protocol.AuthorizationUpdateParams,
+            authzLocation,
+            client.location!,
+            client.keys,
+          ),
+          authzId,
+        );
 
         assert.strictEqual(resp2.status, 200);
 
         // deactivate authz again
-        const resp3 = await controller.postAuthorization(await createPostRequest(
-          {
-            status: "deactivated",
-          } as protocol.AuthorizationUpdateParams,
-          authzLocation,
-          client.location!,
-          client.keys), authzId);
+        const resp3 = await controller.postAuthorization(
+          await createPostRequest(
+            {
+              status: "deactivated",
+            } as protocol.AuthorizationUpdateParams,
+            authzLocation,
+            client.location!,
+            client.keys,
+          ),
+          authzId,
+        );
 
         assert.strictEqual(resp3.status, 403);
 
         const error = resp3.json<protocol.Error>();
         assert.strictEqual(error.type, core.ErrorType.malformed);
       });
-
     });
-
   });
 
   context("certificate", () => {
-
     async function changeAuthzStatus(location: string, status: protocol.AuthorizationStatus) {
       const authzRepo = container.resolve<data.IAuthorizationRepository>(data.diAuthorizationRepository);
       const authz = await authzRepo.findById(getId(location));
@@ -1522,7 +1547,6 @@ context("Server", () => {
     }
 
     context("revoke", () => {
-
       before(() => {
         controller.options.downloadCertificateFormat = "pkix";
       });
@@ -1532,15 +1556,16 @@ context("Server", () => {
 
       async function enrollCertificate(client: any) {
         // create order
-        const resp = await controller.createOrder(await createPostRequest(
-          {
-            identifiers: [
-              { type: "dns", value: "some.com" },
-            ],
-          } as protocol.OrderCreateParams,
-          `${baseAddress}/new-order`,
-          client.location!,
-          client.keys));
+        const resp = await controller.createOrder(
+          await createPostRequest(
+            {
+              identifiers: [{ type: "dns", value: "some.com" }],
+            } as protocol.OrderCreateParams,
+            `${baseAddress}/new-order`,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         const order = resp.json<protocol.Order>();
         const orderId = getId(resp.headers.location);
@@ -1553,35 +1578,39 @@ context("Server", () => {
           publicExponent: new Uint8Array([1, 0, 1]),
           modulusLength: 2048,
         };
-        const keys = await crypto.subtle.generateKey(keyAlg, false, ["sign", "verify"]) as CryptoKeyPair;
+        const keys = (await crypto.subtle.generateKey(keyAlg, false, ["sign", "verify"])) as CryptoKeyPair;
         const req = await x509.Pkcs10CertificateRequestGenerator.create({
           name: "DC=some.com",
           keys,
           signingAlgorithm: { name: "RSASSA-PKCS1-v1_5" },
-          extensions: [
-            new x509.Extension(id_ce_subjectAltName, false, AsnConvert.serialize(new SubjectAlternativeName([
-              new GeneralName({ dNSName: "some.com" }),
-            ])))
-          ]
+          extensions: [new x509.Extension(id_ce_subjectAltName, false, AsnConvert.serialize(new SubjectAlternativeName([new GeneralName({ dNSName: "some.com" })])))],
         });
-        const resp2 = await controller.finalizeOrder(await createPostRequest(
-          {
-            csr: Convert.ToBase64Url(req.rawData),
-          } as protocol.FinalizeParams,
-          `${baseAddress}/finalize/${orderId}`,
-          client.location!,
-          client.keys), orderId);
+        const resp2 = await controller.finalizeOrder(
+          await createPostRequest(
+            {
+              csr: Convert.ToBase64Url(req.rawData),
+            } as protocol.FinalizeParams,
+            `${baseAddress}/finalize/${orderId}`,
+            client.location!,
+            client.keys,
+          ),
+          orderId,
+        );
         const order2 = resp2.json<protocol.Order>();
 
         assert(order2.certificate);
         const thumbprint = getId(order2.certificate);
-        const resp3 = await controller.getCertificate(await createPostRequest(
-          {
-            csr: Convert.ToBase64Url(req.rawData),
-          } as protocol.FinalizeParams,
-          order2.certificate,
-          client.location!,
-          client.keys), thumbprint);
+        const resp3 = await controller.getCertificate(
+          await createPostRequest(
+            {
+              csr: Convert.ToBase64Url(req.rawData),
+            } as protocol.FinalizeParams,
+            order2.certificate,
+            client.location!,
+            client.keys,
+          ),
+          thumbprint,
+        );
         return resp3;
       }
 
@@ -1596,13 +1625,17 @@ context("Server", () => {
         const cert = resp.content!.content;
         assert(cert);
 
-        const resp2 = await controller.revokeCertificate(await createPostRequest({
-          certificate: Convert.ToBase64Url(cert),
-          reason: 0,
-        },
-          `${baseAddress}/revoke`,
-          client.location!,
-          client.keys));
+        const resp2 = await controller.revokeCertificate(
+          await createPostRequest(
+            {
+              certificate: Convert.ToBase64Url(cert),
+              reason: 0,
+            },
+            `${baseAddress}/revoke`,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         assert.strictEqual(resp2.status, 204);
       });
@@ -1618,12 +1651,16 @@ context("Server", () => {
         const cert = resp.content!.content;
         assert(cert);
 
-        const resp2 = await controller.revokeCertificate(await createPostRequest({
-          certificate: Convert.ToBase64Url(cert),
-        },
-          `${baseAddress}/revoke`,
-          client.location!,
-          client.keys));
+        const resp2 = await controller.revokeCertificate(
+          await createPostRequest(
+            {
+              certificate: Convert.ToBase64Url(cert),
+            },
+            `${baseAddress}/revoke`,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         assert.strictEqual(resp2.status, 204);
       });
@@ -1639,20 +1676,28 @@ context("Server", () => {
         const cert = resp.content!.content;
         assert(cert);
 
-        const resp2 = await controller.revokeCertificate(await createPostRequest({
-          certificate: Convert.ToBase64Url(cert),
-        },
-          `${baseAddress}/revoke`,
-          client.location!,
-          client.keys));
+        const resp2 = await controller.revokeCertificate(
+          await createPostRequest(
+            {
+              certificate: Convert.ToBase64Url(cert),
+            },
+            `${baseAddress}/revoke`,
+            client.location!,
+            client.keys,
+          ),
+        );
         assert.strictEqual(resp2.status, 204);
 
-        const resp3 = await controller.revokeCertificate(await createPostRequest({
-          certificate: Convert.ToBase64Url(cert),
-        },
-          `${baseAddress}/revoke`,
-          client.location!,
-          client.keys));
+        const resp3 = await controller.revokeCertificate(
+          await createPostRequest(
+            {
+              certificate: Convert.ToBase64Url(cert),
+            },
+            `${baseAddress}/revoke`,
+            client.location!,
+            client.keys,
+          ),
+        );
 
         assert.strictEqual(resp3.status, 400);
         const error = resp3.json<protocol.Error>();
@@ -1674,12 +1719,16 @@ context("Server", () => {
         const cert = resp.content!.content;
         assert(cert);
 
-        const resp2 = await controller.revokeCertificate(await createPostRequest({
-          certificate: Convert.ToBase64Url(cert),
-        },
-          `${baseAddress}/revoke`,
-          client.location!,
-          client2.keys));
+        const resp2 = await controller.revokeCertificate(
+          await createPostRequest(
+            {
+              certificate: Convert.ToBase64Url(cert),
+            },
+            `${baseAddress}/revoke`,
+            client.location!,
+            client2.keys,
+          ),
+        );
 
         assert.strictEqual(resp2.status, 401);
         const error = resp2.json<protocol.Error>();

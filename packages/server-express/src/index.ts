@@ -22,7 +22,6 @@ class AcmeExpressOptions {
 }
 
 export class AcmeExpress {
-
   public static register(app: express.Express, options: IAcmeExpressOptions = {}) {
     diServer.register(container, options);
 
@@ -30,11 +29,13 @@ export class AcmeExpress {
 
     const opt = container.resolve<IServerOptions>(diServerOptions);
 
-    app.use(cors({
-      methods: "GET, POST, OPTIONS, HEAD",
-      allowedHeaders: "Content-Type, Authorization, Cache-Control, Replay-Nonce",
-      exposedHeaders: "Location, Link, Replay-Nonce"
-    }));
+    app.use(
+      cors({
+        methods: "GET, POST, OPTIONS, HEAD",
+        allowedHeaders: "Content-Type, Authorization, Cache-Control, Replay-Nonce",
+        exposedHeaders: "Location, Link, Replay-Nonce",
+      }),
+    );
 
     app.use(express.json({ type: "application/jose+json" }) as any);
     app.use(url.parse(opt.baseAddress).pathname || "/", routers);
@@ -42,7 +43,7 @@ export class AcmeExpress {
     //#region Print options
     const logger = new AcmeExpressOptions();
     const keys = Object.keys(opt);
-    keys.forEach(key => logger.info(`${key}: ${(opt as any)[key]}`));
+    keys.forEach((key) => logger.info(`${key}: ${(opt as any)[key]}`));
     //#endregion
   }
 }

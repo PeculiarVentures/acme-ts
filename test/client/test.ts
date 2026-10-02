@@ -5,12 +5,10 @@ import { ApiClient } from "@peculiar/acme-client";
 import fetch from "node-fetch";
 
 context("client", () => {
-
   const crypto = new Crypto();
   cryptoProvider.set(crypto);
 
   context("Lets Encrypt", () => {
-
     it("create user", async () => {
       const alg: RsaHashedKeyGenParams = {
         name: "RSASSA-PKCS1-v1_5",
@@ -31,7 +29,5 @@ context("client", () => {
       });
       assert.strictEqual(account.status, 201);
     });
-
   });
-
 }).timeout(5e3);

@@ -4,7 +4,6 @@ import { EllipticCurves } from "./elliptic_curves";
 import * as pvtsutils from "pvtsutils";
 
 export class JsonWebKey implements globalThis.JsonWebKey {
-
   public alg?: Algorithms;
   public kty?: KeyTypes;
   public e?: string;
@@ -74,9 +73,8 @@ export class JsonWebKey implements globalThis.JsonWebKey {
    * @param alg Default SHA256
    */
   public async getThumbprint(alg: Algorithms = Algorithms.SHA256): Promise<string> {
-
     // eslint-disable-next-line @typescript-eslint/member-delimiter-style
-    const listKeys: { [key: string]: string; } = {};
+    const listKeys: { [key: string]: string } = {};
     if (this.crv) {
       listKeys["crv"] = this.crv.toString();
     }
@@ -115,7 +113,7 @@ export class JsonWebKey implements globalThis.JsonWebKey {
       {
         name: alg,
       },
-      pvtsutils.BufferSourceConverter.toUint8Array(pvtsutils.Convert.FromUtf8String(json))
+      pvtsutils.BufferSourceConverter.toUint8Array(pvtsutils.Convert.FromUtf8String(json)),
     );
     return hash;
   }
@@ -123,8 +121,7 @@ export class JsonWebKey implements globalThis.JsonWebKey {
   public async getPublicKey() {
     if (this.kty === KeyTypes.EC) {
       return this.getEcdsaPublicKey();
-    }
-    else if (this.kty === KeyTypes.RSA) {
+    } else if (this.kty === KeyTypes.RSA) {
       return this.getRsaPublicKey();
     }
     throw new Error(`Unsupported type ${this.kty}`);
@@ -146,4 +143,3 @@ export class JsonWebKey implements globalThis.JsonWebKey {
     return await this.#cryptoProvider.subtle.importKey("jwk", this, alg, true, ["verify"]);
   }
 }
-

@@ -4,7 +4,6 @@ import { Authorization } from "../models";
 import { BaseRepository } from "./base";
 
 export class AuthorizationRepository extends BaseRepository<Authorization> implements acmeData.IAuthorizationRepository {
-
   protected className = acmeData.diAuthorization;
 
   public async findByIdentifier(accountId: acmeData.Key, identifier: Identifier) {
