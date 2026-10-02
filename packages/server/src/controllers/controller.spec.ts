@@ -9,17 +9,17 @@ import { AsnConvert } from "@peculiar/asn1-schema";
 import { GeneralName, id_ce_subjectAltName, SubjectAlternativeName } from "@peculiar/asn1-x509";
 import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
 import { Crypto } from "@peculiar/webcrypto";
-import assert from "assert";
-import { MemoryEndpointService } from "packages/test-server/src/services";
+import { MemoryEndpointService } from "@peculiar/acme-test-server/src/services";
 import { Convert } from "pvtsutils";
 import { container, Lifecycle } from "tsyringe";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
 
 const baseAddress = "http://localhost";
 
-context("Server", () => {
+describe("Server", () => {
   const crypto = new Crypto();
   let controller: server.AcmeController;
-  before(async () => {
+  beforeAll(async () => {
     const notAfter = new Date();
     notAfter.setUTCFullYear(notAfter.getUTCFullYear() + 1);
 
@@ -48,7 +48,7 @@ context("Server", () => {
         method: "HEAD",
       }),
     );
-    assert(nonceResp.headers.replayNonce, "replayNonce is required");
+    assert.ok(nonceResp.headers.replayNonce, "replayNonce is required");
     return nonceResp.headers.replayNonce;
   }
 
@@ -110,10 +110,10 @@ context("Server", () => {
     );
 
     if (resp.status === core.HttpStatusCode.ok || resp.status === core.HttpStatusCode.created) {
-      assert(resp.headers.location, "location header is required");
-      assert.strictEqual(resp.headers.location.startsWith(`${baseAddress}/acct/`), true, "Wrong Account location URL");
+      assert.ok(resp.headers.location, "location header is required");
+      expect(resp.headers.location.startsWith(`${baseAddress}/acct/`), "Wrong Account location URL").toBe(true);
     }
-    assert.strictEqual(!!resp.headers.replayNonce, true);
+    expect(!!resp.headers.replayNonce).toBe(true);
 
     if (response) {
       response(resp);
@@ -127,11 +127,11 @@ context("Server", () => {
   }
 
   function getId(location: any) {
-    assert(location);
-    assert.strictEqual(typeof location, "string");
+    expect(location).toBeTruthy();
+    expect(typeof location).toBe("string");
 
     const matches = /([^/]+)$/.exec(location);
-    assert(matches);
+    assert.ok(matches);
 
     return matches[1];
   }
@@ -145,16 +145,16 @@ context("Server", () => {
       }),
     );
 
-    assert.strictEqual(resp.status, 200, `Wrong status ${resp.status}. ${resp.content?.toJSON().detail}`);
-    assert.strictEqual(resp.content?.type, core.ContentType.json);
+    expect(resp.status, `Wrong status ${resp.status}. ${resp.content?.toJSON().detail}`).toBe(200);
+    expect(resp.content?.type).toBe(core.ContentType.json);
 
     const json: protocol.Directory = resp.json();
-    assert.strictEqual(json.keyChange, `${baseAddress}/key-change`);
-    assert.strictEqual(json.newAccount, `${baseAddress}/new-acct`);
-    assert.strictEqual(json.newAuthz, `${baseAddress}/new-authz`);
-    assert.strictEqual(json.newNonce, `${baseAddress}/new-nonce`);
-    assert.strictEqual(json.newOrder, `${baseAddress}/new-order`);
-    assert.strictEqual(json.revokeCert, `${baseAddress}/revoke`);
+    expect(json.keyChange).toBe(`${baseAddress}/key-change`);
+    expect(json.newAccount).toBe(`${baseAddress}/new-acct`);
+    expect(json.newAuthz).toBe(`${baseAddress}/new-authz`);
+    expect(json.newNonce).toBe(`${baseAddress}/new-nonce`);
+    expect(json.newOrder).toBe(`${baseAddress}/new-order`);
+    expect(json.revokeCert).toBe(`${baseAddress}/revoke`);
   });
 
   it("GET new-nonce", async () => {
@@ -165,9 +165,9 @@ context("Server", () => {
       }),
     );
 
-    assert.strictEqual(resp.status, 204);
+    expect(resp.status).toBe(204);
 
-    assert.strictEqual(!!resp.headers.replayNonce, true);
+    expect(!!resp.headers.replayNonce).toBe(true);
   });
 
   it("HEAD new-nonce", async () => {
@@ -178,13 +178,13 @@ context("Server", () => {
       }),
     );
 
-    assert.strictEqual(resp.status, 200);
+    expect(resp.status).toBe(200);
 
-    assert.strictEqual(!!resp.headers.replayNonce, true);
+    expect(!!resp.headers.replayNonce).toBe(true);
   });
 
-  context("account", () => {
-    context("new-account", () => {
+  describe("account", () => {
+    describe("new-account", () => {
       it("wrong nonce", async () => {
         const alg: RsaHashedKeyGenParams = {
           name: "RSASSA-PKCS1-v1_5",
@@ -214,10 +214,10 @@ context("Server", () => {
           }),
         );
 
-        assert.strictEqual(resp.status, 400);
+        expect(resp.status).toBe(400);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, core.ErrorType.badNonce);
+        expect(json.type).toBe(core.ErrorType.badNonce);
       });
 
       it("empty url", async () => {
@@ -243,11 +243,11 @@ context("Server", () => {
           }),
         );
 
-        assert.strictEqual(resp.status, 401);
-        assert.strictEqual(!!resp.headers.replayNonce, true);
+        expect(resp.status).toBe(401);
+        expect(!!resp.headers.replayNonce).toBe(true);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, core.ErrorType.unauthorized);
+        expect(json.type).toBe(core.ErrorType.unauthorized);
       });
 
       it("invalid jws signature", async () => {
@@ -278,11 +278,11 @@ context("Server", () => {
           }),
         );
 
-        assert.strictEqual(resp.status, 401);
-        assert.strictEqual(!!resp.headers.replayNonce, true);
+        expect(resp.status).toBe(401);
+        expect(!!resp.headers.replayNonce).toBe(true);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, core.ErrorType.unauthorized);
+        expect(json.type).toBe(core.ErrorType.unauthorized);
       });
 
       it("create with contacts", async () => {
@@ -291,101 +291,101 @@ context("Server", () => {
             contact: ["mailto:some@mail.com"],
           },
           (resp) => {
-            assert.strictEqual(resp.status, 201);
-            assert(resp.headers.location);
+            expect(resp.status).toBe(201);
+            expect(resp.headers.location).toBeTruthy();
           },
         );
 
-        assert.deepStrictEqual(client.account.contact, ["mailto:some@mail.com"]);
-        assert.deepStrictEqual(client.account.termsOfServiceAgreed, undefined);
-        assert.deepStrictEqual(client.account.status, "valid");
-        assert.deepStrictEqual(!!client.account.orders, true);
+        expect(client.account.contact).toStrictEqual(["mailto:some@mail.com"]);
+        expect(client.account.termsOfServiceAgreed).toStrictEqual(undefined);
+        expect(client.account.status).toStrictEqual("valid");
+        expect(!!client.account.orders).toStrictEqual(true);
       });
 
       it("create without contacts", async () => {
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
-          assert(resp.headers.location);
+          expect(resp.status).toBe(201);
+          expect(resp.headers.location).toBeTruthy();
         });
 
-        assert.strictEqual(client.account.contact, undefined);
+        expect(client.account.contact).toBe(undefined);
       });
 
       it("unsupported contact", async () => {
         const client = await createAccount({ contact: ["wrong email address"] }, (resp) => {
-          assert.strictEqual(resp.status, 400);
+          expect(resp.status).toBe(400);
 
           const json = resp.json<protocol.Error>();
           // If the server rejects a contact URL for using an unsupported scheme,
           // it MUST return an error of type "unsupportedContact"
-          assert.strictEqual(json.type, core.ErrorType.unsupportedContact);
+          expect(json.type).toBe(core.ErrorType.unsupportedContact);
         });
 
-        assert.strictEqual(client.account.contact, undefined);
+        expect(client.account.contact).toBe(undefined);
       });
 
       it("incorrect contact", async () => {
         const client = await createAccount({ contact: ["mailto:wrong email address"] }, (resp) => {
-          assert.strictEqual(resp.status, 400);
+          expect(resp.status).toBe(400);
 
           const json = resp.json<protocol.Error>();
           // If the server rejects a contact URL for using
           // a supported scheme but an invalid value, then the server MUST return
           // an error of type "invalidContact".
-          assert.strictEqual(json.type, core.ErrorType.invalidContact);
+          expect(json.type).toBe(core.ErrorType.invalidContact);
         });
 
-        assert.strictEqual(client.account.contact, undefined);
+        expect(client.account.contact).toBe(undefined);
       });
 
       it("get nonexisting account onlyReturnExisting:true", async () => {
         await createAccount({ onlyReturnExisting: true }, (resp) => {
-          assert.strictEqual(resp.status, 400);
+          expect(resp.status).toBe(400);
 
           const json = resp.json<protocol.Error>();
-          assert.strictEqual(json.type, core.ErrorType.accountDoesNotExist);
+          expect(json.type).toBe(core.ErrorType.accountDoesNotExist);
         });
       });
 
       it("get existing account onlyReturnExisting:true", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
 
           const json = resp.json<protocol.Account>();
-          assert.strictEqual(json.status, "valid");
+          expect(json.status).toBe("valid");
         });
 
         // Get existing account
         await createAccount({ onlyReturnExisting: true, keys: client.keys }, (resp) => {
-          assert.strictEqual(resp.status, 200);
+          expect(resp.status).toBe(200);
 
           const json = resp.json<protocol.Account>();
-          assert.strictEqual(json.status, "valid");
+          expect(json.status).toBe("valid");
         });
       });
 
       it("get existing account onlyReturnExisting:false", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
 
           const json = resp.json<protocol.Account>();
-          assert.strictEqual(json.status, "valid");
+          expect(json.status).toBe("valid");
         });
 
         // Get existing account
         await createAccount({ keys: client.keys }, (resp) => {
-          assert.strictEqual(resp.status, 200);
+          expect(resp.status).toBe(200);
 
           const json = resp.json<protocol.Account>();
-          assert.strictEqual(json.status, "valid");
+          expect(json.status).toBe("valid");
         });
       });
     });
 
-    context("terms agreement", () => {
-      before(() => {
+    describe("terms agreement", () => {
+      beforeAll(() => {
         controller.options.meta = { termsOfService: `${baseAddress}/terms.pdf` };
       });
 
@@ -397,40 +397,40 @@ context("Server", () => {
           }),
         );
 
-        assert.strictEqual(resp.status, 200);
+        expect(resp.status).toBe(200);
 
         const json = resp.json<protocol.Directory>();
-        assert(json.meta, "Property 'meta' is required in Directory object");
-        assert(json.meta.termsOfService);
+        assert.ok(json.meta, "Property 'meta' is required in Directory object");
+        expect(json.meta.termsOfService).toBeTruthy();
       });
 
       it("create account without termsOfServiceAgreed", async () => {
         await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 403);
+          expect(resp.status).toBe(403);
 
           const json = resp.json<protocol.Error>();
-          assert.strictEqual(json.type, core.ErrorType.malformed);
+          expect(json.type).toBe(core.ErrorType.malformed);
         });
       });
 
       it("create account with termsOfServiceAgreed", async () => {
         await createAccount({ termsOfServiceAgreed: true }, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
 
           const json = resp.json<protocol.Account>();
-          assert.strictEqual(json.termsOfServiceAgreed, true);
+          expect(json.termsOfServiceAgreed).toBe(true);
         });
       });
 
-      after(() => {
+      afterAll(() => {
         delete controller.options.meta;
       });
     });
 
-    context("POST account", () => {
+    describe("POST account", () => {
       it("update contacts", async () => {
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
         const resp = await controller.postAccount(
           await createPostRequest(
@@ -443,16 +443,16 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp.status, 200);
+        expect(resp.status).toBe(200);
 
         const json = resp.json<protocol.Account>();
-        assert.strictEqual(json.status, "valid");
-        assert.deepStrictEqual(json.contact, ["mailto:some-new@mail.com"]);
+        expect(json.status).toBe("valid");
+        expect(json.contact).toStrictEqual(["mailto:some-new@mail.com"]);
       });
 
       it("remove contacts", async () => {
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
         const resp = await controller.postAccount(
           await createPostRequest(
@@ -465,16 +465,16 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp.status, 200);
+        expect(resp.status).toBe(200);
 
         const json = resp.json<protocol.Account>();
-        assert.strictEqual(json.status, "valid");
-        assert.deepStrictEqual(json.contact, []);
+        expect(json.status).toBe("valid");
+        expect(json.contact).toStrictEqual([]);
       });
 
       it("invalid contact", async () => {
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
         const resp = await controller.postAccount(
           await createPostRequest(
@@ -487,15 +487,15 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp.status, 400);
+        expect(resp.status).toBe(400);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, core.ErrorType.invalidContact);
+        expect(json.type).toBe(core.ErrorType.invalidContact);
       });
 
       it("unsupported contact", async () => {
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
         const resp = await controller.postAccount(
           await createPostRequest(
@@ -508,15 +508,15 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp.status, 400);
+        expect(resp.status).toBe(400);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, core.ErrorType.unsupportedContact);
+        expect(json.type).toBe(core.ErrorType.unsupportedContact);
       });
 
       it("deactivate", async () => {
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
 
         {
@@ -531,25 +531,25 @@ context("Server", () => {
             ),
           );
 
-          assert.strictEqual(resp.status, 200);
+          expect(resp.status).toBe(200);
 
           const json = resp.json<protocol.Account>();
-          assert.strictEqual(json.status, "deactivated");
+          expect(json.status).toBe("deactivated");
         }
 
         {
           // send request to deactivated account
           const resp = await controller.postAccount(await createPostRequest({} as protocol.AccountUpdateParams, client.location!, client.location!, client.keys));
 
-          assert.strictEqual(resp.status, 401);
+          expect(resp.status).toBe(401);
 
           const json = resp.json<protocol.Error>();
-          assert.strictEqual(json.type, core.ErrorType.unauthorized);
+          expect(json.type).toBe(core.ErrorType.unauthorized);
         }
       });
     });
 
-    context("key rollover", () => {
+    describe("key rollover", () => {
       async function createNewKey(oldKey: CryptoKey, kid: string, keys?: Required<CryptoKeyPair>) {
         keys ??= await generateKey();
         const innerToken = new JsonWebSignature(
@@ -571,38 +571,38 @@ context("Server", () => {
 
       it("success", async () => {
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
         const innerToken = await createNewKey(client.keys.publicKey, client.location!);
         const resp = await controller.keyChange(await createPostRequest(innerToken.toJSON(), `${baseAddress}/key-change`, client.location!, client.keys));
 
-        assert.strictEqual(resp.status, 200);
-        assert.strictEqual(resp.headers.location, client.location);
+        expect(resp.status).toBe(200);
+        expect(resp.headers.location).toBe(client.location);
 
         const json = resp.json<protocol.Account>();
-        assert.strictEqual(json.status, "valid");
+        expect(json.status).toBe("valid");
       });
 
       it("conflict", async () => {
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
         const client2 = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
         const innerToken = await createNewKey(client.keys.publicKey, client.location!, client2.keys);
         const resp = await controller.keyChange(await createPostRequest(innerToken.toJSON(), `${baseAddress}/key-change`, client.location!, client.keys));
 
-        assert.strictEqual(resp.status, 409);
-        assert.strictEqual(resp.headers.location, client2.location);
+        expect(resp.status).toBe(409);
+        expect(resp.headers.location).toBe(client2.location);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, core.ErrorType.malformed);
+        expect(json.type).toBe(core.ErrorType.malformed);
       });
 
       it("inner token must have JWK", async () => {
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
         const innerToken = await createNewKey(client.keys.publicKey, client.location!);
         const header = innerToken.getProtected();
@@ -610,15 +610,15 @@ context("Server", () => {
         innerToken.setProtected(header);
         const resp = await controller.keyChange(await createPostRequest(innerToken.toJSON(), `${baseAddress}/key-change`, client.location!, client.keys));
 
-        assert.strictEqual(resp.status, 403);
+        expect(resp.status).toBe(403);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, core.ErrorType.malformed);
+        expect(json.type).toBe(core.ErrorType.malformed);
       });
 
       it("inner token must have JWK", async () => {
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
         const innerToken = await createNewKey(client.keys.publicKey, client.location!);
         const header = innerToken.getProtected();
@@ -626,56 +626,56 @@ context("Server", () => {
         innerToken.setProtected(header);
         const resp = await controller.keyChange(await createPostRequest(innerToken.toJSON(), `${baseAddress}/key-change`, client.location!, client.keys));
 
-        assert.strictEqual(resp.status, 403);
+        expect(resp.status).toBe(403);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, core.ErrorType.malformed);
+        expect(json.type).toBe(core.ErrorType.malformed);
       });
 
       it("inner token invalid signature", async () => {
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
         const innerToken = await createNewKey(client.keys.publicKey, client.location!);
         innerToken.signature = "wrongSignatureValue";
         const resp = await controller.keyChange(await createPostRequest(innerToken.toJSON(), `${baseAddress}/key-change`, client.location!, client.keys));
 
-        assert.strictEqual(resp.status, 403);
+        expect(resp.status).toBe(403);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, core.ErrorType.malformed);
+        expect(json.type).toBe(core.ErrorType.malformed);
       });
 
       it("inner token invalid signature", async () => {
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
         const innerToken = await createNewKey(client.keys.publicKey, client.location!);
         innerToken.signature = "wrongSignatureValue";
         const resp = await controller.keyChange(await createPostRequest(innerToken.toJSON(), `${baseAddress}/key-change`, client.location!, client.keys));
 
-        assert.strictEqual(resp.status, 403);
+        expect(resp.status).toBe(403);
 
         const json = resp.json<protocol.Error>();
-        assert.strictEqual(json.type, core.ErrorType.malformed);
+        expect(json.type).toBe(core.ErrorType.malformed);
       });
     });
   });
 
-  context("order", async () => {
+  describe("order", async () => {
     async function changeAuthzStatus(location: string, status: protocol.AuthorizationStatus) {
       const authzRepo = container.resolve<data.IAuthorizationRepository>(data.diAuthorizationRepository);
       const authz = await authzRepo.findById(getId(location));
-      assert(authz);
+      assert.ok(authz);
       authz.status = status;
       authzRepo.update(authz);
     }
 
-    context("create", () => {
+    describe("create", () => {
       it("create", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
 
         const resp = await controller.createOrder(
@@ -694,20 +694,20 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp.status, 201);
-        assert.strictEqual(/http:\/\/localhost\/order\/[^/]/.test(resp.headers.location!), true, "Order response wrong Location header");
+        expect(resp.status).toBe(201);
+        expect(/http:\/\/localhost\/order\/[^/]/.test(resp.headers.location!), "Order response wrong Location header").toBe(true);
 
         const json = resp.json<protocol.Order>();
-        assert.strictEqual(json.status, "pending");
-        assert.strictEqual(/http:\/\/localhost\/finalize\/[^/]/.test(json.finalize), true, "Order response wrong 'finalize' value");
-        assert.strictEqual(/http:\/\/localhost\/authz\/[^/]/.test(json.authorizations[0]), true, "Order response wrong authorizations link");
-        assert.deepStrictEqual(json.identifiers, [{ type: "dns", value: "some.com" }]);
+        expect(json.status).toBe("pending");
+        expect(/http:\/\/localhost\/finalize\/[^/]/.test(json.finalize), "Order response wrong 'finalize' value").toBe(true);
+        expect(/http:\/\/localhost\/authz\/[^/]/.test(json.authorizations[0]), "Order response wrong authorizations link").toBe(true);
+        expect(json.identifiers).toStrictEqual([{ type: "dns", value: "some.com" }]);
       });
 
       it("create if already exists", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
 
         const resp = await controller.createOrder(
@@ -726,7 +726,7 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp.status, 201);
+        expect(resp.status).toBe(201);
 
         const resp2 = await controller.createOrder(
           await createPostRequest(
@@ -745,14 +745,14 @@ context("Server", () => {
         );
 
         // Server must create new order
-        assert.strictEqual(resp2.status, 201);
-        assert.notStrictEqual(resp.headers.location, resp2.headers.location);
+        expect(resp2.status).toBe(201);
+        expect(resp.headers.location).not.toBe(resp2.headers.location);
       });
 
       it("create if already exists and valid", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
 
         const resp = await controller.createOrder(
@@ -771,12 +771,12 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp.status, 201);
+        expect(resp.status).toBe(201);
 
         // Change status of order
         const orderRepo = container.resolve<data.IOrderRepository>(data.diOrderRepository);
         const order = await orderRepo.findById(getId(resp.headers.location));
-        assert(order);
+        assert.ok(order);
         order.status = "valid";
         orderRepo.update(order);
 
@@ -796,13 +796,13 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp2.status, 201);
+        expect(resp2.status).toBe(201);
       });
 
       it("create if authz has valid status", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
 
         const resp = await controller.createOrder(
@@ -821,12 +821,12 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp.status, 201);
+        expect(resp.status).toBe(201);
 
         // Change status of order
         const orderRepo = container.resolve<data.IOrderRepository>(data.diOrderRepository);
         const order = await orderRepo.findById(getId(resp.headers.location));
-        assert(order);
+        assert.ok(order);
         order.status = "valid";
         orderRepo.update(order);
 
@@ -834,7 +834,7 @@ context("Server", () => {
         const authzRepo = container.resolve<data.IAuthorizationRepository>(data.diAuthorizationRepository);
         const jsonOrder = resp.json<protocol.Order>();
         const authz = await authzRepo.findById(getId(jsonOrder.authorizations[0]));
-        assert(authz);
+        assert.ok(authz);
         authz.status = "valid";
         authzRepo.update(authz);
 
@@ -854,17 +854,17 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp2.status, 201);
+        expect(resp2.status).toBe(201);
 
         const json = resp2.json<protocol.Order>();
-        assert.strictEqual(json.authorizations[0], jsonOrder.authorizations[0]);
-        assert.strictEqual(json.status, "ready");
+        expect(json.authorizations[0]).toBe(jsonOrder.authorizations[0]);
+        expect(json.status).toBe("ready");
       });
 
       it("incorrect identifier type", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
 
         const resp = await controller.createOrder(
@@ -878,16 +878,16 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp.status, 403);
+        expect(resp.status).toBe(403);
 
         const error = resp.json<protocol.Error>();
-        assert.strictEqual(error.type, core.ErrorType.unsupportedIdentifier);
+        expect(error.type).toBe(core.ErrorType.unsupportedIdentifier);
       });
 
       it("incorrect identifier value", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
 
         const resp = await controller.createOrder(
@@ -901,19 +901,19 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp.status, 403);
+        expect(resp.status).toBe(403);
 
         const error = resp.json<protocol.Error>();
-        assert.strictEqual(error.type, core.ErrorType.malformed);
+        expect(error.type).toBe(core.ErrorType.malformed);
       });
     });
 
-    context("get", () => {
-      context("status", () => {
+    describe("get", () => {
+      describe("status", () => {
         it("authz: valid, valid ", async () => {
           // Create new account
           const client = await createAccount({}, (resp) => {
-            assert.strictEqual(resp.status, 201);
+            expect(resp.status).toBe(201);
           });
 
           const resp = await controller.createOrder(
@@ -930,26 +930,26 @@ context("Server", () => {
             ),
           );
 
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
           const id = getId(resp.headers.location);
 
           const order = resp.json<protocol.Order>();
-          assert.strictEqual(order.status, "pending");
+          expect(order.status).toBe("pending");
 
           changeAuthzStatus(order.authorizations[0], "valid");
           changeAuthzStatus(order.authorizations[1], "valid");
 
           const resp2 = await controller.postOrder(await createPostRequest("", `${baseAddress}/order/${id}`, client.location!, client.keys), id);
-          assert.strictEqual(resp2.status, 200);
+          expect(resp2.status).toBe(200);
 
           const order2 = resp2.json<protocol.Order>();
-          assert.strictEqual(order2.status, "ready");
+          expect(order2.status).toBe("ready");
         });
 
         it("authz: valid, pending ", async () => {
           // Create new account
           const client = await createAccount({}, (resp) => {
-            assert.strictEqual(resp.status, 201);
+            expect(resp.status).toBe(201);
           });
 
           const resp = await controller.createOrder(
@@ -966,25 +966,25 @@ context("Server", () => {
             ),
           );
 
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
           const id = getId(resp.headers.location);
 
           const order = resp.json<protocol.Order>();
-          assert.strictEqual(order.status, "pending");
+          expect(order.status).toBe("pending");
 
           changeAuthzStatus(order.authorizations[0], "valid");
 
           const resp2 = await controller.postOrder(await createPostRequest("", `${baseAddress}/order/${id}`, client.location!, client.keys), id);
-          assert.strictEqual(resp2.status, 200);
+          expect(resp2.status).toBe(200);
 
           const order2 = resp2.json<protocol.Order>();
-          assert.strictEqual(order2.status, "pending");
+          expect(order2.status).toBe("pending");
         });
 
         it("authz: valid, invalid ", async () => {
           // Create new account
           const client = await createAccount({}, (resp) => {
-            assert.strictEqual(resp.status, 201);
+            expect(resp.status).toBe(201);
           });
 
           const resp = await controller.createOrder(
@@ -1001,30 +1001,30 @@ context("Server", () => {
             ),
           );
 
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
           const id = getId(resp.headers.location);
 
           const order = resp.json<protocol.Order>();
-          assert.strictEqual(order.status, "pending");
+          expect(order.status).toBe("pending");
 
           changeAuthzStatus(order.authorizations[0], "valid");
           changeAuthzStatus(order.authorizations[1], "invalid");
 
           const resp2 = await controller.postOrder(await createPostRequest("", `${baseAddress}/order/${id}`, client.location!, client.keys), id);
-          assert.strictEqual(resp2.status, 200);
+          expect(resp2.status).toBe(200);
 
           const order2 = resp2.json<protocol.Order>();
-          assert.strictEqual(order2.status, "invalid");
-          assert(order2.error);
+          expect(order2.status).toBe("invalid");
+          expect(order2.error).toBeTruthy();
         });
       });
     });
 
-    context("finalize", () => {
+    describe("finalize", () => {
       it("wrong CSR message", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
 
         // create order
@@ -1039,7 +1039,7 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp.status, 201);
+        expect(resp.status).toBe(201);
         const order = resp.json<protocol.Order>();
         const orderId = getId(resp.headers.location);
 
@@ -1057,15 +1057,15 @@ context("Server", () => {
           orderId,
         );
 
-        assert.strictEqual(resp2.status, 403);
+        expect(resp2.status).toBe(403);
         const error = resp2.json<protocol.Error>();
-        assert.strictEqual(error.type, core.ErrorType.badCSR);
+        expect(error.type).toBe(core.ErrorType.badCSR);
       });
 
       it("CSR doesn't have required identifiers", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
 
         // create order
@@ -1083,7 +1083,7 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp.status, 201);
+        expect(resp.status).toBe(201);
         const order = resp.json<protocol.Order>();
         const orderId = getId(resp.headers.location);
 
@@ -1102,17 +1102,17 @@ context("Server", () => {
           orderId,
         );
 
-        assert.strictEqual(resp2.status, 403);
+        expect(resp2.status).toBe(403);
         const error = resp2.json<protocol.Error>();
-        assert.strictEqual(error.type, core.ErrorType.badCSR);
-        assert(error.subproblems);
-        assert.strictEqual(error.subproblems.length, 2);
+        expect(error.type).toBe(core.ErrorType.badCSR);
+        assert.ok(error.subproblems);
+        expect(error.subproblems.length).toBe(2);
       });
 
       it("CSR with multiple DNS", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
 
         // create order
@@ -1130,7 +1130,7 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp.status, 201);
+        expect(resp.status).toBe(201);
         const order = resp.json<protocol.Order>();
         const orderId = getId(resp.headers.location);
 
@@ -1168,19 +1168,19 @@ context("Server", () => {
           orderId,
         );
 
-        assert.strictEqual(resp2.status, 403);
+        expect(resp2.status).toBe(403);
         const error = resp2.json<protocol.Error>();
-        assert.strictEqual(error.type, core.ErrorType.badCSR);
-        assert(error.subproblems);
-        assert.strictEqual(error.subproblems.length, 2);
+        expect(error.type).toBe(core.ErrorType.badCSR);
+        assert.ok(error.subproblems);
+        expect(error.subproblems.length).toBe(2);
       });
     });
 
-    context("list", () => {
+    describe("list", () => {
       it("pagination", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
 
         async function createOrder(dns: string, status: protocol.OrderStatus = "pending") {
@@ -1194,14 +1194,14 @@ context("Server", () => {
               client.keys,
             ),
           );
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
 
           const id = getId(resp.headers.location);
 
           if (status !== "pending") {
             const orderRepo = container.resolve<data.IOrderRepository>(data.diOrderRepository);
             const order = await orderRepo.findById(id);
-            assert(order);
+            assert.ok(order);
 
             order.status = status;
 
@@ -1236,10 +1236,10 @@ context("Server", () => {
         const id23 = await createOrder("some23.com");
 
         const resp = await controller.postOrders(await createPostRequest("", `${baseAddress}/orders`, client.location!, client.keys));
-        assert.strictEqual(resp.status, 200);
+        expect(resp.status).toBe(200);
 
         if (resp.headers.link) {
-          assert.deepStrictEqual(resp.json(), {
+          expect(resp.json()).toStrictEqual({
             orders: [
               `${baseAddress}/order/${id01}`,
               `${baseAddress}/order/${id02}`,
@@ -1253,12 +1253,12 @@ context("Server", () => {
               `${baseAddress}/order/${id11}`,
             ],
           });
-          assert.deepStrictEqual(resp.headers.link, [`<${baseAddress}/orders?cursor=1>;rel="next"`]);
+          expect(resp.headers.link).toStrictEqual([`<${baseAddress}/orders?cursor=1>;rel="next"`]);
 
           const resp2 = await controller.postOrders(await createPostRequest("", `${baseAddress}/orders?cursor=1`, client.location!, client.keys, { cursor: ["1"] }));
-          assert.strictEqual(resp2.status, 200);
-          assert.deepStrictEqual(resp2.headers.link, [`<${baseAddress}/orders?cursor=0>;rel="previous"`, `<${baseAddress}/orders?cursor=2>;rel="next"`]);
-          assert.deepStrictEqual(resp2.json(), {
+          expect(resp2.status).toBe(200);
+          expect(resp2.headers.link).toStrictEqual([`<${baseAddress}/orders?cursor=0>;rel="previous"`, `<${baseAddress}/orders?cursor=2>;rel="next"`]);
+          expect(resp2.json()).toStrictEqual({
             orders: [
               `${baseAddress}/order/${id12}`,
               `${baseAddress}/order/${id13}`,
@@ -1299,20 +1299,20 @@ context("Server", () => {
             `${baseAddress}/order/${id22}`,
             `${baseAddress}/order/${id23}`,
           ];
-          assert.strictEqual(j.orders.length, ar.length);
+          expect(j.orders.length).toBe(ar.length);
           j.orders.forEach((order: string) => {
-            assert(ar.find((o) => o === order));
+            expect(ar.find((o) => o === order)).toBeTruthy();
           });
         }
       });
     });
   });
 
-  context("authorization", () => {
+  describe("authorization", () => {
     it("create new", async () => {
       // Create new account
       const client = await createAccount({}, (resp) => {
-        assert.strictEqual(resp.status, 201);
+        expect(resp.status).toBe(201);
       });
 
       const resp = await controller.createAuthorization(
@@ -1326,20 +1326,20 @@ context("Server", () => {
         ),
       );
 
-      assert.strictEqual(resp.status, 201);
-      assert.strictEqual(/http:\/\/localhost\/authz\/[^/]/.test(resp.headers.location!), true, "Authorization response wrong Location header");
+      expect(resp.status).toBe(201);
+      expect(/http:\/\/localhost\/authz\/[^/]/.test(resp.headers.location!), "Authorization response wrong Location header").toBe(true);
 
       const json = resp.json<protocol.Authorization>();
-      assert.strictEqual(json.status, "pending");
-      assert.deepStrictEqual(json.identifier, { type: "dns", value: "some.com" });
-      assert.deepStrictEqual(json.challenges.length, 1);
+      expect(json.status).toBe("pending");
+      expect(json.identifier).toStrictEqual({ type: "dns", value: "some.com" });
+      expect(json.challenges.length).toStrictEqual(1);
     });
 
-    context("status", () => {
+    describe("status", () => {
       async function changeChallengeStatus(location: string, status: protocol.ChallengeStatus) {
         const challengeRepo = container.resolve<data.IChallengeRepository>(data.diChallengeRepository);
         const challenge = await challengeRepo.findById(getId(location));
-        assert(challenge);
+        assert.ok(challenge);
         challenge.status = status;
         challengeRepo.update(challenge);
       }
@@ -1347,7 +1347,7 @@ context("Server", () => {
       async function testAuthzStatus(challengeStatus: protocol.ChallengeStatus, authzStatus: protocol.AuthorizationStatus) {
         // Create new account
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
 
         const resp = await controller.createAuthorization(
@@ -1361,7 +1361,7 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp.status, 201);
+        expect(resp.status).toBe(201);
 
         const authz = resp.json<protocol.Authorization>();
         const authzId = getId(resp.headers.location);
@@ -1369,10 +1369,10 @@ context("Server", () => {
 
         const resp2 = await controller.postAuthorization(await createPostRequest({} as protocol.AuthorizationCreateParams, `${baseAddress}/authz/${authzId}`, client.location!, client.keys), authzId);
 
-        assert.strictEqual(resp2.status, 200);
+        expect(resp2.status).toBe(200);
 
         const authz2 = resp2.json<protocol.Authorization>();
-        assert.strictEqual(authz2.status, authzStatus);
+        expect(authz2.status).toBe(authzStatus);
       }
 
       it("valid", async () => {
@@ -1390,7 +1390,7 @@ context("Server", () => {
       it("expired", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
 
         const resp = await controller.createAuthorization(
@@ -1404,31 +1404,31 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp.status, 201);
+        expect(resp.status).toBe(201);
 
         const authzId = getId(resp.headers.location);
 
         // Update expiration time
         const authzRepo = container.resolve<IAuthorizationRepository>(data.diAuthorizationRepository);
         const authzItem = await authzRepo.findById(authzId);
-        assert(authzItem);
+        assert.ok(authzItem);
         authzItem.expires = new Date("2019/01/01");
         await authzRepo.update(authzItem);
 
         const resp2 = await controller.postAuthorization(await createPostRequest({} as protocol.AuthorizationCreateParams, `${baseAddress}/authz/${authzId}`, client.location!, client.keys), authzId);
 
-        assert.strictEqual(resp2.status, 200);
+        expect(resp2.status).toBe(200);
 
         const authz = resp2.json<protocol.Authorization>();
-        assert.strictEqual(authz.status, "expired");
+        expect(authz.status).toBe("expired");
       });
     });
 
-    context("POST authz", () => {
+    describe("POST authz", () => {
       it("deactivate", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
 
         const resp = await controller.createOrder(
@@ -1442,8 +1442,8 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp.status, 201);
-        assert(resp.headers.location);
+        expect(resp.status).toBe(201);
+        assert.ok(resp.headers.location);
 
         const order = resp.json<protocol.Order>();
         const orderId = getId(resp.headers.location);
@@ -1462,24 +1462,24 @@ context("Server", () => {
           authzId,
         );
 
-        assert.strictEqual(resp2.status, 200);
+        expect(resp2.status).toBe(200);
 
         const authz = resp2.json<protocol.Authorization>();
-        assert.strictEqual(authz.status, "deactivated");
+        expect(authz.status).toBe("deactivated");
 
         // validate order status
         const resp3 = await controller.postOrder(await createPostRequest({}, resp.headers.location, client.location!, client.keys), orderId);
 
-        assert.strictEqual(resp.status, 201);
+        expect(resp.status).toBe(201);
 
         const order2 = resp3.json<protocol.Order>();
-        assert.strictEqual(order2.status, "invalid");
+        expect(order2.status).toBe("invalid");
       });
 
       it("deactivate inactive authz", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
 
         // create order
@@ -1494,8 +1494,8 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp.status, 201);
-        assert(resp.headers.location);
+        expect(resp.status).toBe(201);
+        expect(resp.headers.location).toBeTruthy();
 
         const order = resp.json<protocol.Order>();
         const authzLocation = order.authorizations[0];
@@ -1514,7 +1514,7 @@ context("Server", () => {
           authzId,
         );
 
-        assert.strictEqual(resp2.status, 200);
+        expect(resp2.status).toBe(200);
 
         // deactivate authz again
         const resp3 = await controller.postAuthorization(
@@ -1529,28 +1529,28 @@ context("Server", () => {
           authzId,
         );
 
-        assert.strictEqual(resp3.status, 403);
+        expect(resp3.status).toBe(403);
 
         const error = resp3.json<protocol.Error>();
-        assert.strictEqual(error.type, core.ErrorType.malformed);
+        expect(error.type).toBe(core.ErrorType.malformed);
       });
     });
   });
 
-  context("certificate", () => {
+  describe("certificate", () => {
     async function changeAuthzStatus(location: string, status: protocol.AuthorizationStatus) {
       const authzRepo = container.resolve<data.IAuthorizationRepository>(data.diAuthorizationRepository);
       const authz = await authzRepo.findById(getId(location));
-      assert(authz);
+      assert.ok(authz);
       authz.status = status;
       authzRepo.update(authz);
     }
 
-    context("revoke", () => {
-      before(() => {
+    describe("revoke", () => {
+      beforeAll(() => {
         controller.options.downloadCertificateFormat = "pkix";
       });
-      after(() => {
+      afterAll(() => {
         controller.options.downloadCertificateFormat = "pem";
       });
 
@@ -1598,7 +1598,7 @@ context("Server", () => {
         );
         const order2 = resp2.json<protocol.Order>();
 
-        assert(order2.certificate);
+        assert.ok(order2.certificate);
         const thumbprint = getId(order2.certificate);
         const resp3 = await controller.getCertificate(
           await createPostRequest(
@@ -1617,13 +1617,13 @@ context("Server", () => {
       it("success", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
 
         const resp = await enrollCertificate(client);
 
         const cert = resp.content!.content;
-        assert(cert);
+        expect(cert).toBeTruthy();
 
         const resp2 = await controller.revokeCertificate(
           await createPostRequest(
@@ -1637,19 +1637,19 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp2.status, 204);
+        expect(resp2.status).toBe(204);
       });
 
       it("revoke without reason", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
 
         const resp = await enrollCertificate(client);
 
         const cert = resp.content!.content;
-        assert(cert);
+        expect(cert).toBeTruthy();
 
         const resp2 = await controller.revokeCertificate(
           await createPostRequest(
@@ -1662,19 +1662,19 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp2.status, 204);
+        expect(resp2.status).toBe(204);
       });
 
       it("Error: already revoked", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
 
         const resp = await enrollCertificate(client);
 
         const cert = resp.content!.content;
-        assert(cert);
+        expect(cert).toBeTruthy();
 
         const resp2 = await controller.revokeCertificate(
           await createPostRequest(
@@ -1686,7 +1686,7 @@ context("Server", () => {
             client.keys,
           ),
         );
-        assert.strictEqual(resp2.status, 204);
+        expect(resp2.status).toBe(204);
 
         const resp3 = await controller.revokeCertificate(
           await createPostRequest(
@@ -1699,25 +1699,25 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp3.status, 400);
+        expect(resp3.status).toBe(400);
         const error = resp3.json<protocol.Error>();
-        assert.strictEqual(error.type, core.ErrorType.alreadyRevoked);
+        expect(error.type).toBe(core.ErrorType.alreadyRevoked);
       });
 
       it("Error: access denied", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
         // Create new account
         const client2 = await createAccount({}, (resp) => {
-          assert.strictEqual(resp.status, 201);
+          expect(resp.status).toBe(201);
         });
 
         const resp = await enrollCertificate(client);
 
         const cert = resp.content!.content;
-        assert(cert);
+        expect(cert).toBeTruthy();
 
         const resp2 = await controller.revokeCertificate(
           await createPostRequest(
@@ -1730,9 +1730,9 @@ context("Server", () => {
           ),
         );
 
-        assert.strictEqual(resp2.status, 401);
+        expect(resp2.status).toBe(401);
         const error = resp2.json<protocol.Error>();
-        assert.strictEqual(error.type, core.ErrorType.unauthorized);
+        expect(error.type).toBe(core.ErrorType.unauthorized);
       });
     });
   });

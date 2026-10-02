@@ -1,10 +1,10 @@
-import * as assert from "node:assert";
 import * as crypto from "node:crypto";
 import "@peculiar/acme-core";
 import { DynamoDB } from "aws-sdk";
 import * as DynamoDbLocal from "dynamodb-local";
 import { Lifecycle, container } from "tsyringe";
-import { DependencyInjection } from "../src/dependency";
+import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
+import { DependencyInjection } from "../dependency";
 import {
   IAccount,
   IAccountRepository,
@@ -38,32 +38,34 @@ import {
   diOrderRepository,
 } from "@peculiar/acme-data";
 import { JsonWebKey } from "@peculiar/jose";
+import { cryptoProvider } from "@peculiar/x509";
 import { Logger, diLogger } from "@peculiar/acme-core";
 const dynamoLocalPort = 8000;
 
+const clientConfig: DynamoDB.ClientConfiguration = {
+  region: "local",
+  endpoint: `http://localhost:${dynamoLocalPort}`,
+  accessKeyId: "xxxxxx",
+  secretAccessKey: "xxxxxx",
+};
+
 describe("DynamoDB Repositories", () => {
-  // NOTE: this test is skipped because it does not work on GitHub Actions
-  // https://github.com/PeculiarVentures/acme-ts/actions/runs/5661747667/job/15340303282?pr=40#step:7:170
-  before(async () => {
+  beforeAll(async () => {
+    cryptoProvider.set(crypto.webcrypto as globalThis.Crypto);
     await DynamoDbLocal.launch(dynamoLocalPort, null, [], false, true);
 
     container.register(diLogger, Logger, { lifecycle: Lifecycle.Singleton });
     await DependencyInjection.registerAsync(container, {
-      client: {
-        region: "local",
-        endpoint: `http://localhost:${dynamoLocalPort}`,
-        accessKeyId: "xxxxxx",
-        secretAccessKey: "xxxxxx",
-      },
+      client: clientConfig,
       options: {
         tableName: "acme-test",
       },
     });
-  });
+  }, 60_000);
 
-  after(async () => {
+  afterAll(async () => {
     // Remove all tables
-    const client = new DynamoDB({ region: "local", endpoint: `http://localhost:${dynamoLocalPort}` });
+    const client = new DynamoDB(clientConfig);
     const tables = await client.listTables().promise();
     if (tables.TableNames) {
       for (const table of tables.TableNames) {
@@ -78,7 +80,7 @@ describe("DynamoDB Repositories", () => {
   describe("AccountRepository", () => {
     let accountRepo: IAccountRepository;
 
-    before(() => {
+    beforeAll(() => {
       accountRepo = container.resolve<IAccountRepository>(diAccountRepository);
     });
 
@@ -105,9 +107,9 @@ describe("DynamoDB Repositories", () => {
         // Save the account
         const account = await accountRepo.add(accountModel);
 
-        assert.ok(account);
-        assert.ok(account.id);
-        assert.ok(account.createdAt);
+        expect(account).toBeTruthy();
+        expect(account.id).toBeTruthy();
+        expect(account.createdAt).toBeTruthy();
       });
     });
 
@@ -138,7 +140,7 @@ describe("DynamoDB Repositories", () => {
         const account = await accountRepo.findByPublicKey(jwk);
 
         assert.ok(account);
-        assert.ok(account.createdAt);
+        expect(account.createdAt).toBeTruthy();
       });
     });
   });
@@ -146,7 +148,7 @@ describe("DynamoDB Repositories", () => {
   describe("AuthorizationRepository", () => {
     let authzRepo: IAuthorizationRepository;
 
-    before(() => {
+    beforeAll(() => {
       authzRepo = container.resolve<IAuthorizationRepository>(diAuthorizationRepository);
     });
 
@@ -162,9 +164,9 @@ describe("DynamoDB Repositories", () => {
 
         const authz = await authzRepo.add(authzModel);
 
-        assert.ok(authz);
-        assert.ok(authz.id);
-        assert.ok(authz.identifier);
+        expect(authz).toBeTruthy();
+        expect(authz.id).toBeTruthy();
+        expect(authz.identifier).toBeTruthy();
       });
     });
 
@@ -187,8 +189,8 @@ describe("DynamoDB Repositories", () => {
         });
 
         assert.ok(authz);
-        assert.ok(authz.id);
-        assert.ok(authz.identifier);
+        expect(authz.id).toBeTruthy();
+        expect(authz.identifier).toBeTruthy();
       });
     });
   });
@@ -196,7 +198,7 @@ describe("DynamoDB Repositories", () => {
   describe("CertificateRepository", () => {
     let certRepo: ICertificateRepository;
 
-    before(() => {
+    beforeAll(() => {
       certRepo = container.resolve<ICertificateRepository>(diCertificateRepository);
     });
 
@@ -210,10 +212,10 @@ describe("DynamoDB Repositories", () => {
 
         const cert = await certRepo.add(certModel);
 
-        assert.ok(cert);
-        assert.ok(cert.id);
-        assert.ok(cert.rawData);
-        assert.ok(cert.thumbprint);
+        expect(cert).toBeTruthy();
+        expect(cert.id).toBeTruthy();
+        expect(cert.rawData).toBeTruthy();
+        expect(cert.thumbprint).toBeTruthy();
       });
     });
 
@@ -230,9 +232,9 @@ describe("DynamoDB Repositories", () => {
         const cert = await certRepo.findByThumbprint("test");
 
         assert.ok(cert);
-        assert.ok(cert.id);
-        assert.ok(cert.rawData);
-        assert.ok(cert.thumbprint);
+        expect(cert.id).toBeTruthy();
+        expect(cert.rawData).toBeTruthy();
+        expect(cert.thumbprint).toBeTruthy();
       });
     });
 
@@ -257,8 +259,8 @@ describe("DynamoDB Repositories", () => {
         const certs = await certRepo.findCaCertificates();
 
         assert.ok(certs);
-        assert.equal(certs.length, 1);
-        assert.equal(certs[0].thumbprint, "testCa");
+        expect(certs.length).toBe(1);
+        expect(certs[0].thumbprint).toBe("testCa");
       });
     });
   });
@@ -266,7 +268,7 @@ describe("DynamoDB Repositories", () => {
   describe("ChallengeRepository", () => {
     let challengeRepo: IChallengeRepository;
 
-    before(() => {
+    beforeAll(() => {
       challengeRepo = container.resolve<IChallengeRepository>(diChallengeRepository);
     });
 
@@ -280,11 +282,11 @@ describe("DynamoDB Repositories", () => {
 
         const challenge = await challengeRepo.add(challengeModel);
 
-        assert.ok(challenge);
-        assert.ok(challenge.id);
-        assert.strictEqual(challenge.token, "test");
-        assert.strictEqual(challenge.type, "dns");
-        assert.strictEqual(challenge.status, "pending");
+        expect(challenge).toBeTruthy();
+        expect(challenge.id).toBeTruthy();
+        expect(challenge.token).toBe("test");
+        expect(challenge.type).toBe("dns");
+        expect(challenge.status).toBe("pending");
       });
     });
 
@@ -299,9 +301,9 @@ describe("DynamoDB Repositories", () => {
         const challenge = await challengeRepo.add(challengeModel);
 
         const challengesFound = await challengeRepo.findByAuthorization(challenge.authorizationId);
-        assert.ok(challengesFound);
-        assert.equal(challengesFound.length, 1);
-        assert.equal(challengesFound.filter((o) => o.id === challenge.id).length, 1);
+        expect(challengesFound).toBeTruthy();
+        expect(challengesFound.length).toBe(1);
+        expect(challengesFound.filter((o) => o.id === challenge.id).length).toBe(1);
       });
     });
   });
@@ -309,7 +311,7 @@ describe("DynamoDB Repositories", () => {
   describe("ExternalAccountRepository", () => {
     let externalAccountRepo: IExternalAccountRepository;
 
-    before(() => {
+    beforeAll(() => {
       externalAccountRepo = container.resolve<IExternalAccountRepository>(diExternalAccountRepository);
     });
 
@@ -322,11 +324,11 @@ describe("DynamoDB Repositories", () => {
 
         const externalAccount = await externalAccountRepo.add(externalAccountModel);
 
-        assert.ok(externalAccount);
-        assert.ok(externalAccount.id);
-        assert.strictEqual(externalAccount.account, "testAccount");
-        assert.strictEqual(externalAccount.key, "testKey");
-        assert.strictEqual(externalAccount.status, "valid");
+        expect(externalAccount).toBeTruthy();
+        expect(externalAccount.id).toBeTruthy();
+        expect(externalAccount.account).toBe("testAccount");
+        expect(externalAccount.key).toBe("testKey");
+        expect(externalAccount.status).toBe("valid");
       });
     });
   });
@@ -334,7 +336,7 @@ describe("DynamoDB Repositories", () => {
   describe("NonceRepository", () => {
     let nonceRepo: INonceRepository;
 
-    before(() => {
+    beforeAll(() => {
       nonceRepo = container.resolve<INonceRepository>(diNonceRepository);
     });
 
@@ -342,7 +344,7 @@ describe("DynamoDB Repositories", () => {
       it("should create a new nonce", async () => {
         const nonce = await nonceRepo.create();
 
-        assert.ok(nonce);
+        expect(nonce).toBeTruthy();
       });
     });
 
@@ -353,7 +355,7 @@ describe("DynamoDB Repositories", () => {
         await nonceRepo.remove(nonce);
 
         const nonceFound = await nonceRepo.contains(nonce);
-        assert.ok(!nonceFound);
+        expect(nonceFound).toBeFalsy();
       });
     });
 
@@ -362,7 +364,7 @@ describe("DynamoDB Repositories", () => {
         const nonce = await nonceRepo.create();
 
         const nonceFound = await nonceRepo.contains(nonce);
-        assert.ok(nonceFound);
+        expect(nonceFound).toBeTruthy();
       });
 
       it("should not find a nonce", async () => {
@@ -370,7 +372,7 @@ describe("DynamoDB Repositories", () => {
         await nonceRepo.remove(nonce);
 
         const nonceFound = await nonceRepo.contains(nonce);
-        assert.ok(!nonceFound);
+        expect(nonceFound).toBeFalsy();
       });
     });
   });
@@ -380,7 +382,7 @@ describe("DynamoDB Repositories", () => {
     let authzRepo: IAuthorizationRepository;
     let orderAuthzRepo: IOrderAuthorizationRepository;
 
-    before(() => {
+    beforeAll(() => {
       orderRepo = container.resolve<IOrderRepository>(diOrderRepository);
       authzRepo = container.resolve<IAuthorizationRepository>(diAuthorizationRepository);
       orderAuthzRepo = container.resolve<IOrderAuthorizationRepository>(diOrderAuthorizationRepository);
@@ -412,17 +414,17 @@ describe("DynamoDB Repositories", () => {
 
         const orderAuthz = await orderAuthzRepo.add(orderAuthzModel);
 
-        assert.ok(orderAuthz);
-        assert.ok(orderAuthz.id);
-        assert.equal(orderAuthz.authorizationId, authz.id);
-        assert.equal(orderAuthz.orderId, order.id);
+        expect(orderAuthz).toBeTruthy();
+        expect(orderAuthz.id).toBeTruthy();
+        expect(orderAuthz.authorizationId).toBe(authz.id);
+        expect(orderAuthz.orderId).toBe(order.id);
       });
     });
 
     describe("find", () => {
       let order: IOrder;
       let authz: IAuthorization;
-      before(async () => {
+      beforeAll(async () => {
         // Create order1
         const order1Model = container.resolve<IOrder>(diOrder);
         order1Model.accountId = "account1";
@@ -506,8 +508,8 @@ describe("DynamoDB Repositories", () => {
         it("should find an order authorization by order", async () => {
           const orderAuthz = await orderAuthzRepo.findByOrder(order.id);
 
-          assert.ok(orderAuthz);
-          assert.equal(orderAuthz.length, 2);
+          expect(orderAuthz).toBeTruthy();
+          expect(orderAuthz.length).toBe(2);
         });
       });
 
@@ -515,8 +517,8 @@ describe("DynamoDB Repositories", () => {
         it("should find an order authorization by authorization", async () => {
           const orderAuthz = await orderAuthzRepo.findByAuthorization(authz.id);
 
-          assert.ok(orderAuthz);
-          assert.equal(orderAuthz.length, 2);
+          expect(orderAuthz).toBeTruthy();
+          expect(orderAuthz.length).toBe(2);
         });
       });
     });
@@ -526,7 +528,7 @@ describe("DynamoDB Repositories", () => {
     let orderRepo: IOrderRepository;
     let certRepo: ICertificateRepository;
 
-    before(() => {
+    beforeAll(() => {
       orderRepo = container.resolve<IOrderRepository>(diOrderRepository);
       certRepo = container.resolve<ICertificateRepository>(diCertificateRepository);
     });
@@ -540,11 +542,11 @@ describe("DynamoDB Repositories", () => {
 
         const order = await orderRepo.add(orderModel);
 
-        assert.ok(order);
-        assert.ok(order.id);
-        assert.equal(order.accountId, "account1");
-        assert.equal(order.identifier, "identifier1");
-        assert.equal(order.status, "pending");
+        expect(order).toBeTruthy();
+        expect(order.id).toBeTruthy();
+        expect(order.accountId).toBe("account1");
+        expect(order.identifier).toBe("identifier1");
+        expect(order.status).toBe("pending");
       });
     });
 
@@ -552,7 +554,7 @@ describe("DynamoDB Repositories", () => {
       let order: IOrder;
       let certThumbprint: string;
 
-      before(async () => {
+      beforeAll(async () => {
         certThumbprint = crypto.webcrypto.randomUUID();
         // Add certificate
         const certModel = container.resolve<ICertificate>(diCertificate);
@@ -593,7 +595,7 @@ describe("DynamoDB Repositories", () => {
         it("should find an order by thumbprint", async () => {
           const orderFound = await orderRepo.findByThumbprint(certThumbprint);
           assert.ok(orderFound);
-          assert.equal(orderFound.id, order.id);
+          expect(orderFound.id).toBe(order.id);
         });
       });
 
@@ -601,15 +603,15 @@ describe("DynamoDB Repositories", () => {
         it("should find the last order by identifier", async () => {
           const orderFound = await orderRepo.lastByIdentifier("accountListOrder", "identifier1");
           assert.ok(orderFound);
-          assert.equal(orderFound.id, order.id);
+          expect(orderFound.id).toBe(order.id);
         });
       });
 
       describe("getList", () => {
         it("should get the list of orders", async () => {
           const orderList = await orderRepo.getList("accountListOrder", {}, 10);
-          assert.ok(orderList);
-          assert.equal(orderList.items.length, 3);
+          expect(orderList).toBeTruthy();
+          expect(orderList.items.length).toBe(3);
         });
       });
     });

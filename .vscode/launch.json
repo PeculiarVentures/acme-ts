@@ -5,10 +5,12 @@
       "name": "Tests",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+      "program": "${workspaceRoot}/node_modules/vitest/vitest.mjs",
       "args": [
-        "--no-timeouts",
-        "--colors"
+        "run",
+        "--no-file-parallelism",
+        "--test-timeout=0",
+        "--hook-timeout=0"
       ],
       "env": {
         "NODE_TLS_REJECT_UNAUTHORIZED": "0"
