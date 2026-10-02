@@ -1,14 +1,15 @@
 import assert from "assert";
 import { cryptoProvider } from "@peculiar/x509";
 import { Crypto } from "@peculiar/webcrypto";
-import { JsonWebSignature } from "@peculiar/jose";
+import { describe, it } from "vitest";
+import { JsonWebSignature } from "./jws";
 
-context("jose", () => {
+describe("jose", () => {
   const crypto = new Crypto();
   cryptoProvider.set(crypto);
 
-  context("jws", () => {
-    context("sign/verify", () => {
+  describe("jws", () => {
+    describe("sign/verify", () => {
       it("RSASSA-PKCS1-v1_5 SHA256", async () => {
         // generate keys
         const alg = {

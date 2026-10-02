@@ -1,14 +1,15 @@
 import assert from "assert";
 import { Crypto } from "@peculiar/webcrypto";
 import { cryptoProvider } from "@peculiar/x509";
-import { ApiClient } from "@peculiar/acme-client";
 import fetch from "node-fetch";
+import { describe, it } from "vitest";
+import { ApiClient } from "./api";
 
-context("client", () => {
+describe("client", { timeout: 5e3 }, () => {
   const crypto = new Crypto();
   cryptoProvider.set(crypto);
 
-  context("Lets Encrypt", () => {
+  describe("Lets Encrypt", () => {
     it("create user", async () => {
       const alg: RsaHashedKeyGenParams = {
         name: "RSASSA-PKCS1-v1_5",
@@ -30,4 +31,4 @@ context("client", () => {
       assert.strictEqual(account.status, 201);
     });
   });
-}).timeout(5e3);
+});

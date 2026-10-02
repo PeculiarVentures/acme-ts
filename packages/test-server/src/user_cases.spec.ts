@@ -1,13 +1,21 @@
+import * as http from "http";
 import { ApiClient } from "@peculiar/acme-client";
+import { DependencyInjection as diData } from "@peculiar/acme-data-memory";
+import { AcmeExpress } from "@peculiar/acme-express";
+import { diEndpointService } from "@peculiar/acme-server";
 import { Crypto } from "@peculiar/webcrypto";
 import assert from "assert";
+import express from "express";
 import fetch from "node-fetch";
-import { Worker } from "worker_threads";
+import { container, Lifecycle } from "tsyringe";
+import { afterAll, beforeAll, describe, it } from "vitest";
+import { MemoryEndpointService } from "./services";
 
-context("ACME user cases", () => {
-  let worker: Worker | null;
+describe("ACME user cases", () => {
+  let server: http.Server | undefined;
   const crypto = new Crypto();
-  const url = "http://localhost:4321/acme";
+  const port = 4321;
+  const url = `http://localhost:${port}/acme`;
   const alg = {
     name: "RSASSA-PKCS1-v1_5",
     hash: "SHA-256",
@@ -15,18 +23,24 @@ context("ACME user cases", () => {
     modulusLength: 2048,
   };
 
-  before((done) => {
-    worker = new Worker(`${__dirname}/worker.js`, {
-      workerData: { url },
-    })
-      .on("message", () => done())
-      .on("error", done);
+  beforeAll(async () => {
+    const app = express();
+    AcmeExpress.register(app, {
+      baseAddress: url,
+      loggerLevel: "error",
+      cryptoProvider: crypto,
+      debugMode: true,
+    });
+    diData.register(container);
+    container.register(diEndpointService, MemoryEndpointService, { lifecycle: Lifecycle.Singleton });
+
+    await new Promise<void>((resolve, reject) => {
+      server = app.listen(port, resolve).on("error", reject);
+    });
   });
 
-  after(() => {
-    if (worker) {
-      worker.terminate();
-    }
+  afterAll(async () => {
+    await new Promise<void>((resolve) => (server ? server.close(() => resolve()) : resolve()));
   });
 
   it("Create authorization", async () => {

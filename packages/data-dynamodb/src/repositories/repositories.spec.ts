@@ -4,7 +4,8 @@ import "@peculiar/acme-core";
 import { DynamoDB } from "aws-sdk";
 import * as DynamoDbLocal from "dynamodb-local";
 import { Lifecycle, container } from "tsyringe";
-import { DependencyInjection } from "../src/dependency";
+import { afterAll, beforeAll, describe, it } from "vitest";
+import { DependencyInjection } from "../dependency";
 import {
   IAccount,
   IAccountRepository,
@@ -44,7 +45,7 @@ const dynamoLocalPort = 8000;
 describe("DynamoDB Repositories", () => {
   // NOTE: this test is skipped because it does not work on GitHub Actions
   // https://github.com/PeculiarVentures/acme-ts/actions/runs/5661747667/job/15340303282?pr=40#step:7:170
-  before(async () => {
+  beforeAll(async () => {
     await DynamoDbLocal.launch(dynamoLocalPort, null, [], false, true);
 
     container.register(diLogger, Logger, { lifecycle: Lifecycle.Singleton });
@@ -61,7 +62,7 @@ describe("DynamoDB Repositories", () => {
     });
   });
 
-  after(async () => {
+  afterAll(async () => {
     // Remove all tables
     const client = new DynamoDB({ region: "local", endpoint: `http://localhost:${dynamoLocalPort}` });
     const tables = await client.listTables().promise();
@@ -78,7 +79,7 @@ describe("DynamoDB Repositories", () => {
   describe("AccountRepository", () => {
     let accountRepo: IAccountRepository;
 
-    before(() => {
+    beforeAll(() => {
       accountRepo = container.resolve<IAccountRepository>(diAccountRepository);
     });
 
@@ -146,7 +147,7 @@ describe("DynamoDB Repositories", () => {
   describe("AuthorizationRepository", () => {
     let authzRepo: IAuthorizationRepository;
 
-    before(() => {
+    beforeAll(() => {
       authzRepo = container.resolve<IAuthorizationRepository>(diAuthorizationRepository);
     });
 
@@ -196,7 +197,7 @@ describe("DynamoDB Repositories", () => {
   describe("CertificateRepository", () => {
     let certRepo: ICertificateRepository;
 
-    before(() => {
+    beforeAll(() => {
       certRepo = container.resolve<ICertificateRepository>(diCertificateRepository);
     });
 
@@ -266,7 +267,7 @@ describe("DynamoDB Repositories", () => {
   describe("ChallengeRepository", () => {
     let challengeRepo: IChallengeRepository;
 
-    before(() => {
+    beforeAll(() => {
       challengeRepo = container.resolve<IChallengeRepository>(diChallengeRepository);
     });
 
@@ -309,7 +310,7 @@ describe("DynamoDB Repositories", () => {
   describe("ExternalAccountRepository", () => {
     let externalAccountRepo: IExternalAccountRepository;
 
-    before(() => {
+    beforeAll(() => {
       externalAccountRepo = container.resolve<IExternalAccountRepository>(diExternalAccountRepository);
     });
 
@@ -334,7 +335,7 @@ describe("DynamoDB Repositories", () => {
   describe("NonceRepository", () => {
     let nonceRepo: INonceRepository;
 
-    before(() => {
+    beforeAll(() => {
       nonceRepo = container.resolve<INonceRepository>(diNonceRepository);
     });
 
@@ -380,7 +381,7 @@ describe("DynamoDB Repositories", () => {
     let authzRepo: IAuthorizationRepository;
     let orderAuthzRepo: IOrderAuthorizationRepository;
 
-    before(() => {
+    beforeAll(() => {
       orderRepo = container.resolve<IOrderRepository>(diOrderRepository);
       authzRepo = container.resolve<IAuthorizationRepository>(diAuthorizationRepository);
       orderAuthzRepo = container.resolve<IOrderAuthorizationRepository>(diOrderAuthorizationRepository);
@@ -422,7 +423,7 @@ describe("DynamoDB Repositories", () => {
     describe("find", () => {
       let order: IOrder;
       let authz: IAuthorization;
-      before(async () => {
+      beforeAll(async () => {
         // Create order1
         const order1Model = container.resolve<IOrder>(diOrder);
         order1Model.accountId = "account1";
@@ -526,7 +527,7 @@ describe("DynamoDB Repositories", () => {
     let orderRepo: IOrderRepository;
     let certRepo: ICertificateRepository;
 
-    before(() => {
+    beforeAll(() => {
       orderRepo = container.resolve<IOrderRepository>(diOrderRepository);
       certRepo = container.resolve<ICertificateRepository>(diCertificateRepository);
     });
@@ -552,7 +553,7 @@ describe("DynamoDB Repositories", () => {
       let order: IOrder;
       let certThumbprint: string;
 
-      before(async () => {
+      beforeAll(async () => {
         certThumbprint = crypto.webcrypto.randomUUID();
         // Add certificate
         const certModel = container.resolve<ICertificate>(diCertificate);

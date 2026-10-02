@@ -10,16 +10,17 @@ import { GeneralName, id_ce_subjectAltName, SubjectAlternativeName } from "@pecu
 import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
 import { Crypto } from "@peculiar/webcrypto";
 import assert from "assert";
-import { MemoryEndpointService } from "packages/test-server/src/services";
+import { MemoryEndpointService } from "@peculiar/acme-test-server/src/services";
 import { Convert } from "pvtsutils";
 import { container, Lifecycle } from "tsyringe";
+import { afterAll, beforeAll, describe, it } from "vitest";
 
 const baseAddress = "http://localhost";
 
-context("Server", () => {
+describe("Server", () => {
   const crypto = new Crypto();
   let controller: server.AcmeController;
-  before(async () => {
+  beforeAll(async () => {
     const notAfter = new Date();
     notAfter.setUTCFullYear(notAfter.getUTCFullYear() + 1);
 
@@ -183,8 +184,8 @@ context("Server", () => {
     assert.strictEqual(!!resp.headers.replayNonce, true);
   });
 
-  context("account", () => {
-    context("new-account", () => {
+  describe("account", () => {
+    describe("new-account", () => {
       it("wrong nonce", async () => {
         const alg: RsaHashedKeyGenParams = {
           name: "RSASSA-PKCS1-v1_5",
@@ -384,8 +385,8 @@ context("Server", () => {
       });
     });
 
-    context("terms agreement", () => {
-      before(() => {
+    describe("terms agreement", () => {
+      beforeAll(() => {
         controller.options.meta = { termsOfService: `${baseAddress}/terms.pdf` };
       });
 
@@ -422,12 +423,12 @@ context("Server", () => {
         });
       });
 
-      after(() => {
+      afterAll(() => {
         delete controller.options.meta;
       });
     });
 
-    context("POST account", () => {
+    describe("POST account", () => {
       it("update contacts", async () => {
         const client = await createAccount({}, (resp) => {
           assert.strictEqual(resp.status, 201);
@@ -549,7 +550,7 @@ context("Server", () => {
       });
     });
 
-    context("key rollover", () => {
+    describe("key rollover", () => {
       async function createNewKey(oldKey: CryptoKey, kid: string, keys?: Required<CryptoKeyPair>) {
         keys ??= await generateKey();
         const innerToken = new JsonWebSignature(
@@ -662,7 +663,7 @@ context("Server", () => {
     });
   });
 
-  context("order", async () => {
+  describe("order", async () => {
     async function changeAuthzStatus(location: string, status: protocol.AuthorizationStatus) {
       const authzRepo = container.resolve<data.IAuthorizationRepository>(data.diAuthorizationRepository);
       const authz = await authzRepo.findById(getId(location));
@@ -671,7 +672,7 @@ context("Server", () => {
       authzRepo.update(authz);
     }
 
-    context("create", () => {
+    describe("create", () => {
       it("create", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
@@ -908,8 +909,8 @@ context("Server", () => {
       });
     });
 
-    context("get", () => {
-      context("status", () => {
+    describe("get", () => {
+      describe("status", () => {
         it("authz: valid, valid ", async () => {
           // Create new account
           const client = await createAccount({}, (resp) => {
@@ -1020,7 +1021,7 @@ context("Server", () => {
       });
     });
 
-    context("finalize", () => {
+    describe("finalize", () => {
       it("wrong CSR message", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
@@ -1176,7 +1177,7 @@ context("Server", () => {
       });
     });
 
-    context("list", () => {
+    describe("list", () => {
       it("pagination", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
@@ -1308,7 +1309,7 @@ context("Server", () => {
     });
   });
 
-  context("authorization", () => {
+  describe("authorization", () => {
     it("create new", async () => {
       // Create new account
       const client = await createAccount({}, (resp) => {
@@ -1335,7 +1336,7 @@ context("Server", () => {
       assert.deepStrictEqual(json.challenges.length, 1);
     });
 
-    context("status", () => {
+    describe("status", () => {
       async function changeChallengeStatus(location: string, status: protocol.ChallengeStatus) {
         const challengeRepo = container.resolve<data.IChallengeRepository>(data.diChallengeRepository);
         const challenge = await challengeRepo.findById(getId(location));
@@ -1424,7 +1425,7 @@ context("Server", () => {
       });
     });
 
-    context("POST authz", () => {
+    describe("POST authz", () => {
       it("deactivate", async () => {
         // Create new account
         const client = await createAccount({}, (resp) => {
@@ -1537,7 +1538,7 @@ context("Server", () => {
     });
   });
 
-  context("certificate", () => {
+  describe("certificate", () => {
     async function changeAuthzStatus(location: string, status: protocol.AuthorizationStatus) {
       const authzRepo = container.resolve<data.IAuthorizationRepository>(data.diAuthorizationRepository);
       const authz = await authzRepo.findById(getId(location));
@@ -1546,11 +1547,11 @@ context("Server", () => {
       authzRepo.update(authz);
     }
 
-    context("revoke", () => {
-      before(() => {
+    describe("revoke", () => {
+      beforeAll(() => {
         controller.options.downloadCertificateFormat = "pkix";
       });
-      after(() => {
+      afterAll(() => {
         controller.options.downloadCertificateFormat = "pem";
       });
 

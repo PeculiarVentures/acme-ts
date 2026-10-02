@@ -1,10 +1,11 @@
 import * as assert from "assert";
 import * as data from "@peculiar/acme-data";
-import * as dataMemory from "@peculiar/acme-data-memory";
 import { container } from "tsyringe";
+import { describe, it } from "vitest";
+import * as dataMemory from "..";
 
-context("Data Memory Repositories", () => {
-  context("Adding", () => {
+describe("Data Memory Repositories", () => {
+  describe("Adding", () => {
     it("default id usage", async () => {
       const scope = container.createChildContainer();
       dataMemory.DependencyInjection.register(scope);

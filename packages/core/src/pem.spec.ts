@@ -1,10 +1,11 @@
 import { Convert } from "pvtsutils";
 import { PemConverter } from "@peculiar/x509";
 import assert from "assert";
+import { describe, it } from "vitest";
 
-context("helpers", () => {
-  context("pem converter", () => {
-    context("encode/decode", () => {
+describe("helpers", () => {
+  describe("pem converter", () => {
+    describe("encode/decode", () => {
       const PEM =
         "-----BEGIN CERTIFICATE-----\n" +
         "TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1\n" +
