@@ -12,16 +12,14 @@ export interface IDynamoOptions {
   options: IOptions;
 }
 
-class DynamoDbSetup extends SourceLogger { }
+class DynamoDbSetup extends SourceLogger {}
 
 function isAwsError(error: unknown): error is AWSError {
   return error instanceof Error && "code" in error;
 }
 
 export class DependencyInjection {
-
   public static async registerAsync(container: DependencyContainer, options: IDynamoOptions) {
-
     await this.validate(options);
 
     const ddb = new dynamoose.aws.sdk.DynamoDB(options.client);

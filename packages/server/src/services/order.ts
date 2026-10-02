@@ -31,7 +31,6 @@ export interface ICertificateEnrollParams {
 
 @injectable()
 export class OrderService extends BaseService implements types.IOrderService {
-
   protected orderRepository = container.resolve<data.IOrderRepository>(data.diOrderRepository);
   protected certificateService = container.resolve<types.ICertificateService>(types.diCertificateService);
   protected accountService = container.resolve<types.IAccountService>(types.diAccountService);
@@ -96,7 +95,7 @@ export class OrderService extends BaseService implements types.IOrderService {
    */
   protected async computeIdentifier(identifiers: protocol.Identifier[]) {
     const strIdentifiers = identifiers
-      .map(o => `${o.type}:${o.value}`.toLowerCase())
+      .map((o) => `${o.type}:${o.value}`.toLowerCase())
       .sort()
       .join(";");
     const hash = await this.getHash(pvtsutils.Convert.FromUtf8String(strIdentifiers));
@@ -146,7 +145,7 @@ export class OrderService extends BaseService implements types.IOrderService {
 
     this.logger.debug("Get list of orders", {
       account: accountId,
-      orders: list.items.map(o => {
+      orders: list.items.map((o) => {
         return {
           id: o.id,
           status: o.status,
@@ -185,17 +184,15 @@ export class OrderService extends BaseService implements types.IOrderService {
       if (order.expires && order.expires < new Date()) {
         order.status = "invalid";
         await this.orderRepository.update(order);
-      }
-      else {
+      } else {
         const orderAuthorization = await this.orderAuthorizationRepository.findByOrder(order.id);
-        const authorizations = await Promise.all(orderAuthorization.map(o => this.authorizationService.getById(order.accountId!, o.authorizationId)));
+        const authorizations = await Promise.all(orderAuthorization.map((o) => this.authorizationService.getById(order.accountId!, o.authorizationId)));
 
         if (order.status === "pending") {
           // Check Auth statuses
-          if (authorizations.find(o => !(o.status === "pending"
-            || o.status === "valid"))) {
+          if (authorizations.find((o) => !(o.status === "pending" || o.status === "valid"))) {
             await this.createOrderError(new core.MalformedError("One of order authorizations has wrong status"), order);
-          } else if (authorizations.every(o => o.status === "valid")) {
+          } else if (authorizations.every((o) => o.status === "valid")) {
             order.status = "ready";
             await this.orderRepository.update(order);
           }
@@ -230,20 +227,16 @@ export class OrderService extends BaseService implements types.IOrderService {
       // Checks expires
       if (order.expires && order.expires < new Date()) {
         order.status = "invalid";
-      }
-      else {
-
+      } else {
         // RefreshStatus authorizations
         const orderAuthorization = await this.orderAuthorizationRepository.findByOrder(order.id);
-        const authorizations = await Promise.all(orderAuthorization.map(o => this.authorizationService.getById(accountId, o.authorizationId)));
+        const authorizations = await Promise.all(orderAuthorization.map((o) => this.authorizationService.getById(accountId, o.authorizationId)));
 
         if (order.status === "pending") {
           // Check Auth statuses
-          if (!authorizations.find(o => o.status === "pending"
-            || o.status === "valid")) {
+          if (!authorizations.find((o) => o.status === "pending" || o.status === "valid")) {
             order.status = "invalid";
-          }
-          else if (authorizations.find(o => o.status === "valid")) {
+          } else if (authorizations.find((o) => o.status === "valid")) {
             order.status = "ready";
           }
         }
@@ -260,11 +253,7 @@ export class OrderService extends BaseService implements types.IOrderService {
     }
 
     let actual: data.IOrder | null = null;
-    if (order
-      && (order.status === "pending"
-        || order.status === "ready"
-        || order.status === "processing")) {
-
+    if (order && (order.status === "pending" || order.status === "ready" || order.status === "processing")) {
       this.logger.debug("Get actual order");
 
       actual = order;
@@ -273,10 +262,10 @@ export class OrderService extends BaseService implements types.IOrderService {
     this.logger.debug("Get actual order", {
       order: actual
         ? {
-          id: actual.id,
-          status: actual.status,
-        }
-        : null
+            id: actual.id,
+            status: actual.status,
+          }
+        : null,
     });
 
     return actual;
@@ -295,24 +284,18 @@ export class OrderService extends BaseService implements types.IOrderService {
       throw new core.AcmeError(core.ErrorType.orderNotReady);
     }
 
-    const certificateEnrollParams: ICertificateEnrollParams =
-    {
+    const certificateEnrollParams: ICertificateEnrollParams = {
       order: order,
       params: params,
       data: {},
-      cancel: false
+      cancel: false,
     };
 
     try {
       await this.onEnrollCertificateBefore(certificateEnrollParams);
-    }
-    catch (err) {
+    } catch (err) {
       // return invalid order
-      await this.createOrderError(
-        err instanceof Error
-          ? err
-          : new Error(`Unknown error '${err}'`),
-        certificateEnrollParams.order);
+      await this.createOrderError(err instanceof Error ? err : new Error(`Unknown error '${err}'`), certificateEnrollParams.order);
       return certificateEnrollParams.order;
     }
 
@@ -340,11 +323,7 @@ export class OrderService extends BaseService implements types.IOrderService {
         }
       } catch (err) {
         // TODO Optimize Error assignment
-        await this.createOrderError(
-          err instanceof Error
-            ? err
-            : new Error(`Unknown error '${err}'`),
-          order);
+        await this.createOrderError(err instanceof Error ? err : new Error(`Unknown error '${err}'`), order);
       }
 
       this.logger.debug(`Order status updated`, {
@@ -371,9 +350,7 @@ export class OrderService extends BaseService implements types.IOrderService {
    * @param thumbprint Thumbprint of certificate
    */
   public async getByCertificate(accountId: data.Key, param: string | ArrayBuffer): Promise<data.IOrder> {
-    const thumbprint = typeof param === "string"
-      ? param
-      : pvtsutils.Convert.ToHex(await this.getHash(param));
+    const thumbprint = typeof param === "string" ? param : pvtsutils.Convert.ToHex(await this.getHash(param));
 
     const order = await this.orderRepository.findByThumbprint(thumbprint);
     if (!order) {
@@ -482,16 +459,18 @@ export class OrderService extends BaseService implements types.IOrderService {
     for (const orderAuthz of orderAuthzs) {
       authzs.push(await this.authorizationService.getById(order.accountId, orderAuthz.authorizationId));
     }
-    const identifiers = authzs.map(o => { return { ...o.identifier }; });
+    const identifiers = authzs.map((o) => {
+      return { ...o.identifier };
+    });
 
     this.logger.debug(`Get order identifiers`, {
       order: order.id,
-      identifiers: identifiers.map(o => {
+      identifiers: identifiers.map((o) => {
         return {
           type: o.type,
           value: o.value,
         };
-      })
+      }),
     });
 
     return identifiers;

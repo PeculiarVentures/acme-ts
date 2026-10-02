@@ -1,4 +1,3 @@
-
 export enum ErrorType {
   /**
    * The request specified an account that

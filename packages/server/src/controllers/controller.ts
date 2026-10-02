@@ -18,7 +18,6 @@ export const diAcmeController = "ACME.AcmeController";
  */
 @injectable()
 export class AcmeController extends BaseService {
-
   protected directoryService = container.resolve<types.IDirectoryService>(types.diDirectoryService);
   protected nonceService = container.resolve<types.INonceService>(types.diNonceService);
   protected convertService = container.resolve<types.IConvertService>(types.diConvertService);
@@ -84,7 +83,7 @@ export class AcmeController extends BaseService {
           if (!header.jwk) {
             throw new core.IncorrectResponseError("JWS MUST contain 'jwk' field");
           }
-          if (!await token.verify()) {
+          if (!(await token.verify())) {
             throw new core.UnauthorizedError("JWS signature is invalid");
           }
 
@@ -94,8 +93,7 @@ export class AcmeController extends BaseService {
           if (request.account && request.account.status !== "valid") {
             throw new core.UnauthorizedError(`Account is not valid. Status is '${request.account.status}'`);
           }
-        }
-        else {
+        } else {
           if (!header.kid) {
             throw new core.IncorrectResponseError("JWS MUST contain 'kid' field");
           }
@@ -103,7 +101,7 @@ export class AcmeController extends BaseService {
           request.account = await this.accountService.getById(this.getKeyIdentifier(header.kid));
 
           const key = await new JsonWebKey(this.getCrypto(), request.account.key).exportKey();
-          if (!await token.verify(key)) {
+          if (!(await token.verify(key))) {
             throw new core.UnauthorizedError("JWS signature is invalid");
           }
 
@@ -119,8 +117,7 @@ export class AcmeController extends BaseService {
 
       this.logger.debug("Invoke custom action");
       await action(response);
-    }
-    catch (e) {
+    } catch (e) {
       if (e instanceof core.AcmeError) {
         response.status = e.status;
         response.content = new core.Content(e, this.options.formattedResponse);
@@ -160,7 +157,6 @@ export class AcmeController extends BaseService {
 
   public keyChange(request: Request) {
     return this.wrapAction(async (response) => {
-
       const token = this.getToken(request);
       const reqProtected = token.getProtected();
 
@@ -178,14 +174,13 @@ export class AcmeController extends BaseService {
       }
 
       // Check that the inner JWS verifies using the key in its "jwk" field.
-      if (!await innerJWS.verify(await innerProtected.jwk.getPublicKey())) {
+      if (!(await innerJWS.verify(await innerProtected.jwk.getPublicKey()))) {
         throw new core.MalformedError("The inner JWT not verified");
       }
 
       // Check that the payload of the inner JWS is a well-formed keyChange object (as described above).
       const param = innerJWS.getPayload<protocol.ChangeKey>();
-      if (!(param.account && typeof param.account === "string" &&
-        param.oldKey && typeof param.oldKey === "object")) {
+      if (!(param.account && typeof param.account === "string" && param.oldKey && typeof param.oldKey === "object")) {
         throw new core.MalformedError("The payload of the inner JWS is not a well-formed keyChange object");
       }
 
@@ -210,8 +205,7 @@ export class AcmeController extends BaseService {
         response.content = new core.Content(await this.convertService.toAccount(updatedAccount));
         response.headers.location = `${this.options.baseAddress}/acct/${updatedAccount.id}`;
         response.status = 200; // Ok
-      }
-      catch (e) {
+      } catch (e) {
         if (e instanceof core.AcmeError && e.status === 409) {
           const conflictAccount = await this.accountService.getByPublicKey(innerProtected.jwk);
           response.headers.location = `${this.options.baseAddress}/acct/${conflictAccount.id}`;
@@ -239,36 +233,40 @@ export class AcmeController extends BaseService {
 
   //#region Account management
   public async newAccount(request: Request) {
-    return this.wrapAction(async (response) => {
-      const token = this.getToken(request);
-      const header = token.getProtected();
-      const params = token.getPayload<protocol.AccountCreateParams>();
-      let account = await this.accountService.findByPublicKey(header.jwk!);
+    return this.wrapAction(
+      async (response) => {
+        const token = this.getToken(request);
+        const header = token.getProtected();
+        const params = token.getPayload<protocol.AccountCreateParams>();
+        let account = await this.accountService.findByPublicKey(header.jwk!);
 
-      if (params.onlyReturnExisting) {
-        if (!account) {
-          throw new core.AccountDoesNotExistError();
-        }
-        response.content = new core.Content(await this.convertService.toAccount(account), this.options.formattedResponse);
-        response.status = core.HttpStatusCode.ok;
-      } else {
-        if (!account) {
-          if (this.options.meta?.termsOfService && !params.termsOfServiceAgreed) {
-            throw new core.MalformedError("Must agree to terms of service");
-          } else {
-            // Create new account
-            account = await this.accountService.create(new JsonWebKey(this.getCrypto(), header.jwk!), params);
-            response.content = new core.Content(await this.convertService.toAccount(account), this.options.formattedResponse);
-            response.status = 201; // Created
+        if (params.onlyReturnExisting) {
+          if (!account) {
+            throw new core.AccountDoesNotExistError();
           }
-        } else {
-          // Existing account
           response.content = new core.Content(await this.convertService.toAccount(account), this.options.formattedResponse);
+          response.status = core.HttpStatusCode.ok;
+        } else {
+          if (!account) {
+            if (this.options.meta?.termsOfService && !params.termsOfServiceAgreed) {
+              throw new core.MalformedError("Must agree to terms of service");
+            } else {
+              // Create new account
+              account = await this.accountService.create(new JsonWebKey(this.getCrypto(), header.jwk!), params);
+              response.content = new core.Content(await this.convertService.toAccount(account), this.options.formattedResponse);
+              response.status = 201; // Created
+            }
+          } else {
+            // Existing account
+            response.content = new core.Content(await this.convertService.toAccount(account), this.options.formattedResponse);
+          }
         }
-      }
 
-      response.headers.location = `${this.options.baseAddress}/acct/${account.id}`;
-    }, request, true);
+        response.headers.location = `${this.options.baseAddress}/acct/${account.id}`;
+      },
+      request,
+      true,
+    );
   }
 
   protected async getAccount(request: Request) {
@@ -310,29 +308,32 @@ export class AcmeController extends BaseService {
   }
 
   public async postAccount(request: Request) {
-    return this.wrapAction(async (response) => {
-      const token = this.getToken(request);
-      const params = token.getPayload<protocol.AccountUpdateParams>();
+    return this.wrapAction(
+      async (response) => {
+        const token = this.getToken(request);
+        const params = token.getPayload<protocol.AccountUpdateParams>();
 
-      let account = await this.getAccount(request);
-      this.assertAccountStatus(account);
+        let account = await this.getAccount(request);
+        this.assertAccountStatus(account);
 
-      if (params.status) {
-        // Deactivate
-        if (params.status !== "deactivated") {
-          throw new core.MalformedError("Request paramter status must be 'deactivated'");
+        if (params.status) {
+          // Deactivate
+          if (params.status !== "deactivated") {
+            throw new core.MalformedError("Request paramter status must be 'deactivated'");
+          }
+
+          account = await this.accountService.deactivate(account.id);
+        } else {
+          // Update
+          account = await this.accountService.update(account.id, params);
         }
 
-        account = await this.accountService.deactivate(account.id);
-      }
-      else {
-        // Update
-        account = await this.accountService.update(account.id, params);
-      }
-
-      response.headers.location = `${this.options.baseAddress}/acct/${account.id}`;
-      response.content = new core.Content(await this.convertService.toAccount(account));
-    }, request, true);
+        response.headers.location = `${this.options.baseAddress}/acct/${account.id}`;
+        response.content = new core.Content(await this.convertService.toAccount(account));
+      },
+      request,
+      true,
+    );
   }
   //#endregion
 
@@ -390,7 +391,7 @@ export class AcmeController extends BaseService {
           if (Object.prototype.hasOwnProperty.call(params, key)) {
             const element = params[key];
             if (element && key !== "cursor") {
-              element.forEach(value => {
+              element.forEach((value) => {
                 addingString += `&${key}=${value}`;
               });
             }
@@ -402,7 +403,7 @@ export class AcmeController extends BaseService {
       const link = `${this.options.baseAddress}/orders`;
       let page = 0;
       if (params.cursor) {
-        page = Number.parseInt(params.cursor.find(o => o) || "0", 10);
+        page = Number.parseInt(params.cursor.find((o) => o) || "0", 10);
       }
       if (page > 0) {
         response.headers.setLink(`<${link}?cursor=${page - 1}${addingString}>;rel="previous"`);
@@ -522,7 +523,10 @@ export class AcmeController extends BaseService {
     switch (this.options.downloadCertificateFormat) {
       case "pem":
         {
-          const pem = x509.PemConverter.encode(certs.map(o => o.rawData), "certificate");
+          const pem = x509.PemConverter.encode(
+            certs.map((o) => o.rawData),
+            "certificate",
+          );
           response.content = new core.Content(pem);
         }
         break;
@@ -554,8 +558,7 @@ export class AcmeController extends BaseService {
       if (header.kid) {
         const account = await this.getAccount(request);
         await this.orderService.revokeCertificate(account.id, params);
-      }
-      else if (header.jwk) {
+      } else if (header.jwk) {
         await this.orderService.revokeCertificate(header.jwk, params);
       } else {
         throw new core.MalformedError("");
@@ -582,7 +585,6 @@ export class AcmeController extends BaseService {
       }
 
       response.content = new core.Content(await this.convertService.toEndpoint(endpoint));
-
     }, request);
   }
 
@@ -598,5 +600,4 @@ export class AcmeController extends BaseService {
       await this.createCertificateResponse(certs, response);
     }, request);
   }
-
 }

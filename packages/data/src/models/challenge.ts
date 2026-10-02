@@ -5,25 +5,25 @@ import { IError } from "./error";
 export const diChallenge = "ACME.Models.Challenge";
 
 export interface IChallenge extends IBaseObject {
-    /**
-     * The type of challenge encoded in the object.
-     */
-    type: string;
+  /**
+   * The type of challenge encoded in the object.
+   */
+  type: string;
 
-    /**
-     * The status of this challenge.
-     */
-    status: ChallengeStatus;
+  /**
+   * The status of this challenge.
+   */
+  status: ChallengeStatus;
 
-    /**
-     * The time at which the server validated this challenge.
-     */
-    validated?: Date;
+  /**
+   * The time at which the server validated this challenge.
+   */
+  validated?: Date;
 
-    /**
-     * Error that occurred while the server was validating the challenge.
-     */
-    error?: IError;
-    token: string;
-    authorizationId: Key;
+  /**
+   * Error that occurred while the server was validating the challenge.
+   */
+  error?: IError;
+  token: string;
+  authorizationId: Key;
 }

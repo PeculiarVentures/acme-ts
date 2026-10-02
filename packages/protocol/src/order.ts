@@ -88,7 +88,6 @@ export interface OrderCreateParams {
    * NOTE: in the date format defined in RFC3339
    */
   notAfter?: Date | string;
-
 }
 
 /**
@@ -106,7 +105,7 @@ export enum RevokeReason {
   /*Value 7 is not used*/
   removeFromCrl = 8,
   privilegeWithdrawn = 9,
-  aaCompromise = 10
+  aaCompromise = 10,
 }
 
 /**

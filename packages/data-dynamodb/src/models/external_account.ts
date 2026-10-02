@@ -8,7 +8,6 @@ export interface IExternalAccountDynamo extends IBaseDynamoObject {
 }
 
 export class ExternalAccount extends BaseObject implements IExternalAccount {
-
   public key: string;
   public expires?: Date;
   public account: any;

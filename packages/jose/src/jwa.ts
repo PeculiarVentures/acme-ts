@@ -1,19 +1,4 @@
-export type JsonWebAlgorithm =
-  "HS1"
-  | "HS256"
-  | "HS384"
-  | "HS512"
-  | "RS1"
-  | "RS256"
-  | "RS384"
-  | "RS512"
-  | "ES256"
-  | "ES384"
-  | "ES512"
-  | "PS1"
-  | "PS256"
-  | "PS384"
-  | "PS512";
+export type JsonWebAlgorithm = "HS1" | "HS256" | "HS384" | "HS512" | "RS1" | "RS256" | "RS384" | "RS512" | "ES256" | "ES384" | "ES512" | "PS1" | "PS256" | "PS384" | "PS512";
 
 export class JsonWebAlgorithmConverter {
   public static toAlgorithm(data: string | JsonWebAlgorithm): Algorithm | null {
@@ -53,15 +38,9 @@ export class JsonWebAlgorithmConverter {
   }
 
   public static fromAlgorithm(algorithm: string | Algorithm): JsonWebAlgorithm | null {
-    const alg: any = typeof algorithm === "string"
-      ? { name: algorithm }
-      : algorithm;
+    const alg: any = typeof algorithm === "string" ? { name: algorithm } : algorithm;
     const algName: string = alg.name.toLowerCase();
-    const hashName: string = alg.hash
-      ? (typeof alg.hash === "string"
-        ? alg.hash
-        : alg.hash.name).toLowerCase()
-      : "sha-256"; // default
+    const hashName: string = alg.hash ? (typeof alg.hash === "string" ? alg.hash : alg.hash.name).toLowerCase() : "sha-256"; // default
     switch (algName) {
       case "hmac":
         switch (hashName) {
@@ -112,6 +91,4 @@ export class JsonWebAlgorithmConverter {
     }
     return null;
   }
-
-
 }

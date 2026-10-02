@@ -25,8 +25,8 @@ const browser = [
         tsconfigOverride: {
           compilerOptions: {
             module: "es2015",
-          }
-        }
+          },
+        },
       }),
     ],
     output: [
@@ -38,11 +38,14 @@ const browser = [
           getBabelOutputPlugin({
             allowAllFormats: true,
             presets: [
-              ["@babel/preset-env", {
-                targets: {
-                  chrome: "60"
+              [
+                "@babel/preset-env",
+                {
+                  targets: {
+                    chrome: "60",
+                  },
                 },
-              }],
+              ],
             ],
           }),
           terser({
@@ -54,12 +57,10 @@ const browser = [
             },
           }),
         ],
-        name: "acme"
-      }
-    ]
+        name: "acme",
+      },
+    ],
   },
 ];
 
-export default [
-  ...browser,
-];
+export default [...browser];

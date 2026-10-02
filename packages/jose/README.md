@@ -21,6 +21,7 @@
 ```
 npm install @peculiar/jose
 ```
+
 ## Usage
 
 ### Browser
@@ -56,7 +57,7 @@ jws.setProtected({
   url: "http://test.url",
 });
 jws.setPayload({
-  value: "hello world"
+  value: "hello world",
 });
 
 // Sign
@@ -67,6 +68,7 @@ console.log("Compact:", jws.toString(true));
 ```
 
 ### Verify JWS
+
 ```js
 const jws = new jose.JsonWebSignature({}, crypto);
 jws.parse("eyJqd2siOnsia3R5IjoiRUMiLCJjcnYiOi...vfZo3c_EVDje7ckgprp5NPvkQUODOub9k");

@@ -7,7 +7,6 @@ export const diAuthProviderService = "Ra.AuthProviderService";
 
 @injectable()
 export class ProviderService extends BaseService {
-
   public async getProfile(token: string, providerIdentifier?: string) {
     const identifier = providerIdentifier || this.options.defaultProvider;
     const provider = this.getProvider(identifier);
@@ -25,7 +24,7 @@ export class ProviderService extends BaseService {
     }
 
     if (identifier) {
-      const provider = providers.filter(o => o.identifier === identifier);
+      const provider = providers.filter((o) => o.identifier === identifier);
       if (!provider.length) {
         throw new MalformedError(`Unsupported provider type '${identifier}'`);
       }

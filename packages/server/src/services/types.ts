@@ -23,8 +23,6 @@ export interface IConvertService {
   toEndpoint(endpoint: IEndpointService): Promise<protocol.Endpoint>;
 }
 
-
-
 export const diDirectoryService = "ACME.DirectoryService";
 
 /**
@@ -50,7 +48,6 @@ export interface INonceService {
 export const diAccountService = "ACME.AccountService";
 
 export interface IAccountService {
-
   /**
    * Creates a new Account
    * @param key Account's JSON web key
@@ -72,9 +69,9 @@ export interface IAccountService {
   deactivate(account: data.IAccount): Promise<data.IAccount>;
 
   /**
-  * Returns Account by specified Id
-  * @param accountId
-  */
+   * Returns Account by specified Id
+   * @param accountId
+   */
   getById(accountId: data.Key): Promise<data.IAccount>;
 
   /**

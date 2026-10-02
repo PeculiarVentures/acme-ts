@@ -18,7 +18,6 @@ const acmeData = require("@peculiar/acme-data-memory");
 const { MemoryEndpointService } = require("@peculiar/acme-test-server/src/services/memory_endpoint");
 
 if (!isMainThread) {
-
   const app = express();
   const crypto = new Crypto();
   AcmeExpress.register(app, {
@@ -34,7 +33,6 @@ if (!isMainThread) {
     parentPort.postMessage(""); // Send message to the main process
   });
 }
-
 
 process
   .on("uncaughtException", (e) => {

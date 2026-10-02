@@ -55,11 +55,11 @@ export enum CRLReasons {
   certificateHold = 6,
   removeFromCRL = 8,
   privilegeWithdrawn = 9,
-  aACompromise = 10
+  aACompromise = 10,
 }
 
 export interface ApiClientType<T extends ApiClient> {
-  new(accountKey: Required<CryptoKeyPair>, url: string, options?: ClientOptions): T;
+  new (accountKey: Required<CryptoKeyPair>, url: string, options?: ClientOptions): T;
 }
 
 /**
@@ -75,9 +75,7 @@ export class ApiClient extends BaseClient {
    * @param url URI to ACME directory controller
    * @param options Client options
    */
-  public static async create<T extends ApiClient>(
-    this: ApiClientType<T>,
-    accountKey: Required<CryptoKeyPair>, url: string, options?: ClientOptions): Promise<T> {
+  public static async create<T extends ApiClient>(this: ApiClientType<T>, accountKey: Required<CryptoKeyPair>, url: string, options?: ClientOptions): Promise<T> {
     const client = new this(accountKey, url, options);
     client.directory = await client.getDirectory();
 
@@ -106,7 +104,8 @@ export class ApiClient extends BaseClient {
   public constructor(
     public accountKey: Required<CryptoKeyPair>,
     public url: string,
-    options?: ClientOptions) {
+    options?: ClientOptions,
+  ) {
     super(options);
   }
 
@@ -134,7 +133,6 @@ export class ApiClient extends BaseClient {
 
       throw error;
     }
-
   }
 
   /**
@@ -239,16 +237,19 @@ export class ApiClient extends BaseClient {
   public async changeKey(key: Required<CryptoKeyPair>) {
     const kid = this.getAccountId();
     const cryptoProvider = this.getCrypto();
-    const innerToken = new JsonWebSignature({
-      protected: {
-        url: this.directory.keyChange,
-        jwk: new JsonWebKey(cryptoProvider, await cryptoProvider.subtle.exportKey("jwk", key.publicKey)),
+    const innerToken = new JsonWebSignature(
+      {
+        protected: {
+          url: this.directory.keyChange,
+          jwk: new JsonWebKey(cryptoProvider, await cryptoProvider.subtle.exportKey("jwk", key.publicKey)),
+        },
+        payload: {
+          account: kid,
+          oldKey: new JsonWebKey(cryptoProvider, await cryptoProvider.subtle.exportKey("jwk", this.accountKey.publicKey)),
+        },
       },
-      payload: {
-        account: kid,
-        oldKey: new JsonWebKey(cryptoProvider, await cryptoProvider.subtle.exportKey("jwk", this.accountKey.publicKey)),
-      }
-    }, this.getCrypto());
+      this.getCrypto(),
+    );
     await innerToken.sign({ hash: this.options.defaultHash, ...key.privateKey.algorithm }, key.privateKey);
 
     const response = await this.fetch<null>(this.directory.keyChange, {
@@ -311,9 +312,7 @@ export class ApiClient extends BaseClient {
    */
   public async retryOrder(url: string, options?: RetryOptions): Promise<ApiResponse<protocol.Order>>;
   public async retryOrder(param: string | ApiResponse<protocol.Order>, options: RetryOptions = {}) {
-    let order = typeof param === "string"
-      ? await this.getOrder(param)
-      : param;
+    let order = typeof param === "string" ? await this.getOrder(param) : param;
     let retries = options.retries || ApiClient.RETRIES;
     while (retries--) {
       if (!order.headers.location) {
@@ -423,7 +422,6 @@ export class ApiClient extends BaseClient {
 
       return res;
     }
-
   }
 
   /**
@@ -473,9 +471,7 @@ export class ApiClient extends BaseClient {
   public async retryAuthorization(authz: ApiResponse<protocol.Authorization>, options?: RetryOptions): Promise<ApiResponse<protocol.Authorization>>;
   public async retryAuthorization(url: string, options?: RetryOptions): Promise<ApiResponse<protocol.Authorization>>;
   public async retryAuthorization(param: string | ApiResponse<protocol.Authorization>, options: RetryOptions = {}) {
-    let authz = typeof param === "string"
-      ? await this.getOrder(param)
-      : param;
+    let authz = typeof param === "string" ? await this.getOrder(param) : param;
     let retries = options.retries || ApiClient.RETRIES;
     while (retries--) {
       if (!authz.headers.location) {
@@ -588,14 +584,18 @@ export class ApiClient extends BaseClient {
       Convert.FromBase64Url(challenge), // challenge password from AEG portal
       { name: "HMAC", hash: "SHA-256" },
       true,
-      ["sign"]);
+      ["sign"],
+    );
     const jwk = await this.getCrypto().subtle.exportKey("jwk", this.accountKey.publicKey);
-    const externalAccountBinding = new JsonWebSignature({
-      protected: {
-        kid,
+    const externalAccountBinding = new JsonWebSignature(
+      {
+        protected: {
+          kid,
+        },
+        payload: jwk,
       },
-      payload: jwk,
-    }, this.getCrypto());
+      this.getCrypto(),
+    );
     await externalAccountBinding.sign(hmac.algorithm, hmac, this.getCrypto());
     return externalAccountBinding.toJSON();
   }
@@ -606,9 +606,8 @@ export class ApiClient extends BaseClient {
     const res: ArrayBuffer[] = [];
     let matches: RegExpExecArray | null = null;
     // eslint-disable-next-line no-cond-assign
-    while (matches = pattern.exec(pem)) {
-      const base64 = matches[1]
-        .replace(/[\r\n]/g, "");
+    while ((matches = pattern.exec(pem))) {
+      const base64 = matches[1].replace(/[\r\n]/g, "");
       res.push(Convert.FromBase64(base64));
     }
 

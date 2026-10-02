@@ -1,5 +1,5 @@
 import * as core from "@peculiar/acme-core";
-import { JsonWebSignature, JwsProtectedSetter, JsonWebKey, } from "@peculiar/jose";
+import { JsonWebSignature, JwsProtectedSetter, JsonWebKey } from "@peculiar/jose";
 import { Error } from "@peculiar/acme-protocol";
 
 export interface ClientOptions {
@@ -10,7 +10,6 @@ export interface ClientOptions {
 }
 
 export type AcmeMethod = "GET" | "HEAD" | "POST" | "POST-as-GET";
-
 
 export interface GetParams<T> {
   method: "GET" | "HEAD";
@@ -36,7 +35,6 @@ export interface ApiResponse<T> {
 }
 
 export class BaseClient {
-
   protected static createResponse<T>(resp: core.Response, content: T): ApiResponse<T> {
     return {
       status: resp.status,
@@ -53,7 +51,7 @@ export class BaseClient {
       debug: options.debug,
       defaultHash: "SHA-256",
       fetch: typeof fetch !== "undefined" ? fetch : undefined,
-      ...options
+      ...options,
     };
     if (!this.options.crypto) {
       throw new Error("Cannot initialize ACME client. It requires crypto provider to be set.");
@@ -97,12 +95,13 @@ export class BaseClient {
         header.jwk = new JsonWebKey(crypto, jwk);
       }
       // Create JWS
-      const jws = new JsonWebSignature({
-        protected: header,
-        payload: !postParams.method || postParams.method === "POST-as-GET"
-          ? ""
-          : postParams.body,
-      }, this.getCrypto());
+      const jws = new JsonWebSignature(
+        {
+          protected: header,
+          payload: !postParams.method || postParams.method === "POST-as-GET" ? "" : postParams.body,
+        },
+        this.getCrypto(),
+      );
       await jws.sign({ hash: postParams.hash || this.options.defaultHash, ...postParams.key.algorithm }, postParams.key, crypto);
       request.body = jws.toString();
       request.headers = {
@@ -135,7 +134,12 @@ export class BaseClient {
         if (this.options.debug) {
           console.log("RESPONSE", text);
         }
-        throw new core.AcmeError(core.ErrorType.serverInternal, "Wrong Content-Type of ACME response. Must be application/problem+json. See inner exception for more details.", acmeResp.status, new globalThis.Error(text));
+        throw new core.AcmeError(
+          core.ErrorType.serverInternal,
+          "Wrong Content-Type of ACME response. Must be application/problem+json. See inner exception for more details.",
+          acmeResp.status,
+          new globalThis.Error(text),
+        );
       }
     }
 

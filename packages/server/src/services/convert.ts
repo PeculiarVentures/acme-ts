@@ -8,7 +8,6 @@ import { MalformedError } from "@peculiar/acme-core";
 
 @injectable()
 export class ConvertService extends BaseService implements IConvertService {
-
   protected externalAccountRepository = container.resolve<data.IExternalAccountRepository>(data.diExternalAccountRepository);
   protected orderAuthorizationRepository = container.resolve<data.IOrderAuthorizationRepository>(data.diOrderAuthorizationRepository);
   protected authorizationRepository = container.resolve<data.IAuthorizationRepository>(data.diAuthorizationRepository);
@@ -37,18 +36,22 @@ export class ConvertService extends BaseService implements IConvertService {
     if (!orderAuthzs) {
       throw new MalformedError(`Order authorization ${data.id} does not exist`);
     }
-    const authzs = await Promise.all(orderAuthzs.map(async o => {
-      const auth = await this.authorizationRepository.findById(o.authorizationId);
-      if (!auth) {
-        throw new MalformedError(`Authorization ${o.authorizationId} does not exist`);
-      }
+    const authzs = await Promise.all(
+      orderAuthzs.map(async (o) => {
+        const auth = await this.authorizationRepository.findById(o.authorizationId);
+        if (!auth) {
+          throw new MalformedError(`Authorization ${o.authorizationId} does not exist`);
+        }
 
-      return auth;
-    }));
+        return auth;
+      }),
+    );
 
     const order: protocol.Order = {
-      identifiers: authzs.map(o => { return { ...o.identifier }; }),
-      authorizations: authzs.map(o => `${this.options.baseAddress}/authz/${o.id}`),
+      identifiers: authzs.map((o) => {
+        return { ...o.identifier };
+      }),
+      authorizations: authzs.map((o) => `${this.options.baseAddress}/authz/${o.id}`),
       status: data.status,
       finalize: `${this.options.baseAddress}/finalize/${data.id}`,
     };
@@ -85,7 +88,7 @@ export class ConvertService extends BaseService implements IConvertService {
       identifier,
       status: data.status,
       wildcard: data.wildcard,
-      challenges: await Promise.all(challenges.map(o => this.toChallenge(o))),
+      challenges: await Promise.all(challenges.map((o) => this.toChallenge(o))),
     };
     if (data.expires) {
       authz.expires = data.expires.toISOString();
@@ -119,7 +122,7 @@ export class ConvertService extends BaseService implements IConvertService {
 
     if ("subproblems" in data) {
       if (data.subproblems && data.subproblems.length) {
-        err.subproblems = await Promise.all(data.subproblems.map(o => this.toError(o)));
+        err.subproblems = await Promise.all(data.subproblems.map((o) => this.toError(o)));
       }
     }
 
@@ -128,7 +131,7 @@ export class ConvertService extends BaseService implements IConvertService {
 
   public async toOrderList(orders: data.IOrder[]): Promise<protocol.OrderList> {
     const orderList: protocol.OrderList = {
-      orders: orders.map(o => `${this.options.baseAddress}/order/${o.id}`),
+      orders: orders.map((o) => `${this.options.baseAddress}/order/${o.id}`),
     };
 
     return orderList;

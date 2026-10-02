@@ -41,13 +41,15 @@ export class Content {
       this.content = Convert.FromUtf8String(data);
       this.type = ContentType.pem;
     } else if (data instanceof AcmeError) {
-      this.content = Convert.FromUtf8String(JSON.stringify({
-        detail: data.message,
-        type: data.type,
-        subproblems: data.subproblems?.map(o => {
-          return { detail: o.message, type: o.type };
-        }),
-      } as Error));
+      this.content = Convert.FromUtf8String(
+        JSON.stringify({
+          detail: data.message,
+          type: data.type,
+          subproblems: data.subproblems?.map((o) => {
+            return { detail: o.message, type: o.type };
+          }),
+        } as Error),
+      );
       this.type = ContentType.problemJson;
     } else if (BufferSourceConverter.isBufferSource(data)) {
       if (!type) {
@@ -56,9 +58,7 @@ export class Content {
       this.content = BufferSourceConverter.toArrayBuffer(data);
       this.type = type as string;
     } else {
-      const json = type
-        ? JSON.stringify(data, null, "  ")
-        : JSON.stringify(data);
+      const json = type ? JSON.stringify(data, null, "  ") : JSON.stringify(data);
       this.content = Convert.FromUtf8String(json);
       this.type = ContentType.json;
     }
@@ -71,5 +71,4 @@ export class Content {
   public toString() {
     return Convert.ToUtf8String(this.content);
   }
-
 }

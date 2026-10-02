@@ -8,6 +8,7 @@
 - [Usage](#usage)
 
 ## About
+
 `@peculiar/acme-express` is an Express middleware that can be used to addAutomatic Certificate Management Environment (ACME) implementing RFC 8555 protocol.
 
 ## Installation
@@ -29,15 +30,16 @@ import { container } from "tsyringe";
 const app = express();
 
 AcmeExpress.register(app, {
-    baseAddress: "http://localhost:4000/acme",
-    cryptoProvider: crypto,
-  });
+  baseAddress: "http://localhost:4000/acme",
+  cryptoProvider: crypto,
+});
 
 // Register Data layer
 data.DependencyInjection.register(container);
 // Register Enrollment layer
 container.register(server.diCertificateService, CertificateEnrollmentService);
 
-
-app.listen(8000, () => { console.log(`Server is running`); });
+app.listen(8000, () => {
+  console.log(`Server is running`);
+});
 ```

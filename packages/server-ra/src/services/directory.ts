@@ -6,7 +6,6 @@ import { MalformedError } from "@peculiar/acme-core";
 
 @injectable()
 export class RaDirectoryService extends DirectoryService {
-
   protected providers = container.resolveAll<IProviderService>(diProviderService);
 
   protected override async onGetDirectory(directory: Directory): Promise<void> {
@@ -16,7 +15,7 @@ export class RaDirectoryService extends DirectoryService {
     if (!this.providers.length) {
       throw new MalformedError("No providers found");
     }
-    const authzProviders = this.providers.map(o => o.identifier);
+    const authzProviders = this.providers.map((o) => o.identifier);
 
     if (!directory.meta) {
       const meta: DirectoryMetadata = {
@@ -27,5 +26,4 @@ export class RaDirectoryService extends DirectoryService {
       directory.meta.authzProviders = authzProviders;
     }
   }
-
 }

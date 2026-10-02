@@ -22,14 +22,14 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
     const identifiersCsr = this.getDomainNames(csr);
     const problems: core.AcmeError[] = [];
 
-    identifiers.forEach(i => {
-      if (!identifiersCsr.find(o => i.value.toLowerCase() === o.toLowerCase())) {
+    identifiers.forEach((i) => {
+      if (!identifiersCsr.find((o) => i.value.toLowerCase() === o.toLowerCase())) {
         problems.push(new core.MalformedError(`DNS name '${i.value}' from order not found in CSR`));
       }
     });
 
-    identifiersCsr.forEach(i => {
-      if (!identifiers.find(o => o.value.toLowerCase() === i.toLowerCase())) {
+    identifiersCsr.forEach((i) => {
+      if (!identifiers.find((o) => o.value.toLowerCase() === i.toLowerCase())) {
         problems.push(new core.MalformedError(`DNS name '${i}' from CSR not found in order`));
       }
     });
@@ -41,7 +41,7 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
     const names: string[] = [];
 
     const name = new x509.Name(csr.subject);
-    name.toJSON().forEach(o => {
+    name.toJSON().forEach((o) => {
       const dns = o["DC"];
       if (dns && dns.length) {
         for (const o2 of dns) {
@@ -53,7 +53,7 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
     const ext = csr.getExtension(id_ce_subjectAltName);
     if (ext) {
       const san = AsnConvert.parse(ext.value, SubjectAlternativeName);
-      san.forEach(o => {
+      san.forEach((o) => {
         if (o.dNSName) {
           names.push(o.dNSName);
         }
@@ -104,9 +104,7 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
               await this.challengeRepository.update(challenge);
             }
           } catch (e) {
-            const error: Error = !(e instanceof Error)
-              ? new Error(`Unknown error '${e}'`)
-              : e;
+            const error: Error = !(e instanceof Error) ? new Error(`Unknown error '${e}'`) : e;
 
             const err = container.resolve<data.IError>(data.diError);
             if (error instanceof core.AcmeError) {
@@ -119,15 +117,14 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
             challenge.error = err;
             challenge.status = "invalid";
 
-            this.logger.error(err.detail,
-              {
-                challenge: {
-                  id: challenge.id,
-                  type: challenge.type,
-                },
-                stack: error.stack || null,
-                error,
-              });
+            this.logger.error(err.detail, {
+              challenge: {
+                id: challenge.id,
+                type: challenge.type,
+              },
+              stack: error.stack || null,
+              error,
+            });
 
             await this.challengeRepository.update(challenge);
           }
@@ -160,7 +157,6 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
     if (!this.options.debugMode) {
       const response = await fetch(url);
       if (response.status === 200) {
-
         const text = await response.text();
 
         //Accounts.GetById(challenge.Authorization.AccountId
@@ -172,8 +168,7 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
           const errMessage = "The key authorization file from the server did not match this challenge.";
           throw new core.UnauthorizedError(errMessage);
         }
-      }
-      else {
+      } else {
         throw new MalformedError("Response status is not 200(OK)");
       }
     } else {
@@ -209,5 +204,4 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
     this.getCrypto().getRandomValues(httpToken);
     challenge.token = pvtsutils.Convert.ToBase64Url(httpToken);
   }
-
 }

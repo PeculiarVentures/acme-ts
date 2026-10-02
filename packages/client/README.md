@@ -39,7 +39,7 @@ Every release of `@peculiar/acme-client` will have new build of `./build/acme.js
 ### NodeJS
 
 ```js
-import * as acme  from "@peculiar/acme-client";
+import * as acme from "@peculiar/acme-client";
 ```
 
 > WARN: Client requires WebCrypto API and Fetch API modules. Use third-party modules to set crypto provider and fetch client in NodeJS (eg `@peculiar/webcrypto`, `node-fetch`).
@@ -49,14 +49,15 @@ import { Crypto } from "@peculiar/webcrypto";
 import fetch from "node-fetch";
 
 const client = new acme.ApiClient(keys, "https://path/to/acme/directory", {
-    crypto,
-    fetch,
-  });
+  crypto,
+  fetch,
+});
 ```
 
 ## Examples
 
 ### Create an ACME client and get a directory object
+
 ```js
 const client = await ApiClient.create(keys, "http://localhost:4000/acme/directory", {
   // fetch, // required for NodeJS

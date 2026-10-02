@@ -35,4 +35,4 @@ export interface Challenge {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface ChallengeGetParams { }
+export interface ChallengeGetParams {}

@@ -1,6 +1,5 @@
 import { Token } from ".";
 
-
 export type AccountStatus = "valid" | "deactivated" | "revoked";
 
 /**
@@ -59,7 +58,6 @@ export interface AccountCreateParams {
    * NOTE: This field cannot be updated by the client.
    */
   termsOfServiceAgreed?: boolean;
-
 
   /**
    * Including this field in a newAccount request indicates approval

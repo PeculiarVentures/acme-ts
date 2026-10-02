@@ -31,15 +31,15 @@ const crypto = new Crypto();
 cryptoProvider.set(crypto);
 
 AcmeRa.register(app, {
-    baseAddress: "http://localhost:4000/acme",
-    levelLogger: "info",
-    cryptoProvider: crypto,
-    debugMode: true,
-    extraCertificateStorage: [rootCert, caCert],
-    meta: { externalAccountRequired: true },
-    defaultEndpoint: "default",
-    auth0Domain: "http://domain.auth0.com",
-  });
+  baseAddress: "http://localhost:4000/acme",
+  levelLogger: "info",
+  cryptoProvider: crypto,
+  debugMode: true,
+  extraCertificateStorage: [rootCert, caCert],
+  meta: { externalAccountRequired: true },
+  defaultEndpoint: "default",
+  auth0Domain: "http://domain.auth0.com",
+});
 
 app.listen(8000, () => {
   console.log(`Server is running`);

@@ -36,7 +36,6 @@ export interface IServerOptions {
 }
 
 export class BaseService {
-
   public logger = container.resolve<ILogger>(diLogger);
   public options = container.resolve<IServerOptions>(diServerOptions);
 

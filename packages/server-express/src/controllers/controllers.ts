@@ -9,7 +9,6 @@ export const diControllers = "ACME.Express.Controllers";
 
 @injectable()
 export class Controllers {
-
   protected acmeController = container.resolve<server.AcmeController>(server.diAcmeController);
 
   public async getDirectory(req: Request, res: Response): Promise<void> {
@@ -135,21 +134,15 @@ export class Controllers {
         case core.ContentType.joseJson:
         case core.ContentType.json:
         case core.ContentType.problemJson:
-          res.contentType(response.content.type)
-            .status(response.status)
-            .send(response.content);
+          res.contentType(response.content.type).status(response.status).send(response.content);
           break;
         case core.ContentType.pem:
         case core.ContentType.pkcs7:
         case core.ContentType.pkix:
-          res.contentType(response.content.type)
-            .status(response.status)
-            .send(Buffer.from(response.content.content));
+          res.contentType(response.content.type).status(response.status).send(Buffer.from(response.content.content));
           break;
         default:
-          res.contentType(core.ContentType.json)
-            .status(response.status)
-            .send(JSON.stringify(response.content));
+          res.contentType(core.ContentType.json).status(response.status).send(JSON.stringify(response.content));
           break;
       }
     } else {
@@ -182,15 +175,14 @@ export class Controllers {
 
     // parse query
     const keys = Object.keys(req.query);
-    keys.forEach(key => {
+    keys.forEach((key) => {
       const value = req.query[key] as string | string[] | undefined;
-      const params: string[] = result.queryParams[key] = [];
+      const params: string[] = (result.queryParams[key] = []);
       if (value) {
         if (Array.isArray(value)) {
-          value.forEach(o => params.push(o));
+          value.forEach((o) => params.push(o));
         } else {
           params.push(value);
-
         }
       }
     });
@@ -200,7 +192,7 @@ export class Controllers {
 
     // parse header
     const headerKeys = Object.keys(req.header);
-    headerKeys.forEach(key => {
+    headerKeys.forEach((key) => {
       const value = req.header(key);
       result.header[key] = value;
     });

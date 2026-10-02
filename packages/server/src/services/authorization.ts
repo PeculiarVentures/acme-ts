@@ -7,7 +7,6 @@ import { IAuthorizationService, diChallengeService, IChallengeService } from "./
 
 @injectable()
 export class AuthorizationService extends BaseService implements IAuthorizationService {
-
   protected challengeService = container.resolve<IChallengeService>(diChallengeService);
   protected authorizationRepository = container.resolve<acmeData.IAuthorizationRepository>(acmeData.diAuthorizationRepository);
 
@@ -26,7 +25,7 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
       authorization: {
         id: authz.id,
         status: authz.status,
-      }
+      },
     });
 
     const updatedAuth = await this.refreshStatus(authz);
@@ -46,7 +45,7 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
           authorization: {
             id: updatedAuth.id,
             status: updatedAuth.status,
-          }
+          },
         });
 
         return updatedAuth;
@@ -56,7 +55,7 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
     this.logger.debug(`Actual authorization not found`, {
       account: {
         id: accountId,
-      }
+      },
     });
 
     return null;
@@ -114,10 +113,10 @@ export class AuthorizationService extends BaseService implements IAuthorizationS
     } else {
       // Check status
       const challenges = await this.challengeService.getByAuthorization(item.id);
-      if (challenges.find(o => o.status === "valid")) {
+      if (challenges.find((o) => o.status === "valid")) {
         item.status = "valid";
         await this.authorizationRepository.update(item);
-      } else if (!challenges.find(o => o.status !== "invalid")) {
+      } else if (!challenges.find((o) => o.status !== "invalid")) {
         item.status = "invalid";
         await this.authorizationRepository.update(item);
       }

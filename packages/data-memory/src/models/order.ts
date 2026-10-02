@@ -15,5 +15,4 @@ export class Order extends BaseObject implements IOrder {
   public constructor(params: Partial<Order> = {}) {
     super(params);
   }
-
 }

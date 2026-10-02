@@ -31,7 +31,6 @@ export const diLogger = "ACME.Logger";
 
 @injectable()
 export class Logger implements ILogger {
-
   public level: LoggerLevel = LoggerLevel.info;
 
   public error(msg: string, obj?: LoggerData): void {
@@ -69,8 +68,7 @@ export class Logger implements ILogger {
   protected caller() {
     try {
       throw new Error();
-    }
-    catch (e) {
+    } catch (e) {
       if (e instanceof Error) {
         const regex = /at ([a-zA-Z0-9_.]+) \(/gm;
         const stack = e.stack;
@@ -78,7 +76,7 @@ export class Logger implements ILogger {
           let matches: RegExpExecArray | null = null;
           let skipCount = 3;
           // eslint-disable-next-line no-cond-assign
-          while (matches = regex.exec(stack)) {
+          while ((matches = regex.exec(stack))) {
             if (skipCount--) {
               continue;
             }

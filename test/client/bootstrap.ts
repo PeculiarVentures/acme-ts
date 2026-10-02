@@ -5,7 +5,6 @@ import { Crypto } from "@peculiar/webcrypto";
 import { cryptoProvider } from "@peculiar/x509";
 import fetch from "node-fetch";
 
-
 export function checkHeaders(res: ApiResponse<any>) {
   assert.strictEqual(!!res.headers.link, true);
   assert.strictEqual(!!res.headers.location, true);
