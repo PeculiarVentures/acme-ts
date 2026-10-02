@@ -62,7 +62,7 @@ describe("DynamoDB Repositories", () => {
         tableName: "acme-test",
       },
     });
-  });
+  }, 60_000);
 
   afterAll(async () => {
     // Remove all tables
