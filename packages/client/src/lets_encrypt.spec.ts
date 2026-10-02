@@ -1,8 +1,7 @@
-import assert from "assert";
 import { Crypto } from "@peculiar/webcrypto";
 import { cryptoProvider } from "@peculiar/x509";
 import fetch from "node-fetch";
-import { describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { ApiClient } from "./api";
 
 describe("client", { timeout: 5e3 }, () => {
@@ -28,7 +27,7 @@ describe("client", { timeout: 5e3 }, () => {
         contact: ["mailto:microshine@mail.ru"],
         termsOfServiceAgreed: true,
       });
-      assert.strictEqual(account.status, 201);
+      expect(account.status).toBe(201);
     });
   });
 });

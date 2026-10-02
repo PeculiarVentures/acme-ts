@@ -1,19 +1,18 @@
-import assert from "assert";
-import { AcmeError, ErrorType } from "@peculiar/acme-core";
+import { ErrorType } from "@peculiar/acme-core";
 import * as protocol from "@peculiar/acme-protocol";
 import { Crypto } from "@peculiar/webcrypto";
 import { cryptoProvider } from "@peculiar/x509";
 import fetch from "node-fetch";
-import { beforeAll, beforeEach, describe, it } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { ApiClient } from "./api";
 import { ApiResponse } from "./base";
 
 function checkHeaders(res: ApiResponse<any>) {
-  assert.strictEqual(!!res.headers.link, true);
-  assert.strictEqual(!!res.headers.location, true);
+  expect(!!res.headers.link).toBe(true);
+  expect(!!res.headers.location).toBe(true);
 }
 function checkResAccount(res: any, status: number) {
-  assert.strictEqual(res.status, status);
+  expect(res.status).toBe(status);
 }
 
 interface ClientWithoutAccountResult {
@@ -70,11 +69,10 @@ describe.skip("Account Management", () => {
       "urn:ietf:params:acme:error:unsupportedContact", // RFC8555
     ];
 
-    function assertUnsupportedContact(error: AcmeError) {
-      assert.strictEqual(contactErrors.includes(error.type), true, `ACME error has got wrong type '${error.type}. Must be one of [${contactErrors.join(", ")}]`);
-      assert.strictEqual(error.status, 400);
-      return true;
-    }
+    const unsupportedContactError = {
+      status: 400,
+      type: expect.toBeOneOf(contactErrors),
+    };
 
     beforeEach(async () => {
       client = await createClient();
@@ -87,51 +85,39 @@ describe.skip("Account Management", () => {
         // `termsOfServiceAgreed` in create account request
         return skip();
       }
-      await assert.rejects(
+      await expect(
         client.api.newAccount({
           contact: ["mailto:microshine@mail.ru"],
           termsOfServiceAgreed: false,
         }),
-        (err: AcmeError) => {
-          assert.strictEqual(err.status, 400);
-          assert.strictEqual(err.type, ErrorType.malformed);
-          return true;
-        },
-      );
+      ).rejects.toMatchObject({ status: 400, type: ErrorType.malformed });
     });
 
     it("Error: find not exist account", async () => {
-      await assert.rejects(
+      await expect(
         client.api.newAccount({
           contact: ["mailto:microshine@mail.ru"],
           onlyReturnExisting: true,
         }),
-        (err: AcmeError) => {
-          assert.strictEqual(err.status, 400);
-          assert.strictEqual(err.type, ErrorType.accountDoesNotExist);
-          return true;
-        },
-      );
+      ).rejects.toMatchObject({ status: 400, type: ErrorType.accountDoesNotExist });
     });
 
     it("Error: create account with unsupported contact", async () => {
-      await assert.rejects(
+      await expect(
         client.api.newAccount({
           contact: ["mailt:microshine@mail.ru"],
           termsOfServiceAgreed: true,
         }),
-        assertUnsupportedContact,
-      );
+      ).rejects.toMatchObject(unsupportedContactError);
     });
 
     it("Error: create account with invalid contact", async () => {
-      await assert.rejects(
+      await expect(
         client.api.newAccount({
           contact: ["mailto:micro shine"],
           termsOfServiceAgreed: true,
         }),
-        assertUnsupportedContact,
-      );
+      ).rejects.toMatchObject(unsupportedContactError);
     });
 
     it("create account without email", async () => {
@@ -175,7 +161,7 @@ describe.skip("Account Management", () => {
 
     it("update account", async () => {
       const res = await client.api.updateAccount({ contact: ["mailto:testmail@mail.ru"] });
-      assert.strictEqual(!!res.headers.link, true);
+      expect(!!res.headers.link).toBe(true);
       checkResAccount(res, 200);
     });
 
@@ -192,32 +178,26 @@ describe.skip("Account Management", () => {
 
       const newKey = (await crypto.subtle.generateKey(alg, true, ["sign", "verify"])) as Required<CryptoKeyPair>;
       const res = await client.api.changeKey(newKey);
-      assert.strictEqual(!!res.headers.link, true);
+      expect(!!res.headers.link).toBe(true);
       checkResAccount(res, 200);
     });
 
     it("deactivate account", async () => {
       const res = await client.api.deactivateAccount();
-      assert.strictEqual(!!res.headers.link, true);
-      assert.strictEqual(res.status, 200);
+      expect(!!res.headers.link).toBe(true);
+      expect(res.status).toBe(200);
 
-      await assert.rejects(
+      await expect(
         client.api.newAccount({
           termsOfServiceAgreed: true,
         }),
-        (err: AcmeError) => {
-          assert.strictEqual(
-            [
-              403, // Let's Encrypt
-              401, // RFC8555
-            ].includes(err.status),
-            true,
-            "Error status doesn't match to requirements",
-          );
-          assert.strictEqual(err.type, ErrorType.unauthorized);
-          return true;
-        },
-      );
+      ).rejects.toMatchObject({
+        status: expect.toBeOneOf([
+          403, // Let's Encrypt
+          401, // RFC8555
+        ]),
+        type: ErrorType.unauthorized,
+      });
     });
   });
 });

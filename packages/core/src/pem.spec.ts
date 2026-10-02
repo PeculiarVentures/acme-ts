@@ -1,7 +1,6 @@
 import { Convert } from "pvtsutils";
 import { PemConverter } from "@peculiar/x509";
-import assert from "assert";
-import { describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 describe("helpers", () => {
   describe("pem converter", () => {
@@ -39,19 +38,19 @@ describe("helpers", () => {
         const rawData = Convert.FromBase64(DATA);
         const rawDataArray: Array<BufferSource> = [rawData, rawData, rawData];
         const res = PemConverter.encode(rawDataArray, "certificate");
-        assert.strictEqual(PEM, res);
+        expect(PEM).toBe(res);
       });
 
       it("encode", () => {
         const rawData = Convert.FromBase64("TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1");
         const expected = "-----BEGIN CERTIFICATE-----\n" + "TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1\n" + "-----END CERTIFICATE-----";
         const res = PemConverter.encode(rawData, "certificate");
-        assert.strictEqual(expected, res);
+        expect(expected).toBe(res);
       });
 
       it("decode", () => {
         const res = PemConverter.decode(PEM);
-        assert.strictEqual(Convert.ToBase64(res[0]), DATA);
+        expect(Convert.ToBase64(res[0])).toBe(DATA);
       });
     });
   });

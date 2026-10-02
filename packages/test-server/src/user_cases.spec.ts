@@ -4,11 +4,10 @@ import { DependencyInjection as diData } from "@peculiar/acme-data-memory";
 import { AcmeExpress } from "@peculiar/acme-express";
 import { diEndpointService } from "@peculiar/acme-server";
 import { Crypto } from "@peculiar/webcrypto";
-import assert from "assert";
 import express from "express";
 import fetch from "node-fetch";
 import { container, Lifecycle } from "tsyringe";
-import { afterAll, beforeAll, describe, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { MemoryEndpointService } from "./services";
 
 describe("ACME user cases", () => {
@@ -58,14 +57,14 @@ describe("ACME user cases", () => {
         value: "some.domain.com",
       },
     });
-    assert.strictEqual(authz.status, 201);
+    expect(authz.status).toBe(201);
     const authz2 = await client.newAuthorization({
       identifier: {
         type: "dns",
         value: "some.domain.com",
       },
     });
-    assert.strictEqual(authz2.status, 200);
+    expect(authz2.status).toBe(200);
 
     // new order must include new authz
     const order = await client.newOrder({
@@ -76,7 +75,7 @@ describe("ACME user cases", () => {
         },
       ],
     });
-    assert.strictEqual(order.content.authorizations[0], authz.headers.location);
+    expect(order.content.authorizations[0]).toBe(authz.headers.location);
   });
 
   it("Create two orders with the same identifiers", async () => {
@@ -93,12 +92,12 @@ describe("ACME user cases", () => {
     const order = await client.newOrder({
       identifiers: [{ type: "dns", value: "some.test.com" }],
     });
-    assert.strictEqual(order.status, 201);
+    expect(order.status).toBe(201);
 
     const order2 = await client.newOrder({
       identifiers: [{ type: "dns", value: "some.test.com" }],
     });
-    assert.strictEqual(order2.status, 201);
-    assert.notStrictEqual(order2.headers.location, order.headers.location);
+    expect(order2.status).toBe(201);
+    expect(order2.headers.location).not.toBe(order.headers.location);
   });
 });

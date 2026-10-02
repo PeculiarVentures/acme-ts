@@ -1,7 +1,6 @@
-import assert from "assert";
 import { cryptoProvider } from "@peculiar/x509";
 import { Crypto } from "@peculiar/webcrypto";
-import { describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { JsonWebSignature } from "./jws";
 
 describe("jose", () => {
@@ -33,8 +32,8 @@ describe("jose", () => {
         jws.parse(jws.toString());
 
         const ok = await jws.verify(keys.publicKey);
-        assert.strictEqual(ok, true);
-        assert.deepStrictEqual(jws.getPayload(), { csr: "AQAB" });
+        expect(ok).toBe(true);
+        expect(jws.getPayload()).toStrictEqual({ csr: "AQAB" });
       });
 
       it("RSASSA-PKCS1-v1_5 SHA256", async () => {
@@ -60,8 +59,8 @@ describe("jose", () => {
         jws.parse(jws.toString());
 
         const ok = await jws.verify(keys.publicKey);
-        assert.strictEqual(ok, true);
-        assert.deepStrictEqual(jws.getPayload(), "");
+        expect(ok).toBe(true);
+        expect(jws.getPayload()).toStrictEqual("");
       });
 
       it("ECDSA SHA384", async () => {
@@ -86,7 +85,7 @@ describe("jose", () => {
         jws.parse(jws.toString(true));
 
         const ok = await jws.verify(keys.publicKey);
-        assert.strictEqual(ok, true);
+        expect(ok).toBe(true);
       });
 
       it("HMAC SHA512", async () => {
@@ -110,7 +109,7 @@ describe("jose", () => {
         jws.parse(jws.toString());
 
         const ok = await jws.verify(key);
-        assert.strictEqual(ok, true);
+        expect(ok).toBe(true);
       });
     });
   });
