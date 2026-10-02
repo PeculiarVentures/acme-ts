@@ -42,21 +42,21 @@ import { cryptoProvider } from "@peculiar/x509";
 import { Logger, diLogger } from "@peculiar/acme-core";
 const dynamoLocalPort = 8000;
 
+const clientConfig: DynamoDB.ClientConfiguration = {
+  region: "local",
+  endpoint: `http://localhost:${dynamoLocalPort}`,
+  accessKeyId: "xxxxxx",
+  secretAccessKey: "xxxxxx",
+};
+
 describe("DynamoDB Repositories", () => {
-  // NOTE: this test is skipped because it does not work on GitHub Actions
-  // https://github.com/PeculiarVentures/acme-ts/actions/runs/5661747667/job/15340303282?pr=40#step:7:170
   beforeAll(async () => {
     cryptoProvider.set(crypto.webcrypto as globalThis.Crypto);
     await DynamoDbLocal.launch(dynamoLocalPort, null, [], false, true);
 
     container.register(diLogger, Logger, { lifecycle: Lifecycle.Singleton });
     await DependencyInjection.registerAsync(container, {
-      client: {
-        region: "local",
-        endpoint: `http://localhost:${dynamoLocalPort}`,
-        accessKeyId: "xxxxxx",
-        secretAccessKey: "xxxxxx",
-      },
+      client: clientConfig,
       options: {
         tableName: "acme-test",
       },
@@ -65,7 +65,7 @@ describe("DynamoDB Repositories", () => {
 
   afterAll(async () => {
     // Remove all tables
-    const client = new DynamoDB({ region: "local", endpoint: `http://localhost:${dynamoLocalPort}` });
+    const client = new DynamoDB(clientConfig);
     const tables = await client.listTables().promise();
     if (tables.TableNames) {
       for (const table of tables.TableNames) {
@@ -355,7 +355,7 @@ describe("DynamoDB Repositories", () => {
         await nonceRepo.remove(nonce);
 
         const nonceFound = await nonceRepo.contains(nonce);
-        expect(!nonceFound).toBeTruthy();
+        expect(nonceFound).toBeFalsy();
       });
     });
 
@@ -372,7 +372,7 @@ describe("DynamoDB Repositories", () => {
         await nonceRepo.remove(nonce);
 
         const nonceFound = await nonceRepo.contains(nonce);
-        expect(!nonceFound).toBeTruthy();
+        expect(nonceFound).toBeFalsy();
       });
     });
   });

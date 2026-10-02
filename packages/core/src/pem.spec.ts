@@ -38,14 +38,14 @@ describe("helpers", () => {
         const rawData = Convert.FromBase64(DATA);
         const rawDataArray: Array<BufferSource> = [rawData, rawData, rawData];
         const res = PemConverter.encode(rawDataArray, "certificate");
-        expect(PEM).toBe(res);
+        expect(res).toBe(PEM);
       });
 
       it("encode", () => {
         const rawData = Convert.FromBase64("TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1");
         const expected = "-----BEGIN CERTIFICATE-----\n" + "TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1\n" + "-----END CERTIFICATE-----";
         const res = PemConverter.encode(rawData, "certificate");
-        expect(expected).toBe(res);
+        expect(res).toBe(expected);
       });
 
       it("decode", () => {
