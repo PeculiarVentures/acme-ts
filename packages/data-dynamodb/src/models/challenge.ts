@@ -23,7 +23,6 @@ export class Challenge extends BaseObject implements IChallenge {
 
     this.type ??= "http-01";
     this.status ??= "pending";
-    this.error;
     this.token ??= "";
     this.authorizationId ??= "";
   }

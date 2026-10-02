@@ -173,7 +173,7 @@ export class CertificateService extends BaseService implements ICertificateServi
     let chain: x509.X509Certificates;
     try {
       chain = await chainBuilder.build(x509Cert);
-    } catch (error) {
+    } catch {
       await this.reloadCaCache();
       chain = await chainBuilder.build(x509Cert);
     }

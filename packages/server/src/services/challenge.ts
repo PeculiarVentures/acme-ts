@@ -80,7 +80,7 @@ export class ChallengeService extends BaseService implements IChallengeService {
     let csr: x509.Pkcs10CertificateRequest;
     try {
       csr = new x509.Pkcs10CertificateRequest(csrStr);
-    } catch (error) {
+    } catch {
       throw new core.BadCSRError("Cannot parse CSR");
     }
     const err = new core.BadCSRError("Validate CSR failed");

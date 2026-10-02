@@ -15,6 +15,10 @@
   },
   "npm.packageManager": "yarn",
   "typescript.tsdk": "node_modules/typescript/lib",
+  "[typescript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "oxc.enable": true,
   "cSpell.words": [
     "Authz",
     "Stepan",

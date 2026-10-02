@@ -47,8 +47,8 @@ export class DirectoryService extends BaseService implements IDirectoryService {
     return directory;
   }
 
-  protected async onGetDirectory(directory: Directory): Promise<void> {
-    directory;
+  protected async onGetDirectory(_directory: Directory): Promise<void> {
+    return;
   }
 
 }

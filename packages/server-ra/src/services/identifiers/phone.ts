@@ -49,7 +49,7 @@ export class PhoneChallengeService extends server.BaseService implements server.
     if (ext) {
       const san = AsnConvert.parse(ext.value, SubjectAlternativeName);
       san.forEach(o => {
-        if (o.uniformResourceIdentifier && /^tel:/.test(o.uniformResourceIdentifier)) {
+        if (o.uniformResourceIdentifier?.startsWith("tel:")) {
           names.push(o.uniformResourceIdentifier);
         }
       });
