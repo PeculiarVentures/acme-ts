@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/acme-protocol",
-  "version": "1.8.2",
+  "version": "2.0.0",
   "description": "Protocol objects of the Automatic Certificate Management Environment (ACME, RFC 8555).",
   "type": "module",
   "sideEffects": false,

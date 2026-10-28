@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/acme-core",
-  "version": "1.8.2",
+  "version": "2.0.0",
   "description": "Errors, HTTP content and logging shared by the Automatic Certificate Management Environment (ACME, RFC 8555) packages.",
   "type": "module",
   "sideEffects": [
@@ -44,7 +44,7 @@
   },
   "homepage": "https://github.com/PeculiarVentures/acme-ts/tree/master/packages/core#readme",
   "dependencies": {
-    "@peculiar/acme-protocol": "^1.8.2",
+    "@peculiar/acme-protocol": "^2.0.0",
     "@peculiar/utils": "^4.1.0",
     "reflect-metadata": "^0.2.2"
   },
