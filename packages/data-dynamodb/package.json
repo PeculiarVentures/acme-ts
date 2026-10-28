@@ -41,14 +41,14 @@
   },
   "homepage": "https://github.com/PeculiarVentures/acme-ts/tree/master/packages/data-dynamodb#readme",
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1158.0",
     "@peculiar/acme-core": "^1.8.2",
     "@peculiar/acme-data": "^1.8.4",
     "@peculiar/acme-protocol": "^1.8.2",
     "@peculiar/asn1-x509": "^3.0.0",
     "@peculiar/jose": "^1.8.2",
     "@peculiar/utils": "^4.1.0",
-    "aws-sdk": "^2.1044.0",
-    "dynamoose": "^2.8.3"
+    "dynamoose": "^4.2.0"
   },
   "peerDependencies": {
     "@peculiar/x509": "^3.1.0",

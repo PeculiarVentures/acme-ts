@@ -7,7 +7,7 @@ import { cryptoProvider } from "@peculiar/x509";
 
 export interface IAccountDynamo extends IBaseDynamoObject {
   status: AccountStatus;
-  key: JsonWebKey;
+  key: globalThis.JsonWebKey;
   termsOfServiceAgreed: boolean;
   externalAccountId?: number;
   contacts: string[];
@@ -40,7 +40,8 @@ export class Account extends BaseObject implements IAccount {
       index: "acct#",
       parentId: this.thumbprint,
       status: this.status,
-      key: this.key,
+      // A plain JWK: the AWS SDK v3 marshaller rejects class instances.
+      key: { ...this.key },
       termsOfServiceAgreed: this.termsOfServiceAgreed,
       contacts: this.contacts,
       createdAt: this.fromDate(this.createdAt),

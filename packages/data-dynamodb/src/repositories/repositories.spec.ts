@@ -1,6 +1,7 @@
 import * as crypto from "node:crypto";
 import "@peculiar/acme-core";
-import { DynamoDB } from "aws-sdk";
+import type { DynamoDBClientConfig } from "@aws-sdk/client-dynamodb";
+import { DynamoDB } from "@aws-sdk/client-dynamodb";
 import * as DynamoDbLocal from "dynamodb-local";
 import { Lifecycle, container } from "tsyringe";
 import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
@@ -44,17 +45,30 @@ import { cryptoProvider } from "@peculiar/x509";
 import { Logger, diLogger } from "@peculiar/acme-core";
 const dynamoLocalPort = 8000;
 
-const clientConfig: DynamoDB.ClientConfiguration = {
+const clientConfig: DynamoDBClientConfig = {
   region: "local",
   endpoint: `http://localhost:${dynamoLocalPort}`,
-  accessKeyId: "xxxxxx",
-  secretAccessKey: "xxxxxx",
+  credentials: {
+    accessKeyId: "xxxxxx",
+    secretAccessKey: "xxxxxx",
+  },
 };
 
 describe("DynamoDB Repositories", () => {
   beforeAll(async () => {
     cryptoProvider.set(crypto.webcrypto as globalThis.Crypto);
     await DynamoDbLocal.launch(dynamoLocalPort, null, [], false, true);
+    // launch() resolves once Java starts; wait until DynamoDB Local answers.
+    const client = new DynamoDB(clientConfig);
+    for (let attempt = 0; ; attempt++) {
+      try {
+        await client.listTables({});
+        break;
+      } catch (error) {
+        if (attempt >= 100) throw error;
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+    }
 
     container.register(diLogger, Logger, { lifecycle: Lifecycle.Singleton });
     await DependencyInjection.registerAsync(container, {
@@ -68,10 +82,10 @@ describe("DynamoDB Repositories", () => {
   afterAll(async () => {
     // Remove all tables
     const client = new DynamoDB(clientConfig);
-    const tables = await client.listTables().promise();
+    const tables = await client.listTables({});
     if (tables.TableNames) {
       for (const table of tables.TableNames) {
-        await client.deleteTable({ TableName: table }).promise();
+        await client.deleteTable({ TableName: table });
       }
     }
 
