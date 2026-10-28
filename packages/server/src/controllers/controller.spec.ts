@@ -10,9 +10,9 @@ import { GeneralName, id_ce_subjectAltName, SubjectAlternativeName } from "@pecu
 import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
 import { Crypto } from "@peculiar/webcrypto";
 import { MemoryEndpointService } from "@peculiar/acme-test-server/src/services";
-import { Convert } from "pvtsutils";
 import { container, Lifecycle } from "tsyringe";
 import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
+import { base64url } from "@peculiar/utils";
 
 const baseAddress = "http://localhost";
 
@@ -1160,7 +1160,7 @@ describe("Server", () => {
         const resp2 = await controller.finalizeOrder(
           await createPostRequest(
             {
-              csr: Convert.ToBase64Url(req.rawData),
+              csr: base64url.encode(req.rawData),
             } as protocol.FinalizeParams,
             `${baseAddress}/finalize/${orderId}`,
             client.location!,
@@ -1589,7 +1589,7 @@ describe("Server", () => {
         const resp2 = await controller.finalizeOrder(
           await createPostRequest(
             {
-              csr: Convert.ToBase64Url(req.rawData),
+              csr: base64url.encode(req.rawData),
             } as protocol.FinalizeParams,
             `${baseAddress}/finalize/${orderId}`,
             client.location!,
@@ -1604,7 +1604,7 @@ describe("Server", () => {
         const resp3 = await controller.getCertificate(
           await createPostRequest(
             {
-              csr: Convert.ToBase64Url(req.rawData),
+              csr: base64url.encode(req.rawData),
             } as protocol.FinalizeParams,
             order2.certificate,
             client.location!,
@@ -1629,7 +1629,7 @@ describe("Server", () => {
         const resp2 = await controller.revokeCertificate(
           await createPostRequest(
             {
-              certificate: Convert.ToBase64Url(cert),
+              certificate: base64url.encode(cert),
               reason: 0,
             },
             `${baseAddress}/revoke`,
@@ -1655,7 +1655,7 @@ describe("Server", () => {
         const resp2 = await controller.revokeCertificate(
           await createPostRequest(
             {
-              certificate: Convert.ToBase64Url(cert),
+              certificate: base64url.encode(cert),
             },
             `${baseAddress}/revoke`,
             client.location!,
@@ -1680,7 +1680,7 @@ describe("Server", () => {
         const resp2 = await controller.revokeCertificate(
           await createPostRequest(
             {
-              certificate: Convert.ToBase64Url(cert),
+              certificate: base64url.encode(cert),
             },
             `${baseAddress}/revoke`,
             client.location!,
@@ -1692,7 +1692,7 @@ describe("Server", () => {
         const resp3 = await controller.revokeCertificate(
           await createPostRequest(
             {
-              certificate: Convert.ToBase64Url(cert),
+              certificate: base64url.encode(cert),
             },
             `${baseAddress}/revoke`,
             client.location!,
@@ -1723,7 +1723,7 @@ describe("Server", () => {
         const resp2 = await controller.revokeCertificate(
           await createPostRequest(
             {
-              certificate: Convert.ToBase64Url(cert),
+              certificate: base64url.encode(cert),
             },
             `${baseAddress}/revoke`,
             client.location!,

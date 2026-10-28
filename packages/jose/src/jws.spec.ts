@@ -112,5 +112,43 @@ describe("jose", () => {
         expect(ok).toBe(true);
       });
     });
+
+    describe("base64url decoding", () => {
+      function jwsFrom(json: { protected?: string; payload?: string; signature?: string }) {
+        const jws = new JsonWebSignature({}, crypto);
+        jws.fromJSON(json);
+        return jws;
+      }
+
+      it("reads unpadded segments", () => {
+        // {"nonce":"n"} and {"a":1}
+        const jws = jwsFrom({ protected: "eyJub25jZSI6Im4ifQ", payload: "eyJhIjoxfQ", signature: "AQID" });
+        expect(jws.getProtected()).toEqual({ nonce: "n" });
+        expect(jws.getPayload()).toEqual({ a: 1 });
+        expect(new Uint8Array(jws.getSignature())).toEqual(new Uint8Array([1, 2, 3]));
+      });
+
+      it("reads an empty payload (POST-as-GET)", () => {
+        const jws = jwsFrom({ protected: "e30", payload: "", signature: "" });
+        expect(jws.getPayload()).toBe("");
+        expect(jws.getSignature().byteLength).toBe(0);
+      });
+
+      it("rejects characters outside the base64url alphabet", () => {
+        expect(() => jwsFrom({ payload: "eyJhIjoxfQ+" }).getPayload()).toThrow(TypeError);
+        expect(() => jwsFrom({ payload: "eyJh/IjoxfQ" }).getPayload()).toThrow(TypeError);
+        expect(() => jwsFrom({ payload: "eyJh?IjoxfQ" }).getPayload()).toThrow(TypeError);
+        expect(() => jwsFrom({ signature: "AQ.D" }).getSignature()).toThrow(TypeError);
+      });
+
+      it("rejects a segment with an impossible length", () => {
+        expect(() => jwsFrom({ signature: "AQIDB" }).getSignature()).toThrow(TypeError);
+      });
+
+      it("rejects malformed UTF-8", () => {
+        // 0x7b 0xff 0x7d
+        expect(() => jwsFrom({ payload: "e_99" }).getPayload()).toThrow(TypeError);
+      });
+    });
   });
 });

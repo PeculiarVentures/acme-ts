@@ -1,6 +1,5 @@
 import * as core from "@peculiar/acme-core";
 import * as data from "@peculiar/acme-data";
-import * as pvtsutils from "pvtsutils";
 import * as types from "../types";
 import { container, injectable } from "tsyringe";
 import { BaseService } from "../base";
@@ -9,6 +8,7 @@ import { id_ce_subjectAltName, SubjectAlternativeName } from "@peculiar/asn1-x50
 import { AsnConvert } from "@peculiar/asn1-schema";
 import * as x509 from "@peculiar/x509";
 import { MalformedError } from "@peculiar/acme-core";
+import { base64url } from "@peculiar/utils";
 
 @injectable()
 export class DnsChallengeService extends BaseService implements types.IIdentifierService {
@@ -202,6 +202,6 @@ export class DnsChallengeService extends BaseService implements types.IIdentifie
     challenge.status = "pending";
     const httpToken = new Uint8Array(20);
     this.getCrypto().getRandomValues(httpToken);
-    challenge.token = pvtsutils.Convert.ToBase64Url(httpToken);
+    challenge.token = base64url.encode(httpToken);
   }
 }

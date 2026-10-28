@@ -44,6 +44,6 @@
     "@peculiar/acme-core": "^1.8.2",
     "@peculiar/acme-protocol": "^1.8.2",
     "@peculiar/jose": "^1.8.2",
-    "pvtsutils": "^1.2.1"
+    "@peculiar/utils": "^4.1.0"
   }
 }

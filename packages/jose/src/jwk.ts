@@ -1,7 +1,7 @@
 import { Algorithms } from "./algorithms";
 import { KeyTypes } from "./key_types";
 import type { EllipticCurves } from "./elliptic_curves";
-import * as pvtsutils from "pvtsutils";
+import { hex, toArrayBuffer, utf8 } from "@peculiar/utils";
 
 export class JsonWebKey implements globalThis.JsonWebKey {
   public alg?: Algorithms;
@@ -100,9 +100,9 @@ export class JsonWebKey implements globalThis.JsonWebKey {
 
     switch (alg) {
       case Algorithms.SHA256:
-        return pvtsutils.Convert.ToHex(await this.digest(json, "SHA-256"));
+        return hex.encode(await this.digest(json, "SHA-256"));
       case Algorithms.SHA1:
-        return pvtsutils.Convert.ToHex(await this.digest(json, "SHA-1"));
+        return hex.encode(await this.digest(json, "SHA-1"));
       default:
         throw new Error(`Unsupported algorithm: ${alg}`);
     }
@@ -113,7 +113,7 @@ export class JsonWebKey implements globalThis.JsonWebKey {
       {
         name: alg,
       },
-      pvtsutils.Convert.FromUtf8String(json),
+      toArrayBuffer(utf8.encode(json)),
     );
     return hash;
   }

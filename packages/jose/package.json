@@ -41,6 +41,6 @@
   },
   "homepage": "https://github.com/PeculiarVentures/acme-ts/tree/master/packages/jose#readme",
   "dependencies": {
-    "pvtsutils": "^1.2.1"
+    "@peculiar/utils": "^4.1.0"
   }
 }

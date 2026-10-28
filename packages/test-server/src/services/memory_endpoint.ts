@@ -3,13 +3,13 @@ import type { RevokeReason } from "@peculiar/acme-protocol";
 import type { ICertificateService, IEndpointService } from "@peculiar/acme-server";
 import { BaseService, diCertificateService } from "@peculiar/acme-server";
 import * as x509 from "@peculiar/x509";
-import { Convert } from "pvtsutils";
 import { container, injectable } from "tsyringe";
+import { hex } from "@peculiar/utils";
 
 function randomSerial(size = 10, crypto = x509.cryptoProvider.get()) {
   const rnd = crypto.getRandomValues(new Uint8Array(size));
 
-  return Convert.ToHex(rnd);
+  return hex.encode(rnd);
 }
 
 @injectable()

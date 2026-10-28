@@ -1,6 +1,6 @@
 import type { IBaseObject } from "@peculiar/acme-data";
 import { cryptoProvider } from "@peculiar/x509";
-import { Convert } from "pvtsutils";
+import { base64url } from "@peculiar/utils";
 
 export interface IBaseDynamoObject {
   id: string;
@@ -9,7 +9,7 @@ export interface IBaseDynamoObject {
 }
 
 export abstract class BaseObject implements IBaseObject {
-  public id = Convert.ToBase64Url(cryptoProvider.get().getRandomValues(new Uint8Array(20)));
+  public id = base64url.encode(cryptoProvider.get().getRandomValues(new Uint8Array(20)));
 
   public constructor(params: Partial<BaseObject> = {}) {
     Object.assign(this, params);

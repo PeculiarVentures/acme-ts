@@ -45,7 +45,7 @@
   "homepage": "https://github.com/PeculiarVentures/acme-ts/tree/master/packages/core#readme",
   "dependencies": {
     "@peculiar/acme-protocol": "^1.8.2",
-    "pvtsutils": "^1.2.1",
+    "@peculiar/utils": "^4.1.0",
     "reflect-metadata": "^0.2.2"
   },
   "peerDependencies": {

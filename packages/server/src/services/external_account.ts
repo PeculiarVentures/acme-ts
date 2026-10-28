@@ -4,9 +4,9 @@ import { diExternalAccount, diExternalAccountRepository } from "@peculiar/acme-d
 import { MalformedError } from "@peculiar/acme-core";
 import { BaseService } from "./base";
 import { container, injectable } from "tsyringe";
-import { Convert } from "pvtsutils";
 import type { JsonWebSignature } from "@peculiar/jose";
 import { cryptoProvider } from "@peculiar/x509";
+import { base64url, toArrayBuffer } from "@peculiar/utils";
 
 @injectable()
 export class ExternalAccountService extends BaseService implements IExternalAccountService {
@@ -27,7 +27,7 @@ export class ExternalAccountService extends BaseService implements IExternalAcco
   }
 
   protected async onCreate(externalAccount: IExternalAccount, account: any, key: BufferSource) {
-    externalAccount.key = Convert.ToBase64Url(key);
+    externalAccount.key = base64url.encode(key);
     externalAccount.account = account;
     externalAccount.status = "pending";
     // TODO Options Service
@@ -73,7 +73,7 @@ export class ExternalAccountService extends BaseService implements IExternalAcco
       throw new MalformedError(`External account '${externalAccount.id}' has wrong status '${externalAccount.status}'`); // TODO check rfc error
     }
 
-    const key = Convert.FromBase64Url(externalAccount.key);
+    const key = toArrayBuffer(base64url.decode(externalAccount.key, { allowPadding: true }));
 
     const hmac = await cryptoProvider.get().subtle.importKey("raw", key, { name: "HMAC", hash: "SHA-256" }, false, ["verify"]);
     const ok = await token.verify(hmac, cryptoProvider.get());
