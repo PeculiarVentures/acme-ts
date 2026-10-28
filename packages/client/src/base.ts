@@ -48,7 +48,7 @@ export class BaseClient {
 
   public constructor(options: ClientOptions = {}) {
     this.options = {
-      crypto: typeof self !== "undefined" ? self.crypto : undefined,
+      crypto: globalThis.crypto,
       debug: options.debug,
       defaultHash: "SHA-256",
       fetch: typeof fetch !== "undefined" ? fetch : undefined,
