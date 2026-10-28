@@ -5,7 +5,8 @@ import * as repositories from "./repositories";
 import * as models from "./models";
 import * as dynamoose from "dynamoose";
 import type { AWSError } from "aws-sdk";
-import { DynamoDB } from "aws-sdk";
+// aws-sdk v2 is CommonJS without named exports for Node.js ESM; import the client module instead.
+import DynamoDB from "aws-sdk/clients/dynamodb.js";
 import type { IOptions } from "./options";
 import { diOptionsService, OptionsService } from "./options";
 import { SourceLogger } from "@peculiar/acme-core";

@@ -1,3 +1,5 @@
+// tsyringe needs the Reflect metadata API when it loads; import the polyfill first.
+import "reflect-metadata";
 import { injectable, container, Lifecycle } from "tsyringe";
 
 export interface ILogger {

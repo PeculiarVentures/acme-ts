@@ -2,11 +2,13 @@
   "name": "root",
   "version": "1.8.4",
   "private": true,
+  "type": "module",
   "license": "AGPL",
   "workspaces": [
     "packages/*"
   ],
   "devDependencies": {
+    "@arethetypeswrong/core": "^0.18.5",
     "@peculiar/asn1-csr": "^2.0.44",
     "@peculiar/asn1-ecc": "^2.0.44",
     "@peculiar/asn1-rsa": "^2.0.44",
@@ -26,10 +28,7 @@
     "oxlint": "^1.86.0",
     "pvtsutils": "^1.2.1",
     "reflect-metadata": "^0.1.13",
-    "rimraf": "^3.0.2",
-    "ts-node": "^10.4.0",
-    "tsconfig-paths": "^3.12.0",
-    "tslib": "^2.3.1",
+    "tsdown": "^0.23.3",
     "tsyringe": "^4.6.0",
     "typescript": "^6.0.3",
     "vite": "^8.3.2",
@@ -43,8 +42,7 @@
     "lint:fix": "oxlint --fix",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "build": "npm run build -w packages/protocol && npm run build -w packages/jose && npm run build -w packages/core && npm run build -w packages/data && npm run build -w packages/data-memory && npm run build -w packages/data-dynamodb && npm run build -w packages/server && npm run build -w packages/server-express && npm run build -w packages/server-ra && npm run build -w packages/client && npm run build -w packages/test-server",
-    "clear": "npm run clear --workspaces",
+    "build": "tsdown",
     "typecheck": "tsc --noEmit"
   },
   "overrides": {

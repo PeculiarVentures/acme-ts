@@ -17,46 +17,6 @@
       },
       "cwd": "${workspaceRoot}",
       "internalConsoleOptions": "openOnSessionStart"
-    },
-    {
-      "name": "Server",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "type": "node",
-      "request": "launch",
-      "args": [
-        "${workspaceFolder}/packages/test-server/src/index.ts"
-      ],
-      "runtimeArgs": [
-        "--require",
-        "tsconfig-paths/register",
-        "--require",
-        "ts-node/register"
-      ],
-      "outputCapture": "std",
-      "cwd": "${workspaceRoot}",
-      "internalConsoleOptions": "openOnSessionStart"
-    },
-    {
-      "name": "Client",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "type": "node",
-      "request": "launch",
-      "args": [
-        "${workspaceFolder}/examples/enrollment.ts"
-      ],
-      "runtimeArgs": [
-        "--require",
-        "tsconfig-paths/register",
-        "--require",
-        "ts-node/register"
-      ],
-      "outputCapture": "std",
-      "cwd": "${workspaceRoot}",
-      "internalConsoleOptions": "openOnSessionStart",
     }
   ]
 }

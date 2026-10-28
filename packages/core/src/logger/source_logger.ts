@@ -1,3 +1,5 @@
+// tsyringe needs the Reflect metadata API when it loads; import the polyfill first.
+import "reflect-metadata";
 import { container } from "tsyringe";
 import type { ILogger } from "./logger";
 import { diLogger } from "./logger";

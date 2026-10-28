@@ -2,46 +2,45 @@
   "name": "@peculiar/jose",
   "version": "1.8.2",
   "description": "Implementation of Javascript Object Signing and Encryption (jose)",
-  "keywords": [
-    "acme"
-  ],
-  "license": "AGPL",
-  "author": "Peculiar Ventures LLC",
-  "contributors": [
-    "Miroshin Stepan<microshine@mail.ru>",
-    "Miroshin Roman<miroshin.ry@gmail.com>"
-  ],
-  "main": "build/cjs/index.js",
-  "module": "build/es2015/index.js",
-  "types": "build/types/index.d.ts",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./build/index.js",
+  "module": "./build/index.js",
+  "types": "./build/index.d.ts",
+  "exports": {
+    ".": "./build/index.js",
+    "./package.json": "./package.json"
+  },
   "files": [
-    "build/**/*.{js,ts}",
+    "build/",
     "README.md",
     "LICENSE"
   ],
   "publishConfig": {
     "access": "public"
   },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "keywords": [
+    "acme"
+  ],
+  "author": "Peculiar Ventures LLC",
+  "contributors": [
+    "Miroshin Stepan<microshine@mail.ru>",
+    "Miroshin Roman<miroshin.ry@gmail.com>"
+  ],
+  "license": "AGPL",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PeculiarVentures/acme-ts.git"
-  },
-  "dependencies": {
-    "pvtsutils": "^1.2.1"
-  },
-  "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1",
-    "clear": "rimraf build/*",
-    "build": "npm run build:module && npm run build:types",
-    "build:module": "npm run build:cjs && npm run build:es2015",
-    "build:cjs": "tsc -p tsconfig.compile.json --removeComments --module commonjs --outDir build/cjs",
-    "build:es2015": "tsc -p tsconfig.compile.json --removeComments --module ES2015 --outDir build/es2015",
-    "prebuild:types": "rimraf build/types",
-    "build:types": "tsc -p tsconfig.compile.json --outDir build/types --declaration --emitDeclarationOnly",
-    "rebuild": "npm run clear && npm run build"
+    "url": "https://github.com/PeculiarVentures/acme-ts",
+    "directory": "packages/jose"
   },
   "bugs": {
     "url": "https://github.com/PeculiarVentures/acme-ts/issues"
   },
-  "homepage": "https://github.com/PeculiarVentures/acme-ts#readme"
+  "homepage": "https://github.com/PeculiarVentures/acme-ts/tree/master/packages/jose#readme",
+  "dependencies": {
+    "pvtsutils": "^1.2.1"
+  }
 }
