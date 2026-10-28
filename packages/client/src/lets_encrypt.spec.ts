@@ -1,6 +1,5 @@
 import { Crypto } from "@peculiar/webcrypto";
 import { cryptoProvider } from "@peculiar/x509";
-import fetch from "node-fetch";
 import { describe, expect, it } from "vitest";
 import { ApiClient } from "./api";
 
@@ -19,7 +18,6 @@ describe("client", { timeout: 5e3 }, () => {
       const keys = (await crypto.subtle.generateKey(alg, false, ["sign", "verify"])) as Required<CryptoKeyPair>;
 
       const client = await ApiClient.create(keys, "https://acme-staging-v02.api.letsencrypt.org/directory", {
-        fetch: fetch as any,
         crypto,
         debug: false,
       });

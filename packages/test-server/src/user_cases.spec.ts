@@ -4,7 +4,6 @@ import { DependencyInjection as diData } from "@peculiar/acme-data-memory";
 import { AcmeExpress } from "@peculiar/acme-express";
 import { diEndpointService } from "@peculiar/acme-server";
 import express from "express";
-import fetch from "node-fetch";
 import { container, Lifecycle } from "tsyringe";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { MemoryEndpointService } from "./services";
@@ -45,7 +44,6 @@ describe("ACME user cases", () => {
     const keys = (await crypto.subtle.generateKey(alg, false, ["sign", "verify"])) as Required<CryptoKeyPair>;
     const client = await ApiClient.create(keys, `${url}/directory`, {
       crypto,
-      fetch: fetch as any,
     });
 
     await client.newAccount({});
@@ -81,7 +79,6 @@ describe("ACME user cases", () => {
     const keys = (await crypto.subtle.generateKey(alg, false, ["sign", "verify"])) as Required<CryptoKeyPair>;
     const client = await ApiClient.create(keys, `${url}/directory`, {
       crypto,
-      fetch: fetch as any,
     });
 
     await client.newAccount({

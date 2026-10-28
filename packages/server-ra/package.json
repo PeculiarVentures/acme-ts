@@ -48,8 +48,7 @@
     "@peculiar/acme-server": "^1.8.4",
     "@peculiar/asn1-x509": "^3.0.0",
     "@peculiar/utils": "^4.1.0",
-    "express": "^4.17.1",
-    "node-fetch": "^2.6.1"
+    "express": "^4.17.1"
   },
   "peerDependencies": {
     "@peculiar/asn1-schema": "^3.0.0",
