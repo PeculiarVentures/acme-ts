@@ -1,47 +1,53 @@
-# `@peculiar/acme-ra`
+<h1 align="center">
+  @peculiar/acme-ra
+</h1>
 
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![npm version](https://badge.fury.io/js/%40peculiar%2Facme-ra.svg)](https://badge.fury.io/js/%40peculiar%2Facme-ra)
+<div align="center">
 
-- [About](#about)
-- [Installation](#installation)
-- [Usage](#usage)
+![NPM License](https://img.shields.io/npm/l/@peculiar/acme-ra)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/PeculiarVentures/acme-ts/release.yml?branch=master&label=release)
+[![npm version](https://img.shields.io/npm/v/@peculiar/acme-ra.svg)](https://www.npmjs.com/package/@peculiar/acme-ra)
+[![npm downloads](https://img.shields.io/npm/dm/@peculiar/acme-ra.svg)](https://www.npmjs.com/package/@peculiar/acme-ra)
 
-## About
+</div>
 
-`@peculiar/acme-ra` is Express middleware withAutomatic Certificate Management Environment (ACME) implementing RFC 8555 protocol that supports External Account Binding using Bearer tokens and multiple Certificate Authority endpoints.
+Express registration authority for the Automatic Certificate Management Environment (ACME, RFC 8555) with External Account Binding using Bearer tokens and several Certificate Authority endpoints. Part of [acme-ts](https://github.com/PeculiarVentures/acme-ts).
 
 ## Installation
 
-```
+```bash
 npm install @peculiar/acme-ra
 ```
+
+## Breaking Changes In v2
+
+v2 is ESM-only and requires Node.js `^20.19.0 || >=22.12.0`. CommonJS code can still `require("@peculiar/acme-ra")` on these versions; Node.js 22.0–22.11 can't. Move all `@peculiar/acme-*` packages and `@peculiar/jose` to v2 together. See the [full notes](https://github.com/PeculiarVentures/acme-ts#breaking-changes-in-v2).
+
+- **TypeScript compiling to CommonJS:** use `"module": "node20"` or `"nodenext"` (`node16` fails with TS1479). ESM and bundler setups need no changes.
+- **Jest in CommonJS mode:** switch to ESM mode or Vitest, or configure an ESM-to-CommonJS transformer and make sure `transformIgnorePatterns` doesn't exclude the `@peculiar/*` packages, `asn1js` and `tsyringe`.
+- **Deep imports** (`@peculiar/acme-ra/build/...`) are blocked by `exports`; import from `@peculiar/acme-ra`.
+- **Peer dependencies:** `tsyringe` (`^4.10.0`), `@peculiar/x509` (`^3.1.0`) and `@peculiar/asn1-schema` (`^3.0.0`) are peers, so your app shares one copy of each with the other `@peculiar/acme-*` packages; npm installs peers automatically.
+- **Reflect polyfill:** import `reflect-metadata` (or another Reflect polyfill) once, before any other import. `@peculiar/x509` 1.x used to load it.
+- **Default crypto provider** is `globalThis.crypto` instead of `@peculiar/webcrypto`; pass `cryptoProvider` if you create keys with another implementation.
 
 ## Usage
 
 ```ts
-import * as express from "express";
-import { cryptoProvider, X509CertificateGenerator } from "@peculiar/x509";
-import { Crypto } from "@peculiar/webcrypto";
-import { AcmeRa, diEndpointService } from "@peculiar/acme-ra";
+import "reflect-metadata";
+import express from "express";
+import { AcmeRa } from "@peculiar/acme-ra";
 
 const app = express();
 
-const crypto = new Crypto();
-cryptoProvider.set(crypto);
-
 AcmeRa.register(app, {
   baseAddress: "http://localhost:4000/acme",
-  levelLogger: "info",
-  cryptoProvider: crypto,
   debugMode: true,
   extraCertificateStorage: [rootCert, caCert],
   meta: { externalAccountRequired: true },
   defaultEndpoint: "default",
-  auth0Domain: "http://domain.auth0.com",
 });
 
-app.listen(8000, () => {
-  console.log(`Server is running`);
+app.listen(4000, () => {
+  console.log("Server is running");
 });
 ```

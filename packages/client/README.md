@@ -1,136 +1,78 @@
-# `@peculiar/acme-client`
+<h1 align="center">
+  @peculiar/acme-client
+</h1>
 
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![npm version](https://badge.fury.io/js/%40peculiar%2Facme-client.svg)](https://badge.fury.io/js/%40peculiar%2Facme-client)
+<div align="center">
 
-- [About](#about)
-- [Installation](#installation)
-- [Documentation](#documentation)
-- [Usage](#usage)
-  - [Browser](#browser)
-  - [NodeJs](#nodejs)
-- [Examples](#examples)
-  - [Create an ACME client and get a directory object](#create-an-acme-client-and-get-a-directory-object)
-  - [Create a new account](#create-a-new-account)
-  - [Enroll certificate](#enroll-certificate)
+![NPM License](https://img.shields.io/npm/l/@peculiar/acme-client)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/PeculiarVentures/acme-ts/release.yml?branch=master&label=release)
+[![npm version](https://img.shields.io/npm/v/@peculiar/acme-client.svg)](https://www.npmjs.com/package/@peculiar/acme-client)
+[![npm downloads](https://img.shields.io/npm/dm/@peculiar/acme-client.svg)](https://www.npmjs.com/package/@peculiar/acme-client)
 
-## About
+</div>
 
-`@peculiar/acme-client` is anAutomatic Certificate Management Environment (ACME) implementing RFC 8555 client.
+Client for the Automatic Certificate Management Environment (ACME, RFC 8555). Part of [acme-ts](https://github.com/PeculiarVentures/acme-ts).
 
 ## Installation
 
-```sh
+```bash
 npm install @peculiar/acme-client
 ```
 
+## Breaking Changes In v2
+
+v2 is ESM-only and requires Node.js `^20.19.0 || >=22.12.0`. CommonJS code can still `require("@peculiar/acme-client")` on these versions; Node.js 22.0–22.11 can't. Move all `@peculiar/acme-*` packages and `@peculiar/jose` to v2 together. See the [full notes](https://github.com/PeculiarVentures/acme-ts#breaking-changes-in-v2).
+
+- **TypeScript compiling to CommonJS:** use `"module": "node20"` or `"nodenext"` (`node16` fails with TS1479). ESM and bundler setups need no changes.
+- **Jest in CommonJS mode:** switch to ESM mode or Vitest, or configure an ESM-to-CommonJS transformer and make sure `transformIgnorePatterns` doesn't exclude the `@peculiar/*` packages, `asn1js` and `tsyringe`.
+- **Deep imports** (`@peculiar/acme-client/build/...`) are blocked by `exports`; import from `@peculiar/acme-client`.
+- **No browser script bundle:** `build/acme.js` (the `acme` global) and the `browser` field are removed. Bundle the package or import it from [esm.sh](https://esm.sh) as a module, or pin `@peculiar/acme-client@1` for the script.
+- **No `node-fetch` needed:** the client uses the global `fetch` and `crypto` of Node.js 20+ by default.
+
 ## Usage
 
-### Browser
-
-Every release of `@peculiar/acme-client` will have new build of `./build/acme.js` for use in the browser. To get access to module classes use `acme` global variable.
-
-> WARN: We recommend hosting and controlling your own copy for security reasons
-
-```html
-<script src="https://unpkg.com/@peculiar/acme-client"></script>
-```
-
-### NodeJS
+Node.js 20+ and browsers have `fetch` and WebCrypto built in; pass `fetch` and `crypto` options only to use other implementations.
 
 ```js
-import * as acme from "@peculiar/acme-client";
-```
+import { ApiClient } from "@peculiar/acme-client";
+import * as x509 from "@peculiar/x509";
 
-> WARN: Client requires WebCrypto API and Fetch API modules. Use third-party modules to set crypto provider and fetch client in NodeJS (eg `@peculiar/webcrypto`, `node-fetch`).
-
-```js
-import { Crypto } from "@peculiar/webcrypto";
-import fetch from "node-fetch";
-
-const client = new acme.ApiClient(keys, "https://path/to/acme/directory", {
-  crypto,
-  fetch,
-});
-```
-
-## Examples
-
-### Create an ACME client and get a directory object
-
-```js
-const client = await ApiClient.create(keys, "http://localhost:4000/acme/directory", {
-  // fetch, // required for NodeJS
-  // crypto, // required for NodeJS
-});
-
-const directory = await client.getDirectory();
-```
-
-### Create a new account
-
-```js
 // Generate account keys
 const alg = { name: "ECDSA", namedCurve: "P-256" };
 const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]);
 
-const account = await client.newAccount({
-  contact: ["mailto:some@email.net"],
+// Create a client and an account
+const client = await ApiClient.create(keys, "https://acme.example.com/directory");
+await client.newAccount({
+  contact: ["mailto:admin@example.com"],
   termsOfServiceAgreed: true,
 });
-```
 
-### Enroll certificate
-
-> WARN: That example uses `@peculiar/x509` package for CSR generation
-
-```js
-// Create a new order
+// Create an order
 let order = await client.newOrder({
-  identifiers: [
-    { type: "dns", value: "some.domain.com" },
-  ],
+  identifiers: [{ type: "dns", value: "some.domain.com" }],
 });
 
 for (const link of order.content.authorizations) {
   let authz = await client.getAuthorization(link);
-
   if (authz.content.status === "pending") {
-    const httpChallenge = authz.content.challenges.find(o => o.type === "http-01");
-    assert(httpChallenge, `Cannot find http-01 challenge for '${authz.content.identifier.type}:${authz.content.identifier.value}' authorization`);
-
-    console.log(httpChallenge);
-    // Get Token and put it to wellknown link of the Server
-
-    // Validate challenge
-    const resp = await client.getChallenge(httpChallenge.url, "POST");
-
-    const up = /<([^<>]+)>/.exec(resp.headers.link.find(o => o.includes(`up"`)))[1];
-    assert(up, "Cannot get up link from header");
-
-    authz = await client.retryAuthorization(up);
-    assert.strictEqual(authz.content.status, "valid");
+    const challenge = authz.content.challenges.find((o) => o.type === "http-01");
+    // Publish the challenge token on your server, then tell the CA to validate it
+    await client.getChallenge(challenge.url, "POST");
+    authz = await client.retryAuthorization(link);
   }
 }
 
-// Generate CSR
-const reqKeys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]) as CryptoKeyPair;
+// Generate a CSR (@peculiar/x509 3) and finalize the order
+const reqKeys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]);
 const req = await x509.Pkcs10CertificateRequestGenerator.create({
   keys: reqKeys,
-  name: "DC=some.domain.com",
-  signingAlgorithm: alg,
-}, crypto);
-
-// Request certificate
-await client.finalize(order.content.finalize, {
-  csr: req.toString("base64url"),
+  name: "CN=some.domain.com",
+  signingAlgorithm: { name: "ECDSA", hash: "SHA-256" },
 });
+await client.finalize(order.content.finalize, { csr: req.toString("base64url") });
 
-// Waiting for enrollment
+// Wait for the certificate and download it
 order = await client.retryOrder(order);
-assert.strictEqual(order.content.status, "valid");
-
-// Get issued certificate
 const certs = await client.getCertificate(order.content.certificate);
-console.log(certs.content);
 ```

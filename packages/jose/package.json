@@ -1,7 +1,7 @@
 {
   "name": "@peculiar/jose",
   "version": "1.8.2",
-  "description": "Implementation of Javascript Object Signing and Encryption (jose)",
+  "description": "JSON Web Signature (JWS) and JSON Web Key (JWK) for ACME (RFC 7515, RFC 7517), built on WebCrypto.",
   "type": "module",
   "sideEffects": false,
   "main": "./build/index.js",

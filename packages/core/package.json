@@ -1,7 +1,7 @@
 {
   "name": "@peculiar/acme-core",
   "version": "1.8.2",
-  "description": "Core module forAutomatic Certificate Management Environment (ACME) implementing RFC 8555",
+  "description": "Errors, HTTP content and logging shared by the Automatic Certificate Management Environment (ACME, RFC 8555) packages.",
   "type": "module",
   "sideEffects": [
     "./build/logger/logger.js",
