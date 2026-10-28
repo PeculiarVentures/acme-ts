@@ -31,7 +31,7 @@
     "@peculiar/webcrypto": "^2.0.0",
     "@peculiar/x509": "^3.1.0",
     "@types/express": "^4.17.13",
-    "express": "^4.17.1",
+    "express": "^4.22.3",
     "tsyringe": "^4.10.0"
   }
 }
