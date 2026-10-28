@@ -2,7 +2,6 @@ import { ErrorType } from "@peculiar/acme-core";
 import type * as protocol from "@peculiar/acme-protocol";
 import { Crypto } from "@peculiar/webcrypto";
 import { cryptoProvider } from "@peculiar/x509";
-import fetch from "node-fetch";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { ApiClient } from "./api";
 import type { ApiResponse } from "./base";
@@ -41,7 +40,6 @@ async function createClient(newAccount?: boolean): Promise<ClientResult> {
 
   // const client = new ApiClient(keys, "https://acme-staging-v02.api.letsencrypt.org/directory", {
   const client = await ApiClient.create(keys, "https://localhost:5003/directory", {
-    fetch: fetch as any,
     crypto,
     // debug: true,
   });

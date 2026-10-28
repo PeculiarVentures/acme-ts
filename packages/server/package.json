@@ -47,7 +47,6 @@
     "@peculiar/asn1-x509": "^3.0.0",
     "@peculiar/jose": "^1.8.2",
     "@peculiar/utils": "^4.1.0",
-    "node-fetch": "^2.6.1",
     "normalize-url": "^8.1.1"
   },
   "peerDependencies": {
