@@ -4,9 +4,9 @@ import { container, injectable } from "tsyringe";
 import { BaseService } from "./base";
 import type { ICertificateService, IEndpointService } from "./types";
 import { diEndpointService } from "./types";
-import * as pvtsutils from "pvtsutils";
 import * as x509 from "@peculiar/x509";
 import type { FinalizeParams, RevokeReason } from "@peculiar/acme-protocol";
+import { base64url, hex, toArrayBuffer } from "@peculiar/utils";
 
 @injectable()
 export class CertificateService extends BaseService implements ICertificateService {
@@ -25,7 +25,7 @@ export class CertificateService extends BaseService implements ICertificateServi
   public async create(rawData: ArrayBuffer, order?: data.IOrder): Promise<data.ICertificate> {
     const certificate = container.resolve<data.ICertificate>(data.diCertificate);
     certificate.rawData = rawData;
-    certificate.thumbprint = pvtsutils.Convert.ToHex(await this.getHash(rawData));
+    certificate.thumbprint = hex.encode(await this.getHash(rawData));
     certificate.status = "valid";
     if (order) {
       certificate.type = "leaf";
@@ -133,7 +133,7 @@ export class CertificateService extends BaseService implements ICertificateServi
    * @param params
    */
   public async enroll(order: data.IOrder, params: FinalizeParams): Promise<data.ICertificate> {
-    const requestRaw = pvtsutils.Convert.FromBase64Url(params.csr);
+    const requestRaw = toArrayBuffer(base64url.decode(params.csr, { allowPadding: true }));
 
     const type = params.endpoint || this.options.defaultEndpoint;
     const service = this.getEndpoint(type);
@@ -200,7 +200,7 @@ export class CertificateService extends BaseService implements ICertificateServi
     for (const endpoint of endpoints) {
       const endpointCerts = await endpoint.getCaCertificate();
       for (const cert of endpointCerts) {
-        const thumbprint = pvtsutils.Convert.ToHex(await cert.getThumbprint());
+        const thumbprint = hex.encode(await cert.getThumbprint());
         if (!this.caCerts.has(thumbprint)) {
           await this.create(cert.rawData);
           this.caCerts.set(thumbprint, cert);
@@ -212,7 +212,7 @@ export class CertificateService extends BaseService implements ICertificateServi
     if (this.options.extraCertificateStorage) {
       const chain = new x509.X509ChainBuilder({ certificates: this.options.extraCertificateStorage }).certificates;
       for (const cert of chain) {
-        const thumbprint = pvtsutils.Convert.ToHex(await cert.getThumbprint());
+        const thumbprint = hex.encode(await cert.getThumbprint());
         if (!this.caCerts.has(thumbprint)) {
           this.caCerts.set(thumbprint, cert);
         }

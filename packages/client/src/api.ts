@@ -2,9 +2,9 @@ import type { Response, Content } from "@peculiar/acme-core";
 import { ContentType, AcmeError, ErrorType } from "@peculiar/acme-core";
 import type * as protocol from "@peculiar/acme-protocol";
 import { JsonWebSignature, JsonWebKey } from "@peculiar/jose";
-import { Convert } from "pvtsutils";
 import type { ClientOptions, ApiResponse, RequestParams } from "./base";
 import { BaseClient } from "./base";
+import { base64, base64url, toArrayBuffer } from "@peculiar/utils";
 
 export interface ExternalAccountBinding {
   /**
@@ -344,7 +344,7 @@ export class ApiClient extends BaseClient {
       nonce: this.nonce,
       key: this.accountKey.privateKey,
       body: {
-        certificate: Convert.ToBase64Url(certificate),
+        certificate: base64url.encode(certificate),
         reason,
       },
       convert: () => null,
@@ -583,7 +583,7 @@ export class ApiClient extends BaseClient {
     // Create externalAccountBinding
     const hmac = await this.getCrypto().subtle.importKey(
       "raw",
-      Convert.FromBase64Url(challenge), // challenge password from AEG portal
+      toArrayBuffer(base64url.decode(challenge, { allowPadding: true })), // challenge password from AEG portal
       { name: "HMAC", hash: "SHA-256" },
       true,
       ["sign"],
@@ -609,8 +609,8 @@ export class ApiClient extends BaseClient {
     let matches: RegExpExecArray | null = null;
     // eslint-disable-next-line no-cond-assign
     while ((matches = pattern.exec(pem))) {
-      const base64 = matches[1].replace(/[\r\n]/g, "");
-      res.push(Convert.FromBase64(base64));
+      const base64Text = matches[1].replace(/[\r\n]/g, "");
+      res.push(toArrayBuffer(base64.decode(base64Text)));
     }
 
     return res;

@@ -1,6 +1,6 @@
 import { cryptoProvider } from "@peculiar/x509";
 import type { INonceRepository } from "@peculiar/acme-data";
-import { Convert } from "pvtsutils";
+import { base64url } from "@peculiar/utils";
 
 export class NonceRepository implements INonceRepository {
   private items: string[] = [];
@@ -15,7 +15,7 @@ export class NonceRepository implements INonceRepository {
   public async create(): Promise<string> {
     const crypto = cryptoProvider.get();
     const buffer = crypto.getRandomValues(new Uint8Array(20));
-    const item = Convert.ToBase64Url(buffer);
+    const item = base64url.encode(buffer);
     this.items.push(item);
     return item;
   }

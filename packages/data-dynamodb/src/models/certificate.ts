@@ -2,7 +2,7 @@ import type { ICertificate, CertificateStatus, CertificateType } from "@peculiar
 import type { IBaseDynamoObject } from "./base";
 import { BaseObject } from "./base";
 import type { CRLReason } from "@peculiar/asn1-x509";
-import { Convert } from "pvtsutils";
+import { base64, toArrayBuffer } from "@peculiar/utils";
 
 export interface ICertificateDynamo extends IBaseDynamoObject {
   id: string;
@@ -31,7 +31,7 @@ export class Certificate extends BaseObject implements ICertificate {
   }
 
   public fromDynamo(data: ICertificateDynamo) {
-    this.rawData = Convert.FromBase64(data.rawData);
+    this.rawData = toArrayBuffer(base64.decode(data.rawData));
     this.status = data.status;
     this.thumbprint = data.id;
     this.reason = data.reason;
@@ -45,7 +45,7 @@ export class Certificate extends BaseObject implements ICertificate {
       index: `cert#`,
       parentId: this.type,
       status: this.status,
-      rawData: Convert.ToBase64(this.rawData),
+      rawData: base64.encode(this.rawData),
     };
     if (this.orderId) {
       cert.orderId = this.orderId;

@@ -1,6 +1,6 @@
-import { Convert } from "pvtsutils";
 import { PemConverter } from "@peculiar/x509";
 import { describe, expect, it } from "vitest";
+import { base64, toArrayBuffer } from "@peculiar/utils";
 
 describe("helpers", () => {
   describe("pem converter", () => {
@@ -35,14 +35,14 @@ describe("helpers", () => {
         "TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlzIHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2YgdGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGludWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=";
 
       it("encode array", () => {
-        const rawData = Convert.FromBase64(DATA);
+        const rawData = toArrayBuffer(base64.decode(DATA));
         const rawDataArray: Array<BufferSource> = [rawData, rawData, rawData];
         const res = PemConverter.encode(rawDataArray, "certificate");
         expect(res).toBe(PEM);
       });
 
       it("encode", () => {
-        const rawData = Convert.FromBase64("TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1");
+        const rawData = toArrayBuffer(base64.decode("TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1"));
         const expected = "-----BEGIN CERTIFICATE-----\n" + "TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1\n" + "-----END CERTIFICATE-----";
         const res = PemConverter.encode(rawData, "certificate");
         expect(res).toBe(expected);
@@ -50,7 +50,7 @@ describe("helpers", () => {
 
       it("decode", () => {
         const res = PemConverter.decode(PEM);
-        expect(Convert.ToBase64(res[0])).toBe(DATA);
+        expect(base64.encode(res[0])).toBe(DATA);
       });
     });
   });

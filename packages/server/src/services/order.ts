@@ -2,10 +2,10 @@ import * as core from "@peculiar/acme-core";
 import * as data from "@peculiar/acme-data";
 import type * as protocol from "@peculiar/acme-protocol";
 import type { JsonWebKey } from "@peculiar/jose";
-import * as pvtsutils from "pvtsutils";
 import { container, injectable } from "tsyringe";
 import { BaseService } from "./base";
 import * as types from "./types";
+import { base64url, hex, toArrayBuffer, utf8 } from "@peculiar/utils";
 
 export interface ICertificateEnrollParams {
   /**
@@ -98,8 +98,8 @@ export class OrderService extends BaseService implements types.IOrderService {
       .map((o) => `${o.type}:${o.value}`.toLowerCase())
       .sort()
       .join(";");
-    const hash = await this.getHash(pvtsutils.Convert.FromUtf8String(strIdentifiers));
-    return pvtsutils.Convert.ToHex(hash);
+    const hash = await this.getHash(toArrayBuffer(utf8.encode(strIdentifiers)));
+    return hex.encode(hash);
   }
 
   /**
@@ -350,7 +350,7 @@ export class OrderService extends BaseService implements types.IOrderService {
    * @param thumbprint Thumbprint of certificate
    */
   public async getByCertificate(accountId: data.Key, param: string | ArrayBuffer): Promise<data.IOrder> {
-    const thumbprint = typeof param === "string" ? param : pvtsutils.Convert.ToHex(await this.getHash(param));
+    const thumbprint = typeof param === "string" ? param : hex.encode(await this.getHash(param));
 
     const order = await this.orderRepository.findByThumbprint(thumbprint);
     if (!order) {
@@ -367,7 +367,7 @@ export class OrderService extends BaseService implements types.IOrderService {
   public async revokeCertificate(key: data.Key | JsonWebKey, params: protocol.RevokeCertificateParams) {
     if (typeof key === "number" || typeof key === "string") {
       // find order
-      const x509 = pvtsutils.Convert.FromBase64Url(params.certificate);
+      const x509 = toArrayBuffer(base64url.decode(params.certificate, { allowPadding: true }));
       const order = await this.getByCertificate(key, x509);
 
       // revoke

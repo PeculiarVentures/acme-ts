@@ -2,10 +2,10 @@ import * as core from "@peculiar/acme-core";
 import * as x509 from "@peculiar/x509";
 import * as data from "@peculiar/acme-data";
 import * as server from "@peculiar/acme-server";
-import * as pvtsutils from "pvtsutils";
 import { container, injectable } from "tsyringe";
 import { id_ce_subjectAltName, SubjectAlternativeName } from "@peculiar/asn1-x509";
 import { AsnConvert } from "@peculiar/asn1-schema";
+import { base64url } from "@peculiar/utils";
 
 @injectable()
 export class PhoneChallengeService extends server.BaseService implements server.IIdentifierService {
@@ -101,6 +101,6 @@ export class PhoneChallengeService extends server.BaseService implements server.
     challenge.status = "valid";
     const httpToken = new Uint8Array(20);
     this.getCrypto().getRandomValues(httpToken);
-    challenge.token = pvtsutils.Convert.ToBase64Url(httpToken);
+    challenge.token = base64url.encode(httpToken);
   }
 }

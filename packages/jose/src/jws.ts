@@ -1,6 +1,6 @@
-import { Convert } from "pvtsutils";
 import { JsonWebAlgorithmConverter } from "./jwa";
 import { JsonWebKey } from "./jwk";
+import { base64url, toArrayBuffer, utf8 } from "@peculiar/utils";
 
 export interface JwsProtectedBase {
   typ?: string;
@@ -92,23 +92,24 @@ export class JsonWebSignature {
   }
 
   public getSignature() {
-    return Convert.FromBase64Url(this.signature);
+    return toArrayBuffer(base64url.decode(this.signature, { allowPadding: true }));
   }
 
   public setSignature(data: BufferSource) {
-    this.signature = Convert.ToBase64Url(data);
+    this.signature = base64url.encode(data);
   }
 
   private read(data: string) {
-    const bytes = Convert.FromBase64Url(data);
-    const json = Convert.ToUtf8String(bytes);
+    const bytes = base64url.decode(data, { allowPadding: true });
+    // Reject malformed UTF-8 instead of replacing it with U+FFFD (RFC 7515 requires UTF-8).
+    const json = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
     return json === "" ? "" : JSON.parse(json);
   }
 
   private write(data: any) {
     const json = JSON.stringify(data);
-    const bytes = Convert.FromUtf8String(json);
-    return Convert.ToBase64Url(bytes);
+    const bytes = utf8.encode(json);
+    return base64url.encode(bytes);
   }
 
   public async verify(key?: CryptoKey, crypto?: Crypto) {
@@ -131,7 +132,7 @@ export class JsonWebSignature {
     }
 
     // verify
-    const data = Convert.FromUtf8String(this.toStringSign());
+    const data = toArrayBuffer(utf8.encode(this.toStringSign()));
     const ok = await this.getCryptoProvider(crypto).subtle.verify(alg as any, key, this.getSignature(), data);
     return ok;
   }
@@ -169,7 +170,7 @@ export class JsonWebSignature {
     this.setProtected(attrs);
 
     // sign
-    const data = Convert.FromUtf8String(this.toStringSign());
+    const data = toArrayBuffer(utf8.encode(this.toStringSign()));
     const signature = await this.getCryptoProvider(crypto).subtle.sign(algorithm as any, key, data);
     this.setSignature(signature);
   }

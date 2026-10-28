@@ -1,10 +1,10 @@
 import type * as protocol from "@peculiar/acme-protocol";
-import * as pvtsutils from "pvtsutils";
 import { BaseService } from "./base";
 import type { IConvertService, IEndpointService } from "./types";
 import * as data from "@peculiar/acme-data";
 import { injectable, container } from "tsyringe";
 import { MalformedError } from "@peculiar/acme-core";
+import { hex } from "@peculiar/utils";
 
 @injectable()
 export class ConvertService extends BaseService implements IConvertService {
@@ -139,7 +139,7 @@ export class ConvertService extends BaseService implements IConvertService {
 
   public async toEndpoint(endpoint: IEndpointService): Promise<protocol.Endpoint> {
     const certs = await endpoint.getCaCertificate();
-    const thumbprint = pvtsutils.Convert.ToHex(await this.getHash(certs[0].rawData));
+    const thumbprint = hex.encode(await this.getHash(certs[0].rawData));
 
     return {
       name: endpoint.type,

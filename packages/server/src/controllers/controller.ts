@@ -2,13 +2,13 @@ import * as core from "@peculiar/acme-core";
 import * as types from "../services/types";
 import type * as protocol from "@peculiar/acme-protocol";
 import * as x509 from "@peculiar/x509";
-import * as pvtsutils from "pvtsutils";
 
 import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
 import { container, injectable } from "tsyringe";
 import type { IAccount, Key } from "@peculiar/acme-data";
 import { BaseService } from "../services";
 import type { Request } from "../request";
+import { base64, hex } from "@peculiar/utils";
 
 export const diAcmeController = "ACME.AcmeController";
 /**
@@ -40,7 +40,7 @@ export class AcmeController extends BaseService {
           content = response.content.toJSON();
           break;
         default:
-          content = pvtsutils.Convert.ToBase64(response.content.content);
+          content = base64.encode(response.content.content);
       }
     }
     this.logger.debug("Response", {
@@ -535,7 +535,7 @@ export class AcmeController extends BaseService {
           if (certs.length > 1) {
             for (let index = 1; index < certs.length; index++) {
               const cert = certs[index];
-              const thumbprint = pvtsutils.Convert.ToHex(await cert.getThumbprint());
+              const thumbprint = hex.encode(await cert.getThumbprint());
               response.headers.setLink(`<${this.options.baseAddress}/ca/cert/${thumbprint}>;rel="up"`);
             }
           }
@@ -579,7 +579,7 @@ export class AcmeController extends BaseService {
       if (certs.length > 1) {
         for (let index = 1; index < certs.length; index++) {
           const cert = certs[index];
-          const thumbprint = pvtsutils.Convert.ToHex(await cert.getThumbprint());
+          const thumbprint = hex.encode(await cert.getThumbprint());
           response.headers.setLink(`<${this.options.baseAddress}/ca/cert/${thumbprint}>;rel="up"`);
         }
       }

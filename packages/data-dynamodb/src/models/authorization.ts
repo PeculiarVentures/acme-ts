@@ -3,8 +3,7 @@ import type { AuthorizationStatus } from "@peculiar/acme-protocol";
 import type { IBaseDynamoObject } from "./base";
 import { BaseObject } from "./base";
 import { cryptoProvider } from "@peculiar/x509";
-import * as pvtsutils from "pvtsutils";
-import { Convert } from "pvtsutils";
+import { hex, toArrayBuffer, utf8 } from "@peculiar/utils";
 
 export interface IAuthorizationDynamo extends IBaseDynamoObject {
   identifier: IIdentifier;
@@ -17,8 +16,8 @@ export interface IAuthorizationDynamo extends IBaseDynamoObject {
 export class Authorization extends BaseObject implements IAuthorization {
   public static async getHashIdentifier(identifier: IIdentifier) {
     const strIdentifiers = `${identifier.type}:${identifier.value}`.toLowerCase();
-    const hashIdentifier = await cryptoProvider.get().subtle.digest("SHA-1", pvtsutils.Convert.FromUtf8String(strIdentifiers));
-    return Convert.ToHex(hashIdentifier);
+    const hashIdentifier = await cryptoProvider.get().subtle.digest("SHA-1", toArrayBuffer(utf8.encode(strIdentifiers)));
+    return hex.encode(hashIdentifier);
   }
 
   public identifier: IIdentifier;

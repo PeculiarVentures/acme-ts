@@ -3,12 +3,12 @@ import { Controllers } from "@peculiar/acme-express";
 import * as server from "@peculiar/acme-server";
 import { cryptoProvider } from "@peculiar/x509";
 import type { Request, Response } from "express";
-import { Convert } from "pvtsutils";
 import { container, injectable } from "tsyringe";
 
 import type { ProviderService } from "../services";
 import { diAuthProviderService } from "../services";
 import type { RaConvertService } from "../services/convert";
+import { base64url } from "@peculiar/utils";
 
 @injectable()
 export class RaControllers extends Controllers {
@@ -17,7 +17,7 @@ export class RaControllers extends Controllers {
   protected raConverterService = container.resolve<RaConvertService>(server.diConvertService);
 
   private aliveAt = new Date().toISOString();
-  private instance = Convert.ToBase64Url(cryptoProvider.get().getRandomValues(new Uint8Array(10)));
+  private instance = base64url.encode(cryptoProvider.get().getRandomValues(new Uint8Array(10)));
 
   public options: server.IServerOptions = container.resolve<server.IServerOptions>(server.diServerOptions);
 
