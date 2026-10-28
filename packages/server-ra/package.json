@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/acme-ra",
-  "version": "1.8.4",
+  "version": "2.0.0",
   "description": "Express registration authority for the Automatic Certificate Management Environment (ACME, RFC 8555) with External Account Binding using Bearer tokens and several Certificate Authority endpoints.",
   "type": "module",
   "sideEffects": false,
@@ -41,11 +41,11 @@
   },
   "homepage": "https://github.com/PeculiarVentures/acme-ts/tree/master/packages/server-ra#readme",
   "dependencies": {
-    "@peculiar/acme-core": "^1.8.2",
-    "@peculiar/acme-data": "^1.8.4",
-    "@peculiar/acme-express": "^1.8.4",
-    "@peculiar/acme-protocol": "^1.8.2",
-    "@peculiar/acme-server": "^1.8.4",
+    "@peculiar/acme-core": "^2.0.0",
+    "@peculiar/acme-data": "^2.0.0",
+    "@peculiar/acme-express": "^2.0.0",
+    "@peculiar/acme-protocol": "^2.0.0",
+    "@peculiar/acme-server": "^2.0.0",
     "@peculiar/asn1-x509": "^3.0.0",
     "@peculiar/utils": "^4.1.0",
     "express": "^4.22.3"

@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/jose",
-  "version": "1.8.2",
+  "version": "2.0.0",
   "description": "JSON Web Signature (JWS) and JSON Web Key (JWK) for ACME (RFC 7515, RFC 7517), built on WebCrypto.",
   "type": "module",
   "sideEffects": false,

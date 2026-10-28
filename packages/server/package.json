@@ -1,6 +1,6 @@
 {
   "name": "@peculiar/acme-server",
-  "version": "1.8.4",
+  "version": "2.0.0",
   "description": "Server services and controller of the Automatic Certificate Management Environment (ACME, RFC 8555), independent of the HTTP framework.",
   "type": "module",
   "sideEffects": false,
@@ -41,11 +41,11 @@
   },
   "homepage": "https://github.com/PeculiarVentures/acme-ts/tree/master/packages/server#readme",
   "dependencies": {
-    "@peculiar/acme-core": "^1.8.2",
-    "@peculiar/acme-data": "^1.8.4",
-    "@peculiar/acme-protocol": "^1.8.2",
+    "@peculiar/acme-core": "^2.0.0",
+    "@peculiar/acme-data": "^2.0.0",
+    "@peculiar/acme-protocol": "^2.0.0",
     "@peculiar/asn1-x509": "^3.0.0",
-    "@peculiar/jose": "^1.8.2",
+    "@peculiar/jose": "^2.0.0",
     "@peculiar/utils": "^4.1.0",
     "normalize-url": "^8.1.1"
   },
