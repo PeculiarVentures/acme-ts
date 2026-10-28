@@ -6,35 +6,32 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@types/body-parser": "^1.19.2",
-    "@types/express": "^4.17.13",
-    "@types/node": "^20.4.4",
-    "@types/node-fetch": "^2",
-    "body-parser": "^1.19.0",
-    "dynamodb-local": "^0.0.32",
-    "express": "^4.17.1",
-    "lerna": "^8.1.2",
-    "oxfmt": "^0.71.0",
-    "oxlint": "^1.86.0",
-    "rimraf": "^3.0.2",
-    "ts-node": "^10.4.0",
-    "tsconfig-paths": "^3.12.0",
-    "typescript": "^4.5.2",
-    "vite": "^8.3.2",
-    "vitest": "^5.0.3"
-  },
-  "dependencies": {
     "@peculiar/asn1-csr": "^2.0.44",
     "@peculiar/asn1-ecc": "^2.0.44",
     "@peculiar/asn1-rsa": "^2.0.44",
     "@peculiar/asn1-schema": "^2.0.44",
     "@peculiar/asn1-x509": "^2.0.44",
     "@peculiar/webcrypto": "^1.4.3",
+    "@types/body-parser": "^1.19.2",
+    "@types/express": "^4.17.13",
+    "@types/node": "^22.19.0",
+    "@types/node-fetch": "^2",
+    "body-parser": "^1.19.0",
+    "dynamodb-local": "^0.0.32",
+    "express": "^4.17.1",
     "node-fetch": "^2.6.1",
+    "oxfmt": "^0.71.0",
+    "oxlint": "^1.86.0",
     "pvtsutils": "^1.2.1",
     "reflect-metadata": "^0.1.13",
+    "rimraf": "^3.0.2",
+    "ts-node": "^10.4.0",
+    "tsconfig-paths": "^3.12.0",
     "tslib": "^2.3.1",
-    "tsyringe": "^4.6.0"
+    "tsyringe": "^4.6.0",
+    "typescript": "^4.5.2",
+    "vite": "^8.3.2",
+    "vitest": "^5.0.3"
   },
   "scripts": {
     "test": "vitest run",
@@ -43,20 +40,12 @@
     "lint:fix": "oxlint --fix",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "build": "lerna run build",
-    "rebuild": "lerna run rebuild",
-    "clear": "lerna run clear",
-    "upgrade": "yarn upgrade-interactive --latest",
-    "prepub": "yarn run build",
-    "pub": "lerna publish"
+    "build": "npm run build -w packages/protocol && npm run build -w packages/jose && npm run build -w packages/core && npm run build -w packages/data && npm run build -w packages/data-memory && npm run build -w packages/data-dynamodb && npm run build -w packages/server && npm run build -w packages/server-express && npm run build -w packages/server-ra && npm run build -w packages/client && npm run build -w packages/test-server",
+    "clear": "npm run clear --workspaces"
   },
-  "resolutions": {
-    "tar": "^6.1.7",
-    "trim-newlines": "^4.0.2",
-    "ansi-regex": "^5.0.1",
-    "json-schema": "^0.4.0",
-    "minimist": "^1.2.6",
-    "trim-off-newlines": "^1.0.3",
-    "shelljs": "^0.8.5"
+  "overrides": {
+    "dynamodb-local": {
+      "tar": "^6.1.7"
+    }
   }
 }

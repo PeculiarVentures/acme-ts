@@ -13,7 +13,7 @@
     "**/node_modules": true,
     "**/build": true
   },
-  "npm.packageManager": "yarn",
+  "npm.packageManager": "npm",
   "typescript.tsdk": "node_modules/typescript/lib",
   "[typescript]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"
