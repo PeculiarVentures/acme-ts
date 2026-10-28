@@ -1,11 +1,3 @@
 # `@peculiar/acme-test-server`
 
-> TODO: description
-
-## Usage
-
-```
-const acmeServer = require('@peculiar/acme-test-server');
-
-// TODO: DEMONSTRATE API
-```
+Private example ACME server (Express, in-memory data, an in-memory CA) used by the tests. It is not published.

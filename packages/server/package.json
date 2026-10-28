@@ -1,7 +1,7 @@
 {
   "name": "@peculiar/acme-server",
   "version": "1.8.4",
-  "description": "Implements server services forAutomatic Certificate Management Environment (ACME) implementing RFC 8555 framework",
+  "description": "Server services and controller of the Automatic Certificate Management Environment (ACME, RFC 8555), independent of the HTTP framework.",
   "type": "module",
   "sideEffects": false,
   "main": "./build/index.js",

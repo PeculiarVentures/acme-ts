@@ -1,76 +1,54 @@
-# `@peculiar/jose`
+<h1 align="center">
+  @peculiar/jose
+</h1>
 
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![npm version](https://badge.fury.io/js/%40peculiar%2Facme-jose.svg)](https://badge.fury.io/js/%40peculiar%2Facme-jose)
+<div align="center">
 
-- [About](#about)
-- [Installation](#installation)
-- [Usage](#usage)
-  - [Browser](#browser)
-  - [NodeJS](#nodejs)
-- [Examples](#examples)
-  - [Create JWS](#create-jws)
-  - [VErify JWS](#verify-jws)
+![NPM License](https://img.shields.io/npm/l/@peculiar/jose)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/PeculiarVentures/acme-ts/release.yml?branch=master&label=release)
+[![npm version](https://img.shields.io/npm/v/@peculiar/jose.svg)](https://www.npmjs.com/package/@peculiar/jose)
+[![npm downloads](https://img.shields.io/npm/dm/@peculiar/jose.svg)](https://www.npmjs.com/package/@peculiar/jose)
 
-## About
+</div>
 
-`@peculiar/jose` implements Javascript Object Signing and Encryption (jose).
+JSON Web Signature (JWS) and JSON Web Key (JWK) for ACME (RFC 7515, RFC 7517), built on WebCrypto. Part of [acme-ts](https://github.com/PeculiarVentures/acme-ts).
 
 ## Installation
 
-```
+```bash
 npm install @peculiar/jose
 ```
 
+## Breaking Changes In v2
+
+v2 is ESM-only and requires Node.js `^20.19.0 || >=22.12.0`. CommonJS code can still `require("@peculiar/jose")` on these versions; Node.js 22.0–22.11 can't. Move all `@peculiar/acme-*` packages and `@peculiar/jose` to v2 together. See the [full notes](https://github.com/PeculiarVentures/acme-ts#breaking-changes-in-v2).
+
+- **TypeScript compiling to CommonJS:** use `"module": "node20"` or `"nodenext"` (`node16` fails with TS1479). ESM and bundler setups need no changes.
+- **Jest in CommonJS mode:** switch to ESM mode or Vitest, or configure an ESM-to-CommonJS transformer and make sure `transformIgnorePatterns` doesn't exclude the `@peculiar/*` packages, `asn1js` and `tsyringe`.
+- **Deep imports** (`@peculiar/jose/build/...`) are blocked by `exports`; import from `@peculiar/jose`.
+- **Strict base64url:** JWS segments with `=` padding are rejected (RFC 7515), and `getSignature()` still returns an `ArrayBuffer`.
+
 ## Usage
 
-### Browser
-
-> TODO: Setup browser compiler and add unpkg link
-
-### NodeJS
-
 ```js
-import * as jose from "@peculiar/jose";
-```
+import { JsonWebSignature } from "@peculiar/jose";
 
-> NOTE: For WebCrypto implementation in NodeJS use third-party modules (eg `@peculiar/webcrypto`).
-
-### Examples
-
-### Create JWS
-
-```js
-// Generate ECDSA key pair
-const alg = {
-  name: "ECDSA",
-  hash: "SHA-384",
-  namedCurve: "P-384",
-};
+// Create and sign a JWS
+const alg = { name: "ECDSA", namedCurve: "P-384" };
 const keys = await crypto.subtle.generateKey(alg, false, ["sign", "verify"]);
 
-// Create JWS object
-const jws = new jose.JsonWebSignature({}, crypto);
+const jws = new JsonWebSignature({}, crypto);
 jws.setProtected({
   jwk: await crypto.subtle.exportKey("jwk", keys.publicKey),
   nonce: "nonce_value",
   url: "http://test.url",
 });
-jws.setPayload({
-  value: "hello world",
-});
-
-// Sign
+jws.setPayload({ value: "hello world" });
 await jws.sign({ ...alg, hash: "SHA-384" }, keys.privateKey);
+const compact = jws.toString(true);
 
-console.log("Compact:", jws.toString(true));
-// Compact: eyJqd2siOnsia3R5IjoiRUMiLCJjcnYiOiJQLTM4NCIsImtleV9vcHMiOlsidmVyaWZ5Il0sImV4dCI6dHJ1ZSwieCI6IlNNWGxyREotZ1E2QzVoVUlCM0Q4SVBPX21VZlhXUE85aV84RkZOWXFDa0FBNVhlUWtHaXBJUzMwWU1Da21ua3giLCJ5IjoiUk1wMk9xa3duM1FTZEZkYlROX0tmTWxPOWxGVVlIWkZmVXRESmxBRDJMbHIxVTNES1lXSHp0YkVoR3JiRTFadCJ9LCJub25jZSI6Im5vbmNlX3ZhbHVlIiwidXJsIjoiaHR0cDovL3Rlc3QudXJsIiwiYWxnIjoiRVMzODQifQ.eyJ2YWx1ZSI6ImhhbGxvIHdvcmxkIn0.JL8aafh1EdUHg-N2YkBn3BVZTfcXOSlYkGCmcHYtV79AbZB3ZiyJiVjQNYyldlTVKPpH3POTXwsCAyxT-_CFBibpZfaNeg9vfZo3c_EVDje7ckgprp5NPvkQUODOub9k
-```
-
-### Verify JWS
-
-```js
-const jws = new jose.JsonWebSignature({}, crypto);
-jws.parse("eyJqd2siOnsia3R5IjoiRUMiLCJjcnYiOi...vfZo3c_EVDje7ckgprp5NPvkQUODOub9k");
-const ok = await jws.verify(); // true
+// Parse and verify it
+const received = new JsonWebSignature({}, crypto);
+received.parse(compact);
+const ok = await received.verify(); // true
 ```

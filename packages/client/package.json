@@ -1,7 +1,7 @@
 {
   "name": "@peculiar/acme-client",
   "version": "1.8.2",
-  "description": "Automatic Certificate Management Environment (ACME) client",
+  "description": "Client for the Automatic Certificate Management Environment (ACME, RFC 8555).",
   "type": "module",
   "sideEffects": false,
   "main": "./build/index.js",

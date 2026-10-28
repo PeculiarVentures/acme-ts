@@ -1,7 +1,7 @@
 {
   "name": "@peculiar/acme-data-memory",
   "version": "1.8.4",
-  "description": "Memory data module forAutomatic Certificate Management Environment (ACME) implementing RFC 8555 framework",
+  "description": "In-memory data layer for the Automatic Certificate Management Environment (ACME, RFC 8555) server.",
   "type": "module",
   "sideEffects": false,
   "main": "./build/index.js",
