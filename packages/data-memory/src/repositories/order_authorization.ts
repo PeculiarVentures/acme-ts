@@ -1,4 +1,4 @@
-import { IOrderAuthorizationRepository, IOrderAuthorization } from "@peculiar/acme-data";
+import type { IOrderAuthorizationRepository, IOrderAuthorization } from "@peculiar/acme-data";
 import { BaseRepository } from "./base";
 
 export class OrderAuthorizationRepository extends BaseRepository<IOrderAuthorization> implements IOrderAuthorizationRepository {

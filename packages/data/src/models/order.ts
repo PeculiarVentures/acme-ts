@@ -1,6 +1,6 @@
-import { OrderStatus } from "@peculiar/acme-protocol";
-import { IBaseObject, Key } from "./base";
-import { IError } from "./error";
+import type { OrderStatus } from "@peculiar/acme-protocol";
+import type { IBaseObject, Key } from "./base";
+import type { IError } from "./error";
 
 export const diOrder = "ACME.Models.Order";
 

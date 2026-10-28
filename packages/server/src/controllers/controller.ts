@@ -1,14 +1,14 @@
 import * as core from "@peculiar/acme-core";
 import * as types from "../services/types";
-import * as protocol from "@peculiar/acme-protocol";
+import type * as protocol from "@peculiar/acme-protocol";
 import * as x509 from "@peculiar/x509";
 import * as pvtsutils from "pvtsutils";
 
 import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
 import { container, injectable } from "tsyringe";
-import { IAccount, Key } from "@peculiar/acme-data";
+import type { IAccount, Key } from "@peculiar/acme-data";
 import { BaseService } from "../services";
-import { Request } from "../request";
+import type { Request } from "../request";
 
 export const diAcmeController = "ACME.AcmeController";
 /**

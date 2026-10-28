@@ -1,4 +1,4 @@
-import { ICertificate, ICertificateRepository } from "@peculiar/acme-data";
+import type { ICertificate, ICertificateRepository } from "@peculiar/acme-data";
 import { BaseRepository } from "./base";
 
 export class CertificateRepository extends BaseRepository<ICertificate> implements ICertificateRepository {

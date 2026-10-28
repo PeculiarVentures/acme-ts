@@ -1,4 +1,4 @@
-import { Error } from "./error";
+import type { Error } from "./error";
 
 export type ChallengeStatus = "pending" | "processing" | "valid" | "invalid";
 

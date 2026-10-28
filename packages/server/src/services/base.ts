@@ -1,7 +1,8 @@
-import { MalformedError, ILogger, LoggerLevel, diLogger } from "@peculiar/acme-core";
-import { X509Certificate } from "@peculiar/x509";
+import type { ILogger, LoggerLevel } from "@peculiar/acme-core";
+import { MalformedError, diLogger } from "@peculiar/acme-core";
+import type { X509Certificate } from "@peculiar/x509";
 import { container } from "tsyringe";
-import { DirectoryMetadata } from "@peculiar/acme-protocol";
+import type { DirectoryMetadata } from "@peculiar/acme-protocol";
 
 export const diServerOptions = "ACME.ServerOptions";
 

@@ -1,6 +1,6 @@
-import { IBaseRepository } from "./base";
-import { IAuthorization, Key } from "../models";
-import { Identifier } from "@peculiar/acme-protocol";
+import type { IBaseRepository } from "./base";
+import type { IAuthorization, Key } from "../models";
+import type { Identifier } from "@peculiar/acme-protocol";
 
 export const diAuthorizationRepository = "ACME.AuthorizationRepository";
 

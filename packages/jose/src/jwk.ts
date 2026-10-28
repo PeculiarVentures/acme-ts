@@ -1,6 +1,6 @@
 import { Algorithms } from "./algorithms";
 import { KeyTypes } from "./key_types";
-import { EllipticCurves } from "./elliptic_curves";
+import type { EllipticCurves } from "./elliptic_curves";
 import * as pvtsutils from "pvtsutils";
 
 export class JsonWebKey implements globalThis.JsonWebKey {

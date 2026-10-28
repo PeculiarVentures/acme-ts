@@ -1,5 +1,5 @@
-import { IAuthorization, IAuthorizationRepository } from "@peculiar/acme-data";
-import { Identifier } from "@peculiar/acme-protocol";
+import type { IAuthorization, IAuthorizationRepository } from "@peculiar/acme-data";
+import type { Identifier } from "@peculiar/acme-protocol";
 import { BaseRepository } from "./base";
 
 export class AuthorizationRepository extends BaseRepository<IAuthorization> implements IAuthorizationRepository {

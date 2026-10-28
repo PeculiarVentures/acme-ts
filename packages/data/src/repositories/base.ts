@@ -1,4 +1,4 @@
-import { IBaseObject, Key } from "../models";
+import type { IBaseObject, Key } from "../models";
 
 export interface IBaseRepository<T extends IBaseObject> {
   findById(id: Key): Promise<T | null>;

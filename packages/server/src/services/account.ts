@@ -1,10 +1,13 @@
 import * as core from "@peculiar/acme-core";
-import { IAccountRepository, diAccountRepository, IAccount, Key, diAccount } from "@peculiar/acme-data";
-import { AccountCreateParams, AccountUpdateParams } from "@peculiar/acme-protocol";
-import { JsonWebKey, JsonWebSignature } from "@peculiar/jose";
+import type { IAccountRepository, IAccount, Key } from "@peculiar/acme-data";
+import { diAccountRepository, diAccount } from "@peculiar/acme-data";
+import type { AccountCreateParams, AccountUpdateParams } from "@peculiar/acme-protocol";
+import type { JsonWebKey } from "@peculiar/jose";
+import { JsonWebSignature } from "@peculiar/jose";
 import { container, injectable } from "tsyringe";
 import { BaseService } from "./base";
-import { IExternalAccountService, diExternalAccountService, IAccountService } from "./types";
+import type { IExternalAccountService, IAccountService } from "./types";
+import { diExternalAccountService } from "./types";
 
 @injectable()
 export class AccountService extends BaseService implements IAccountService {

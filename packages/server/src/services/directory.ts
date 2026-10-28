@@ -1,5 +1,6 @@
-import { diEndpointService, IDirectoryService, IEndpointService } from "./types";
-import { Directory } from "@peculiar/acme-protocol";
+import type { IDirectoryService, IEndpointService } from "./types";
+import { diEndpointService } from "./types";
+import type { Directory } from "@peculiar/acme-protocol";
 import { BaseService } from "./base";
 import { container, injectable } from "tsyringe";
 import { MalformedError } from "@peculiar/acme-core";

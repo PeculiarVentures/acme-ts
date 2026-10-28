@@ -1,5 +1,5 @@
-import { IChallenge, IError } from "@peculiar/acme-data";
-import { ChallengeStatus } from "@peculiar/acme-protocol";
+import type { IChallenge, IError } from "@peculiar/acme-data";
+import type { ChallengeStatus } from "@peculiar/acme-protocol";
 import { BaseObject } from "./base";
 
 export class Challenge extends BaseObject implements IChallenge {

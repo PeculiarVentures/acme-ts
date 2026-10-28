@@ -1,4 +1,4 @@
-import { Content } from "./content";
+import type { Content } from "./content";
 import { Headers } from "./headers";
 import { HttpStatusCode } from "./http_status_code";
 

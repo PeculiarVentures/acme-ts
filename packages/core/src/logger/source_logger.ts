@@ -1,5 +1,6 @@
 import { container } from "tsyringe";
-import { diLogger, ILogger } from "./logger";
+import type { ILogger } from "./logger";
+import { diLogger } from "./logger";
 
 /**
  * Abstract logger class for source name usage

@@ -1,6 +1,7 @@
-import { IChallenge, IError } from "@peculiar/acme-data";
-import { ChallengeStatus } from "@peculiar/acme-protocol";
-import { BaseObject, IBaseDynamoObject } from "./base";
+import type { IChallenge, IError } from "@peculiar/acme-data";
+import type { ChallengeStatus } from "@peculiar/acme-protocol";
+import type { IBaseDynamoObject } from "./base";
+import { BaseObject } from "./base";
 
 export interface IChallengeDynamo extends IBaseDynamoObject {
   type: string;

@@ -1,4 +1,4 @@
-import { IError, ISubProblem } from "@peculiar/acme-data";
+import type { IError, ISubProblem } from "@peculiar/acme-data";
 import { BaseObject } from "./base";
 import { ErrorType } from "@peculiar/acme-core";
 

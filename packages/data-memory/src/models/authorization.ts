@@ -1,5 +1,5 @@
-import { IAuthorization, IIdentifier } from "@peculiar/acme-data";
-import { AuthorizationStatus } from "@peculiar/acme-protocol";
+import type { IAuthorization, IIdentifier } from "@peculiar/acme-data";
+import type { AuthorizationStatus } from "@peculiar/acme-protocol";
 import { BaseObject } from "./base";
 
 export class Authorization extends BaseObject implements IAuthorization {

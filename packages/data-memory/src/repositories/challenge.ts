@@ -1,4 +1,4 @@
-import { IChallenge, IChallengeRepository } from "@peculiar/acme-data";
+import type { IChallenge, IChallengeRepository } from "@peculiar/acme-data";
 import { BaseRepository } from "./base";
 
 export class ChallengeRepository extends BaseRepository<IChallenge> implements IChallengeRepository {

@@ -1,6 +1,7 @@
-import { diCertificate, ICertificate, ICertificateRepository } from "@peculiar/acme-data";
+import type { ICertificate, ICertificateRepository } from "@peculiar/acme-data";
+import { diCertificate } from "@peculiar/acme-data";
 import { BaseRepository } from "./base";
-import { Certificate } from "../models";
+import type { Certificate } from "../models";
 
 export class CertificateRepository extends BaseRepository<Certificate> implements ICertificateRepository {
   protected className = diCertificate;

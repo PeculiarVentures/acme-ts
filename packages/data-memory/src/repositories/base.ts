@@ -1,7 +1,8 @@
-import { diLogger, ILogger } from "@peculiar/acme-core";
-import { IBaseRepository, Key } from "@peculiar/acme-data";
+import type { ILogger } from "@peculiar/acme-core";
+import { diLogger } from "@peculiar/acme-core";
+import type { IBaseRepository, Key } from "@peculiar/acme-data";
 import { container } from "tsyringe";
-import { BaseObject } from "../models";
+import type { BaseObject } from "../models";
 
 export abstract class BaseRepository<T extends BaseObject> implements IBaseRepository<T> {
   private lastId = 0;

@@ -1,4 +1,5 @@
-import { DependencyContainer, Lifecycle } from "tsyringe";
+import type { DependencyContainer } from "tsyringe";
+import { Lifecycle } from "tsyringe";
 import * as data from "@peculiar/acme-data";
 import * as repositories from "./repositories";
 import * as models from "./models";

@@ -1,5 +1,5 @@
 import { cryptoProvider } from "@peculiar/x509";
-import { INonceRepository } from "@peculiar/acme-data";
+import type { INonceRepository } from "@peculiar/acme-data";
 import { Convert } from "pvtsutils";
 
 export class NonceRepository implements INonceRepository {

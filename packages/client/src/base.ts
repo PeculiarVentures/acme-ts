@@ -1,6 +1,7 @@
 import * as core from "@peculiar/acme-core";
-import { JsonWebSignature, JwsProtectedSetter, JsonWebKey } from "@peculiar/jose";
-import { Error } from "@peculiar/acme-protocol";
+import type { JwsProtectedSetter } from "@peculiar/jose";
+import { JsonWebSignature, JsonWebKey } from "@peculiar/jose";
+import type { Error } from "@peculiar/acme-protocol";
 
 export interface ClientOptions {
   crypto?: Crypto;

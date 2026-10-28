@@ -1,8 +1,9 @@
-import { IOrderRepository, IOrderList, diOrder, Key, diCertificateRepository, ICertificateRepository } from "@peculiar/acme-data";
-import { QueryParams } from "@peculiar/acme-core";
+import type { IOrderRepository, IOrderList, Key, ICertificateRepository } from "@peculiar/acme-data";
+import { diOrder, diCertificateRepository } from "@peculiar/acme-data";
+import type { QueryParams } from "@peculiar/acme-core";
 import { container } from "tsyringe";
 import { BaseRepository } from "./base";
-import { Order } from "../models";
+import type { Order } from "../models";
 
 export class OrderRepository extends BaseRepository<Order> implements IOrderRepository {
   protected className = diOrder;

@@ -1,5 +1,5 @@
-import { IOrder, IError, Key } from "@peculiar/acme-data";
-import { OrderStatus } from "@peculiar/acme-protocol";
+import type { IOrder, IError, Key } from "@peculiar/acme-data";
+import type { OrderStatus } from "@peculiar/acme-protocol";
 import { BaseObject } from "./base";
 
 export class Order extends BaseObject implements IOrder {

@@ -1,5 +1,5 @@
-import { IBaseObject } from "./base";
-import { ErrorType } from "@peculiar/acme-core";
+import type { IBaseObject } from "./base";
+import type { ErrorType } from "@peculiar/acme-core";
 
 export interface ISubProblem {
   type: ErrorType;

@@ -1,8 +1,10 @@
-import { Response, Content, ContentType, AcmeError, ErrorType } from "@peculiar/acme-core";
-import * as protocol from "@peculiar/acme-protocol";
+import type { Response, Content } from "@peculiar/acme-core";
+import { ContentType, AcmeError, ErrorType } from "@peculiar/acme-core";
+import type * as protocol from "@peculiar/acme-protocol";
 import { JsonWebSignature, JsonWebKey } from "@peculiar/jose";
 import { Convert } from "pvtsutils";
-import { BaseClient, ClientOptions, ApiResponse, RequestParams } from "./base";
+import type { ClientOptions, ApiResponse, RequestParams } from "./base";
+import { BaseClient } from "./base";
 
 export interface ExternalAccountBinding {
   /**

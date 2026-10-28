@@ -1,5 +1,6 @@
-import { diChallenge, IChallengeRepository, Key } from "@peculiar/acme-data";
-import { Challenge } from "../models";
+import type { IChallengeRepository, Key } from "@peculiar/acme-data";
+import { diChallenge } from "@peculiar/acme-data";
+import type { Challenge } from "../models";
 import { BaseRepository } from "./base";
 
 export class ChallengeRepository extends BaseRepository<Challenge> implements IChallengeRepository {

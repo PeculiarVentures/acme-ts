@@ -1,4 +1,4 @@
-import { IOrderAuthorization } from "@peculiar/acme-data";
+import type { IOrderAuthorization } from "@peculiar/acme-data";
 import { BaseObject } from "./base";
 
 export class OrderAuthorization extends BaseObject implements IOrderAuthorization {

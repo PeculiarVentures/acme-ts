@@ -1,11 +1,11 @@
 import { ErrorType } from "@peculiar/acme-core";
-import * as protocol from "@peculiar/acme-protocol";
+import type * as protocol from "@peculiar/acme-protocol";
 import { Crypto } from "@peculiar/webcrypto";
 import { cryptoProvider } from "@peculiar/x509";
 import fetch from "node-fetch";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { ApiClient } from "./api";
-import { ApiResponse } from "./base";
+import type { ApiResponse } from "./base";
 
 function checkHeaders(res: ApiResponse<any>) {
   expect(!!res.headers.link).toBe(true);

@@ -1,5 +1,5 @@
-import { IBaseRepository } from "./base";
-import { IOrderAuthorization, Key } from "../models";
+import type { IBaseRepository } from "./base";
+import type { IOrderAuthorization, Key } from "../models";
 
 export const diOrderAuthorizationRepository = "ACME.OrderAuthorizationRepository";
 

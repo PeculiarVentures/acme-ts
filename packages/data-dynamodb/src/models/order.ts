@@ -1,6 +1,7 @@
-import { IOrder, IError, Key } from "@peculiar/acme-data";
-import { OrderStatus } from "@peculiar/acme-protocol";
-import { BaseObject, IBaseDynamoObject } from "./base";
+import type { IOrder, IError, Key } from "@peculiar/acme-data";
+import type { OrderStatus } from "@peculiar/acme-protocol";
+import type { IBaseDynamoObject } from "./base";
+import { BaseObject } from "./base";
 
 export interface IOrderDynamo extends IBaseDynamoObject {
   status: OrderStatus;

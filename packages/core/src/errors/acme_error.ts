@@ -1,4 +1,4 @@
-import { ErrorType } from "./error_type";
+import type { ErrorType } from "./error_type";
 import { HttpStatusCode } from "../web/http_status_code";
 
 export class AcmeError extends Error {

@@ -1,4 +1,4 @@
-import * as http from "http";
+import type * as http from "http";
 import { ApiClient } from "@peculiar/acme-client";
 import { DependencyInjection as diData } from "@peculiar/acme-data-memory";
 import { AcmeExpress } from "@peculiar/acme-express";

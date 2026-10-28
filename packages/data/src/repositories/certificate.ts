@@ -1,5 +1,5 @@
-import { IBaseRepository } from "./base";
-import { ICertificate } from "../models";
+import type { IBaseRepository } from "./base";
+import type { ICertificate } from "../models";
 
 export const diCertificateRepository = "ACME.CertificateRepository";
 
