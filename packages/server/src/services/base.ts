@@ -18,7 +18,7 @@ export interface IServerOptions {
   baseAddress: string;
   formattedResponse?: boolean;
   /**
-   * WebCrypto provider. Default provider is @peculiar/webcrypto
+   * WebCrypto provider. Default provider is the global `crypto` (Node.js WebCrypto)
    */
   cryptoProvider?: Crypto;
   hashAlgorithm: string;

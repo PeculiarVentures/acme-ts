@@ -1,9 +1,7 @@
 import type { Request, Response, Express } from "express";
 import { diLogger, ConsoleLogger } from "@peculiar/acme-core";
-import { cryptoProvider } from "@peculiar/x509";
 import { AcmeExpress, diControllers } from "@peculiar/acme-express";
 import * as acmeServer from "@peculiar/acme-server";
-import { Crypto } from "@peculiar/webcrypto";
 import { container } from "tsyringe";
 
 import * as services from "./services";
@@ -14,9 +12,6 @@ export * from "./services";
 
 export class AcmeRa {
   public static register(app: Express, options: Partial<acmeServer.IServerOptions>) {
-    const crypto = new Crypto();
-    cryptoProvider.set(crypto);
-
     // before AcmeExpress because this logger need for logs in setup moment
     container.register(diLogger, ConsoleLogger);
 
