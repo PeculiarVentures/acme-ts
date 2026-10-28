@@ -3,30 +3,30 @@ import { Lifecycle } from "tsyringe";
 import * as data from "@peculiar/acme-data";
 import * as repositories from "./repositories";
 import * as models from "./models";
-import * as dynamoose from "dynamoose";
-import type { AWSError } from "aws-sdk";
-// aws-sdk v2 is CommonJS without named exports for Node.js ESM; import the client module instead.
-import DynamoDB from "aws-sdk/clients/dynamodb.js";
+// dynamoose is CommonJS (`export =`): Node.js ESM only exposes it as the default export.
+import dynamoose from "dynamoose";
+import type { DynamoDBClientConfig } from "@aws-sdk/client-dynamodb";
+import { DynamoDB } from "@aws-sdk/client-dynamodb";
 import type { IOptions } from "./options";
 import { diOptionsService, OptionsService } from "./options";
 import { SourceLogger } from "@peculiar/acme-core";
 
 export interface IDynamoOptions {
-  client: DynamoDB.ClientConfiguration;
+  client: DynamoDBClientConfig;
   options: IOptions;
 }
 
 class DynamoDbSetup extends SourceLogger {}
 
-function isAwsError(error: unknown): error is AWSError {
-  return error instanceof Error && "code" in error;
+function isAwsError(error: unknown): error is Error {
+  return error instanceof Error && "$metadata" in error;
 }
 
 export class DependencyInjection {
   public static async registerAsync(container: DependencyContainer, options: IDynamoOptions) {
     await this.validate(options);
 
-    const ddb = new dynamoose.aws.sdk.DynamoDB(options.client);
+    const ddb = new DynamoDB(options.client);
 
     // Set DynamoDB instance to the Dynamoose DDB instance
     dynamoose.aws.ddb.set(ddb);
@@ -71,10 +71,10 @@ export class DependencyInjection {
     const tableName = options.options.tableName ?? repositories.BaseRepository.defaultTableName;
     const logger = new DynamoDbSetup();
     try {
-      await aws.describeTable({ TableName: tableName }).promise();
+      await aws.describeTable({ TableName: tableName });
     } catch (error) {
       if (isAwsError(error)) {
-        switch (error.code) {
+        switch (error.name) {
           case "ResourceNotFoundException":
             logger.warn(`Dynamo table '${tableName}' is not found. Table will be created by Mongoose module`, { aws: error.message });
             break;
