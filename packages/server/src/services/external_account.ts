@@ -73,7 +73,7 @@ export class ExternalAccountService extends BaseService implements IExternalAcco
       throw new MalformedError(`External account '${externalAccount.id}' has wrong status '${externalAccount.status}'`); // TODO check rfc error
     }
 
-    const key = toArrayBuffer(base64url.decode(externalAccount.key, { allowPadding: true }));
+    const key = toArrayBuffer(base64url.decode(externalAccount.key));
 
     const hmac = await cryptoProvider.get().subtle.importKey("raw", key, { name: "HMAC", hash: "SHA-256" }, false, ["verify"]);
     const ok = await token.verify(hmac, cryptoProvider.get());

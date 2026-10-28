@@ -141,6 +141,13 @@ describe("jose", () => {
         expect(() => jwsFrom({ signature: "AQ.D" }).getSignature()).toThrow(TypeError);
       });
 
+      // RFC 7515 section 2 and RFC 8555 section 6.1: trailing '=' MUST be stripped, and padded values MUST be rejected.
+      it("rejects padded segments", () => {
+        expect(() => jwsFrom({ protected: "eyJub25jZSI6Im4ifQ==" }).getProtected()).toThrow(TypeError);
+        expect(() => jwsFrom({ payload: "eyJhIjoxfQ==" }).getPayload()).toThrow(TypeError);
+        expect(() => jwsFrom({ signature: "AQI=" }).getSignature()).toThrow(TypeError);
+      });
+
       it("rejects a segment with an impossible length", () => {
         expect(() => jwsFrom({ signature: "AQIDB" }).getSignature()).toThrow(TypeError);
       });

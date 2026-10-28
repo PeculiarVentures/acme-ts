@@ -92,7 +92,7 @@ export class JsonWebSignature {
   }
 
   public getSignature() {
-    return toArrayBuffer(base64url.decode(this.signature, { allowPadding: true }));
+    return toArrayBuffer(base64url.decode(this.signature));
   }
 
   public setSignature(data: BufferSource) {
@@ -100,7 +100,7 @@ export class JsonWebSignature {
   }
 
   private read(data: string) {
-    const bytes = base64url.decode(data, { allowPadding: true });
+    const bytes = base64url.decode(data);
     // Reject malformed UTF-8 instead of replacing it with U+FFFD (RFC 7515 requires UTF-8).
     const json = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
     return json === "" ? "" : JSON.parse(json);

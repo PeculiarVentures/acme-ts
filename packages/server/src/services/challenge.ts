@@ -6,6 +6,7 @@ import * as data from "@peculiar/acme-data";
 import * as core from "@peculiar/acme-core";
 import type { IAuthorization, IIdentifier } from "@peculiar/acme-data";
 import * as x509 from "@peculiar/x509";
+import { base64url, toArrayBuffer } from "@peculiar/utils";
 
 @injectable()
 export class ChallengeService extends BaseService implements IChallengeService {
@@ -78,8 +79,15 @@ export class ChallengeService extends BaseService implements IChallengeService {
 
   public async csrValidate(identifiers: data.IIdentifier[], csrStr: string): Promise<void> {
     let csr: x509.Pkcs10CertificateRequest;
+    let raw: Uint8Array;
     try {
-      csr = new x509.Pkcs10CertificateRequest(csrStr);
+      // RFC 8555 section 7.4: base64url-encoded DER without padding.
+      raw = base64url.decode(csrStr);
+    } catch {
+      throw new core.BadCSRError("CSR is not base64url-encoded");
+    }
+    try {
+      csr = new x509.Pkcs10CertificateRequest(toArrayBuffer(raw));
     } catch {
       throw new core.BadCSRError("Cannot parse CSR");
     }

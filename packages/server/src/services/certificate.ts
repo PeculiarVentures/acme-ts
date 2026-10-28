@@ -133,7 +133,7 @@ export class CertificateService extends BaseService implements ICertificateServi
    * @param params
    */
   public async enroll(order: data.IOrder, params: FinalizeParams): Promise<data.ICertificate> {
-    const requestRaw = toArrayBuffer(base64url.decode(params.csr, { allowPadding: true }));
+    const requestRaw = toArrayBuffer(base64url.decode(params.csr));
 
     const type = params.endpoint || this.options.defaultEndpoint;
     const service = this.getEndpoint(type);
