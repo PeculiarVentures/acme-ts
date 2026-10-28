@@ -9,6 +9,8 @@
     "experimentalDecorators": true,
     "resolveJsonModule": true,
     "noImplicitOverride": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "ignoreDeprecations": "6.0",
+    "types": ["node"]
   }
 }
