@@ -10,7 +10,7 @@
 			},
 			"problemMatcher": [],
 			"label": "npm: build",
-			"detail": "lerna run build"
+			"detail": "npm run build"
 		}
 	]
 }
