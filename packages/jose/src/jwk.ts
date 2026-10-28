@@ -113,7 +113,7 @@ export class JsonWebKey implements globalThis.JsonWebKey {
       {
         name: alg,
       },
-      pvtsutils.BufferSourceConverter.toUint8Array(pvtsutils.Convert.FromUtf8String(json)),
+      pvtsutils.Convert.FromUtf8String(json),
     );
     return hash;
   }

@@ -4,7 +4,6 @@
     "incremental": true,
     "importHelpers": false,
     "target": "ES2018",
-    "baseUrl": ".",
     "paths": {
       "@peculiar/acme-client": ["./packages/client/src"],
       "@peculiar/acme-core": ["./packages/core/src"],

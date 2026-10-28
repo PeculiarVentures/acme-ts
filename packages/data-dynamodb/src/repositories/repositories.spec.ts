@@ -205,7 +205,7 @@ describe("DynamoDB Repositories", () => {
     describe("add", () => {
       it("should create a new certificate", async () => {
         const certModel = container.resolve<ICertificate>(diCertificate);
-        certModel.rawData = Buffer.from("test");
+        certModel.rawData = new TextEncoder().encode("test").buffer;
         certModel.status = "valid";
         certModel.type = "leaf";
         certModel.thumbprint = "test";
@@ -222,7 +222,7 @@ describe("DynamoDB Repositories", () => {
     describe("findByThumbprint", () => {
       it("should find a certificate by thumbprint", async () => {
         const certModel = container.resolve<ICertificate>(diCertificate);
-        certModel.rawData = Buffer.from("test");
+        certModel.rawData = new TextEncoder().encode("test").buffer;
         certModel.status = "valid";
         certModel.type = "leaf";
         certModel.thumbprint = "test";
@@ -242,7 +242,7 @@ describe("DynamoDB Repositories", () => {
       it("should find CA certificates", async () => {
         // Add CA certificate
         const certCaModel = container.resolve<ICertificate>(diCertificate);
-        certCaModel.rawData = Buffer.from("test");
+        certCaModel.rawData = new TextEncoder().encode("test").buffer;
         certCaModel.status = "valid";
         certCaModel.type = "ca";
         certCaModel.thumbprint = "testCa";
@@ -251,7 +251,7 @@ describe("DynamoDB Repositories", () => {
 
         // Add leaf certificate
         const certLeafModel = container.resolve<ICertificate>(diCertificate);
-        certLeafModel.rawData = Buffer.from("test");
+        certLeafModel.rawData = new TextEncoder().encode("test").buffer;
         certLeafModel.status = "valid";
         certLeafModel.type = "leaf";
         certLeafModel.thumbprint = "testLeaf";
@@ -558,7 +558,7 @@ describe("DynamoDB Repositories", () => {
         certThumbprint = crypto.webcrypto.randomUUID();
         // Add certificate
         const certModel = container.resolve<ICertificate>(diCertificate);
-        certModel.rawData = Buffer.from("test");
+        certModel.rawData = new TextEncoder().encode("test").buffer;
         certModel.status = "valid";
         certModel.type = "leaf";
         certModel.thumbprint = certThumbprint;
