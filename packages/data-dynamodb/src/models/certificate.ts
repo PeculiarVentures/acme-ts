@@ -1,6 +1,7 @@
-import { ICertificate, CertificateStatus, CertificateType } from "@peculiar/acme-data";
-import { BaseObject, IBaseDynamoObject } from "./base";
-import { CRLReason } from "@peculiar/asn1-x509";
+import type { ICertificate, CertificateStatus, CertificateType } from "@peculiar/acme-data";
+import type { IBaseDynamoObject } from "./base";
+import { BaseObject } from "./base";
+import type { CRLReason } from "@peculiar/asn1-x509";
 import { Convert } from "pvtsutils";
 
 export interface ICertificateDynamo extends IBaseDynamoObject {

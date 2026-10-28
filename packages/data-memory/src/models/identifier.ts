@@ -1,4 +1,4 @@
-import { IIdentifier } from "@peculiar/acme-data";
+import type { IIdentifier } from "@peculiar/acme-data";
 import { BaseObject } from "./base";
 
 export class Identifier extends BaseObject implements IIdentifier {

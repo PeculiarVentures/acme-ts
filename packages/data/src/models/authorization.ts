@@ -1,6 +1,6 @@
-import { AuthorizationStatus } from "@peculiar/acme-protocol";
-import { Key, IBaseObject } from "./base";
-import { IIdentifier } from "./identifier";
+import type { AuthorizationStatus } from "@peculiar/acme-protocol";
+import type { Key, IBaseObject } from "./base";
+import type { IIdentifier } from "./identifier";
 
 export const diAuthorization = "ACME.Models.Authorization";
 

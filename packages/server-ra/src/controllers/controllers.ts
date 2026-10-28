@@ -2,12 +2,13 @@ import { Content } from "@peculiar/acme-core";
 import { Controllers } from "@peculiar/acme-express";
 import * as server from "@peculiar/acme-server";
 import { cryptoProvider } from "@peculiar/x509";
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { Convert } from "pvtsutils";
 import { container, injectable } from "tsyringe";
 
-import { diAuthProviderService, ProviderService } from "../services";
-import { RaConvertService } from "../services/convert";
+import type { ProviderService } from "../services";
+import { diAuthProviderService } from "../services";
+import type { RaConvertService } from "../services/convert";
 
 @injectable()
 export class RaControllers extends Controllers {

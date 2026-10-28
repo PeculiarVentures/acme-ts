@@ -5,36 +5,38 @@ import * as DynamoDbLocal from "dynamodb-local";
 import { Lifecycle, container } from "tsyringe";
 import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
 import { DependencyInjection } from "../dependency";
-import {
+import type {
   IAccount,
   IAccountRepository,
-  diAccount,
-  diAccountRepository,
   IAuthorization,
   IAuthorizationRepository,
-  diAuthorization,
-  diAuthorizationRepository,
   ICertificate,
   ICertificateRepository,
-  diCertificate,
-  diCertificateRepository,
   IChallenge,
   IChallengeRepository,
-  diChallenge,
-  diChallengeRepository,
   IExternalAccount,
   IExternalAccountRepository,
-  diExternalAccount,
-  diExternalAccountRepository,
   INonceRepository,
-  diNonceRepository,
   IOrderAuthorization,
   IOrderAuthorizationRepository,
+  IOrder,
+  IOrderRepository,
+} from "@peculiar/acme-data";
+import {
+  diAccount,
+  diAccountRepository,
+  diAuthorization,
+  diAuthorizationRepository,
+  diCertificate,
+  diCertificateRepository,
+  diChallenge,
+  diChallengeRepository,
+  diExternalAccount,
+  diExternalAccountRepository,
+  diNonceRepository,
   diOrderAuthorization,
   diOrderAuthorizationRepository,
-  IOrder,
   diOrder,
-  IOrderRepository,
   diOrderRepository,
 } from "@peculiar/acme-data";
 import { JsonWebKey } from "@peculiar/jose";

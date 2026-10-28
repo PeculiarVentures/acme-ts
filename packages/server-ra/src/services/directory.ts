@@ -1,7 +1,8 @@
 import { container, injectable } from "tsyringe";
 import { DirectoryService } from "@peculiar/acme-server";
-import { Directory, DirectoryMetadata } from "@peculiar/acme-protocol";
-import { diProviderService, IProviderService } from "./types";
+import type { Directory, DirectoryMetadata } from "@peculiar/acme-protocol";
+import type { IProviderService } from "./types";
+import { diProviderService } from "./types";
 import { MalformedError } from "@peculiar/acme-core";
 
 @injectable()

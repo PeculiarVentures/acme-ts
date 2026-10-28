@@ -1,7 +1,7 @@
-import * as protocol from "@peculiar/acme-protocol";
+import type * as protocol from "@peculiar/acme-protocol";
 import * as pvtsutils from "pvtsutils";
 import { BaseService } from "./base";
-import { IConvertService, IEndpointService } from "./types";
+import type { IConvertService, IEndpointService } from "./types";
 import * as data from "@peculiar/acme-data";
 import { injectable, container } from "tsyringe";
 import { MalformedError } from "@peculiar/acme-core";

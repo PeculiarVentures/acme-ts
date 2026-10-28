@@ -1,6 +1,6 @@
-import { IAccount, IAccountRepository } from "@peculiar/acme-data";
+import type { IAccount, IAccountRepository } from "@peculiar/acme-data";
 import { BaseRepository } from "./base";
-import { JsonWebKey } from "@peculiar/jose";
+import type { JsonWebKey } from "@peculiar/jose";
 
 export class AccountRepository extends BaseRepository<IAccount> implements IAccountRepository {
   public async findByPublicKey(publicKey: JsonWebKey) {

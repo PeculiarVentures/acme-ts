@@ -1,4 +1,4 @@
-import { Request, Response, Express } from "express";
+import type { Request, Response, Express } from "express";
 import { diLogger, ConsoleLogger } from "@peculiar/acme-core";
 import { cryptoProvider } from "@peculiar/x509";
 import { AcmeExpress, diControllers } from "@peculiar/acme-express";

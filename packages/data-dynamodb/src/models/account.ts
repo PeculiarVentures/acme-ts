@@ -1,6 +1,7 @@
-import { IAccount } from "@peculiar/acme-data";
-import { AccountStatus } from "@peculiar/acme-protocol";
-import { BaseObject, IBaseDynamoObject } from "./base";
+import type { IAccount } from "@peculiar/acme-data";
+import type { AccountStatus } from "@peculiar/acme-protocol";
+import type { IBaseDynamoObject } from "./base";
+import { BaseObject } from "./base";
 import { JsonWebKey } from "@peculiar/jose";
 import { cryptoProvider } from "@peculiar/x509";
 

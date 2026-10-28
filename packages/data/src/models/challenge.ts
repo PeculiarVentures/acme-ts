@@ -1,6 +1,6 @@
-﻿import { ChallengeStatus } from "@peculiar/acme-protocol";
-import { IBaseObject, Key } from "./base";
-import { IError } from "./error";
+﻿import type { ChallengeStatus } from "@peculiar/acme-protocol";
+import type { IBaseObject, Key } from "./base";
+import type { IError } from "./error";
 
 export const diChallenge = "ACME.Models.Challenge";
 

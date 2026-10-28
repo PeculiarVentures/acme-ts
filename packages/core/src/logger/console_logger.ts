@@ -1,4 +1,5 @@
-import { Logger, LoggerData, LoggerInfo } from "./logger";
+import type { LoggerData, LoggerInfo } from "./logger";
+import { Logger } from "./logger";
 
 export class ConsoleLogger extends Logger {
   protected override onWrite(info: LoggerInfo, msg: string, obj?: LoggerData) {

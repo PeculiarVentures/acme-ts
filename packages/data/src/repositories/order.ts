@@ -1,6 +1,6 @@
-import { IBaseRepository } from "./base";
-import { IOrder, Key } from "../models";
-import { QueryParams } from "@peculiar/acme-core";
+import type { IBaseRepository } from "./base";
+import type { IOrder, Key } from "../models";
+import type { QueryParams } from "@peculiar/acme-core";
 
 export interface IOrderList {
   items: IOrder[];

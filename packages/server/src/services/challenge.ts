@@ -1,9 +1,10 @@
 import { injectable, container } from "tsyringe";
 import { BaseService } from "./base";
-import { diIdentifierService, IChallengeService, IIdentifierService } from "./types";
+import type { IChallengeService, IIdentifierService } from "./types";
+import { diIdentifierService } from "./types";
 import * as data from "@peculiar/acme-data";
 import * as core from "@peculiar/acme-core";
-import { IAuthorization, IIdentifier } from "@peculiar/acme-data";
+import type { IAuthorization, IIdentifier } from "@peculiar/acme-data";
 import * as x509 from "@peculiar/x509";
 
 @injectable()

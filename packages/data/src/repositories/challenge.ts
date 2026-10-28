@@ -1,5 +1,5 @@
-import { IBaseRepository } from "./base";
-import { IChallenge, Key } from "../models";
+import type { IBaseRepository } from "./base";
+import type { IChallenge, Key } from "../models";
 
 export const diChallengeRepository = "ACME.ChallengeRepository";
 

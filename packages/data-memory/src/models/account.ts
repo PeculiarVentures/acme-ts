@@ -1,7 +1,7 @@
-import { IAccount } from "@peculiar/acme-data";
-import { AccountStatus } from "@peculiar/acme-protocol";
+import type { IAccount } from "@peculiar/acme-data";
+import type { AccountStatus } from "@peculiar/acme-protocol";
 import { BaseObject } from "./base";
-import { JsonWebKey } from "@peculiar/jose";
+import type { JsonWebKey } from "@peculiar/jose";
 
 export class Account extends BaseObject implements IAccount {
   public status: AccountStatus = "valid";

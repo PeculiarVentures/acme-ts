@@ -1,8 +1,8 @@
 import * as core from "@peculiar/acme-core";
-import * as data from "@peculiar/acme-data";
+import type * as data from "@peculiar/acme-data";
 import * as server from "@peculiar/acme-server";
 
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import { container, injectable } from "tsyringe";
 
 export const diControllers = "ACME.Express.Controllers";

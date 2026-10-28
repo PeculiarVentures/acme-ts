@@ -3,8 +3,10 @@ import { container } from "tsyringe";
 import * as url from "url";
 import cors from "cors";
 
-import { diLogger, ILogger } from "@peculiar/acme-core";
-import { DependencyInjection as diServer, diServerOptions, IServerOptions } from "@peculiar/acme-server";
+import type { ILogger } from "@peculiar/acme-core";
+import { diLogger } from "@peculiar/acme-core";
+import type { IServerOptions } from "@peculiar/acme-server";
+import { DependencyInjection as diServer, diServerOptions } from "@peculiar/acme-server";
 
 import { routers } from "./routes";
 import { diControllers, Controllers } from "./controllers";

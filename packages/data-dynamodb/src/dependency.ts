@@ -1,10 +1,13 @@
-import { DependencyContainer, Lifecycle } from "tsyringe";
+import type { DependencyContainer } from "tsyringe";
+import { Lifecycle } from "tsyringe";
 import * as data from "@peculiar/acme-data";
 import * as repositories from "./repositories";
 import * as models from "./models";
 import * as dynamoose from "dynamoose";
-import { AWSError, DynamoDB } from "aws-sdk";
-import { diOptionsService, IOptions, OptionsService } from "./options";
+import type { AWSError } from "aws-sdk";
+import { DynamoDB } from "aws-sdk";
+import type { IOptions } from "./options";
+import { diOptionsService, OptionsService } from "./options";
 import { SourceLogger } from "@peculiar/acme-core";
 
 export interface IDynamoOptions {

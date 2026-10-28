@@ -1,5 +1,5 @@
-import { Identifier } from "./identifier";
-import { Challenge } from "./challenge";
+import type { Identifier } from "./identifier";
+import type { Challenge } from "./challenge";
 
 export type AuthorizationStatus = "pending" | "valid" | "invalid" | "deactivated" | "expired" | "revoked";
 

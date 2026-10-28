@@ -1,7 +1,8 @@
 import { BaseService } from "./base";
-import { INonceService } from "./types";
+import type { INonceService } from "./types";
 import { container, injectable } from "tsyringe";
-import { INonceRepository, diNonceRepository } from "@peculiar/acme-data";
+import type { INonceRepository } from "@peculiar/acme-data";
+import { diNonceRepository } from "@peculiar/acme-data";
 import { BadNonceError } from "@peculiar/acme-core";
 
 @injectable()

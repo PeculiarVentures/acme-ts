@@ -1,5 +1,6 @@
-import { IError, ISubProblem } from "@peculiar/acme-data";
-import { BaseObject, IBaseDynamoObject } from "./base";
+import type { IError, ISubProblem } from "@peculiar/acme-data";
+import type { IBaseDynamoObject } from "./base";
+import { BaseObject } from "./base";
 import { ErrorType } from "@peculiar/acme-core";
 
 export class DynamoError extends BaseObject implements IError {

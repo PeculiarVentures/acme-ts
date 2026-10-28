@@ -1,5 +1,5 @@
-import { Identifier } from "./identifier";
-import { Error } from "./error";
+import type { Identifier } from "./identifier";
+import type { Error } from "./error";
 
 export type OrderStatus = "pending" | "ready" | "processing" | "valid" | "invalid";
 

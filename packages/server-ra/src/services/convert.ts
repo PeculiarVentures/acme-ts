@@ -1,6 +1,6 @@
-import { IExternalAccount } from "@peculiar/acme-data";
+import type { IExternalAccount } from "@peculiar/acme-data";
 import { ConvertService } from "@peculiar/acme-server";
-import { EabChallenge } from "./types";
+import type { EabChallenge } from "./types";
 
 export class RaConvertService extends ConvertService {
   public toEabChallenge(externalAccount: IExternalAccount) {

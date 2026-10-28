@@ -1,8 +1,9 @@
 import { Crypto } from "@peculiar/webcrypto";
 import { cryptoProvider } from "@peculiar/x509";
-import { DependencyContainer, Lifecycle, RegistrationOptions } from "tsyringe";
+import type { DependencyContainer, RegistrationOptions } from "tsyringe";
+import { Lifecycle } from "tsyringe";
 import { AcmeController, diAcmeController } from "./controllers";
-import { IServerOptions } from "./services";
+import type { IServerOptions } from "./services";
 
 import * as data from "@peculiar/acme-data";
 import * as types from "./services/types";

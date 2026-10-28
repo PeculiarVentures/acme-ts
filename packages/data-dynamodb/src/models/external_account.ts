@@ -1,5 +1,6 @@
-import { IExternalAccount, ExternalAccountStatus } from "@peculiar/acme-data";
-import { BaseObject, IBaseDynamoObject } from "./base";
+import type { IExternalAccount, ExternalAccountStatus } from "@peculiar/acme-data";
+import type { IBaseDynamoObject } from "./base";
+import { BaseObject } from "./base";
 
 export interface IExternalAccountDynamo extends IBaseDynamoObject {
   expires?: string;

@@ -1,6 +1,6 @@
 import { MalformedError } from "@peculiar/acme-core";
-import { IAccount, IAuthorization, IExternalAccount, Key } from "@peculiar/acme-data";
-import { Identifier } from "@peculiar/acme-protocol";
+import type { IAccount, IAuthorization, IExternalAccount, Key } from "@peculiar/acme-data";
+import type { Identifier } from "@peculiar/acme-protocol";
 import * as acmeServer from "@peculiar/acme-server";
 import { container, injectable } from "tsyringe";
 

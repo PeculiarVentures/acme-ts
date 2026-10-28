@@ -1,5 +1,6 @@
-import { diExternalAccount, IExternalAccountRepository } from "@peculiar/acme-data";
-import { ExternalAccount } from "../models";
+import type { IExternalAccountRepository } from "@peculiar/acme-data";
+import { diExternalAccount } from "@peculiar/acme-data";
+import type { ExternalAccount } from "../models";
 import { BaseRepository } from "./base";
 
 export class ExternalAccountRepository extends BaseRepository<ExternalAccount> implements IExternalAccountRepository {

@@ -1,9 +1,9 @@
 import * as core from "@peculiar/acme-core";
 import * as x509 from "@peculiar/x509";
 import * as data from "@peculiar/acme-data";
-import { IAuthorizationRepository } from "@peculiar/acme-data";
+import type { IAuthorizationRepository } from "@peculiar/acme-data";
 import * as dataMemory from "@peculiar/acme-data-memory";
-import * as protocol from "@peculiar/acme-protocol";
+import type * as protocol from "@peculiar/acme-protocol";
 import * as server from "@peculiar/acme-server";
 import { AsnConvert } from "@peculiar/asn1-schema";
 import { GeneralName, id_ce_subjectAltName, SubjectAlternativeName } from "@peculiar/asn1-x509";

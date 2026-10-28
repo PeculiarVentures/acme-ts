@@ -1,5 +1,5 @@
-import { IBaseObject, Key } from "./base";
-import { AccountStatus } from "@peculiar/acme-protocol";
+import type { IBaseObject, Key } from "./base";
+import type { AccountStatus } from "@peculiar/acme-protocol";
 
 export const diAccount = "ACME.Models.Account";
 

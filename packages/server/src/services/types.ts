@@ -1,10 +1,10 @@
-import * as protocol from "@peculiar/acme-protocol";
-import * as data from "@peculiar/acme-data";
-import * as x509 from "@peculiar/x509";
-import { JsonWebSignature, JsonWebKey } from "@peculiar/jose";
-import { AcmeError, QueryParams } from "@peculiar/acme-core";
-import { Pkcs10CertificateRequest, X509Certificates } from "@peculiar/x509";
-import { IOrder } from "@peculiar/acme-data";
+import type * as protocol from "@peculiar/acme-protocol";
+import type * as data from "@peculiar/acme-data";
+import type * as x509 from "@peculiar/x509";
+import type { JsonWebSignature, JsonWebKey } from "@peculiar/jose";
+import type { AcmeError, QueryParams } from "@peculiar/acme-core";
+import type { Pkcs10CertificateRequest, X509Certificates } from "@peculiar/x509";
+import type { IOrder } from "@peculiar/acme-data";
 
 export const diConvertService = "ACME.ConvertService";
 

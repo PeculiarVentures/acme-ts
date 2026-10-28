@@ -1,5 +1,5 @@
-import { IAccount } from "../models";
-import { IBaseRepository } from "./base";
+import type { IAccount } from "../models";
+import type { IBaseRepository } from "./base";
 
 export const diAccountRepository = "ACME.AccountRepository";
 

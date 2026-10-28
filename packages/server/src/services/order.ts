@@ -1,7 +1,7 @@
 import * as core from "@peculiar/acme-core";
 import * as data from "@peculiar/acme-data";
-import * as protocol from "@peculiar/acme-protocol";
-import { JsonWebKey } from "@peculiar/jose";
+import type * as protocol from "@peculiar/acme-protocol";
+import type { JsonWebKey } from "@peculiar/jose";
 import * as pvtsutils from "pvtsutils";
 import { container, injectable } from "tsyringe";
 import { BaseService } from "./base";

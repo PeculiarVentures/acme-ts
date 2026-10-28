@@ -1,4 +1,4 @@
-import * as http from "http";
+import type * as http from "http";
 import express from "express";
 import { diLogger, ConsoleLogger } from "@peculiar/acme-core";
 import * as x509 from "@peculiar/x509";
@@ -8,7 +8,7 @@ import { diEndpointService } from "@peculiar/acme-server";
 import { Crypto } from "@peculiar/webcrypto";
 import { container } from "tsyringe";
 import { MemoryEndpointService } from "./services";
-import { ITestServerOptions2 } from "./services/options";
+import type { ITestServerOptions2 } from "./services/options";
 
 let server: http.Server | null = null;
 export async function run(port: number) {

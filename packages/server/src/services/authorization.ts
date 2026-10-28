@@ -1,9 +1,10 @@
 import { HttpStatusCode, MalformedError } from "@peculiar/acme-core";
-import { Identifier } from "@peculiar/acme-protocol";
+import type { Identifier } from "@peculiar/acme-protocol";
 import * as acmeData from "@peculiar/acme-data";
 import { injectable, container } from "tsyringe";
 import { BaseService } from "./base";
-import { IAuthorizationService, diChallengeService, IChallengeService } from "./types";
+import type { IAuthorizationService, IChallengeService } from "./types";
+import { diChallengeService } from "./types";
 
 @injectable()
 export class AuthorizationService extends BaseService implements IAuthorizationService {

@@ -1,7 +1,8 @@
 import { MalformedError } from "@peculiar/acme-core";
 import { BaseService } from "@peculiar/acme-server";
 import { container, injectable } from "tsyringe";
-import { diProviderService, IProviderService } from "./types";
+import type { IProviderService } from "./types";
+import { diProviderService } from "./types";
 
 export const diAuthProviderService = "Ra.AuthProviderService";
 

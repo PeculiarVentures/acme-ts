@@ -1,6 +1,6 @@
-import { ICertificate, CertificateStatus, CertificateType } from "@peculiar/acme-data";
+import type { ICertificate, CertificateStatus, CertificateType } from "@peculiar/acme-data";
 import { BaseObject } from "./base";
-import { CRLReason } from "@peculiar/asn1-x509";
+import type { CRLReason } from "@peculiar/asn1-x509";
 
 export class Certificate extends BaseObject implements ICertificate {
   public thumbprint = "";

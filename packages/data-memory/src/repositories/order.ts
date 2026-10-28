@@ -1,5 +1,5 @@
-import { IOrderRepository, IOrder, IOrderList } from "@peculiar/acme-data";
-import { QueryParams } from "@peculiar/acme-core";
+import type { IOrderRepository, IOrder, IOrderList } from "@peculiar/acme-data";
+import type { QueryParams } from "@peculiar/acme-core";
 import { BaseRepository } from "./base";
 
 export class OrderRepository extends BaseRepository<IOrder> implements IOrderRepository {

@@ -1,5 +1,5 @@
 import * as acmeData from "@peculiar/acme-data";
-import { Identifier } from "@peculiar/acme-protocol";
+import type { Identifier } from "@peculiar/acme-protocol";
 import { Authorization } from "../models";
 import { BaseRepository } from "./base";
 

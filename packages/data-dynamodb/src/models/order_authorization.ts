@@ -1,5 +1,6 @@
-import { IOrderAuthorization, Key } from "@peculiar/acme-data";
-import { BaseObject, IBaseDynamoObject } from "./base";
+import type { IOrderAuthorization, Key } from "@peculiar/acme-data";
+import type { IBaseDynamoObject } from "./base";
+import { BaseObject } from "./base";
 
 export class OrderAuthorization extends BaseObject implements IOrderAuthorization {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

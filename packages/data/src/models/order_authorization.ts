@@ -1,4 +1,4 @@
-import { IBaseObject, Key } from "./base";
+import type { IBaseObject, Key } from "./base";
 
 export const diOrderAuthorization = "ACME.Models.OrderAuthorization";
 

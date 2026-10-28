@@ -1,7 +1,8 @@
-import { diAccount, IAccountRepository } from "@peculiar/acme-data";
-import { Account } from "../models";
+import type { IAccountRepository } from "@peculiar/acme-data";
+import { diAccount } from "@peculiar/acme-data";
+import type { Account } from "../models";
 import { BaseRepository } from "./base";
-import { JsonWebKey } from "@peculiar/jose";
+import type { JsonWebKey } from "@peculiar/jose";
 
 export class AccountRepository extends BaseRepository<Account> implements IAccountRepository {
   protected className = diAccount;

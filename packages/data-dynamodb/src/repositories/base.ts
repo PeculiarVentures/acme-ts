@@ -1,10 +1,11 @@
-import { IBaseRepository, Key } from "@peculiar/acme-data";
+import type { IBaseRepository, Key } from "@peculiar/acme-data";
 import * as dynamoose from "dynamoose";
-import { BaseObject, IBaseDynamoObject } from "../models";
-import { Document } from "dynamoose/dist/Document";
-import { ModelType } from "dynamoose/dist/General";
+import type { BaseObject, IBaseDynamoObject } from "../models";
+import type { Document } from "dynamoose/dist/Document";
+import type { ModelType } from "dynamoose/dist/General";
 import { container } from "tsyringe";
-import { diOptionsService, OptionsService } from "../options";
+import type { OptionsService } from "../options";
+import { diOptionsService } from "../options";
 
 interface IDataTable extends Document {
   id: string;

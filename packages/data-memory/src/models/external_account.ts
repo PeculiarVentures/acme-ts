@@ -1,4 +1,4 @@
-import { IExternalAccount, ExternalAccountStatus } from "@peculiar/acme-data";
+import type { IExternalAccount, ExternalAccountStatus } from "@peculiar/acme-data";
 import { BaseObject } from "./base";
 
 export class ExternalAccount extends BaseObject implements IExternalAccount {

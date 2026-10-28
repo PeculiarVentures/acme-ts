@@ -2,10 +2,11 @@ import { AlreadyRevokedError, MalformedError } from "@peculiar/acme-core";
 import * as data from "@peculiar/acme-data";
 import { container, injectable } from "tsyringe";
 import { BaseService } from "./base";
-import { diEndpointService, ICertificateService, IEndpointService } from "./types";
+import type { ICertificateService, IEndpointService } from "./types";
+import { diEndpointService } from "./types";
 import * as pvtsutils from "pvtsutils";
 import * as x509 from "@peculiar/x509";
-import { FinalizeParams, RevokeReason } from "@peculiar/acme-protocol";
+import type { FinalizeParams, RevokeReason } from "@peculiar/acme-protocol";
 
 @injectable()
 export class CertificateService extends BaseService implements ICertificateService {

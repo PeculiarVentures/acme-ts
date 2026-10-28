@@ -1,4 +1,4 @@
-import { Token } from ".";
+import type { Token } from ".";
 
 export type AccountStatus = "valid" | "deactivated" | "revoked";
 

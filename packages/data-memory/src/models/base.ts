@@ -1,4 +1,4 @@
-import { IBaseObject, Key } from "@peculiar/acme-data";
+import type { IBaseObject, Key } from "@peculiar/acme-data";
 
 export abstract class BaseObject implements IBaseObject {
   public id: Key = 0;

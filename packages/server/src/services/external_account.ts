@@ -1,10 +1,11 @@
-import { IExternalAccountService } from "./types";
-import { Key, IExternalAccount, IExternalAccountRepository, diExternalAccount, diExternalAccountRepository } from "@peculiar/acme-data";
+import type { IExternalAccountService } from "./types";
+import type { Key, IExternalAccount, IExternalAccountRepository } from "@peculiar/acme-data";
+import { diExternalAccount, diExternalAccountRepository } from "@peculiar/acme-data";
 import { MalformedError } from "@peculiar/acme-core";
 import { BaseService } from "./base";
 import { container, injectable } from "tsyringe";
 import { Convert } from "pvtsutils";
-import { JsonWebSignature } from "@peculiar/jose";
+import type { JsonWebSignature } from "@peculiar/jose";
 import { cryptoProvider } from "@peculiar/x509";
 
 @injectable()
