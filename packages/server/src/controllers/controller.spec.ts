@@ -12,7 +12,7 @@ import { Crypto } from "@peculiar/webcrypto";
 import { MemoryEndpointService } from "@peculiar/acme-test-server/src/services";
 import { container, Lifecycle } from "tsyringe";
 import { afterAll, assert, beforeAll, describe, expect, it } from "vitest";
-import { base64url } from "@peculiar/utils";
+import { base64, base64url } from "@peculiar/utils";
 
 const baseAddress = "http://localhost";
 
@@ -1094,7 +1094,11 @@ describe("Server", () => {
         const resp2 = await controller.finalizeOrder(
           await createPostRequest(
             {
-              csr: "MIICRzCCAS8CAQAwAjEAMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArut7tLrb1BEHXImMTWipet+3/J2isn7mBv278oP7YyOkmX/Vzxvk9nvSc/B1wh6kSo6nfaxYacNNSP3r+WQYaTeLm5TsDbUfCJYtvvTuYH0GVTM8Qm7QhMZKnyUy/D60WNcRM4pnBDSEMpKppi7HhfL37DZpQnsQfr9r8LQPWZ9t/mf+FsSeWyQOQcz+ob6cODfNQIvbzpaXXdNpKIHLPW+/e4af5/WlZ9wL5Sy7kOf4X6nErdl74s1vSji9goANSQkd5TbswtFPRNybikrrisz0HtsIq2uTGDY6t3iOEHTe5qe/ux4anjbSqKVuIQEQWQOKb4h+mHTc+EC5yknihQIDAQABoAAwDQYJKoZIhvcNAQELBQADggEBAE7TU20ui1MLtxLM0UZMytYAjC7vtXxB5Vl6bzHUzZkVFW6oTeizqDxjeBtZ1SqErpgdyvzMvFSxF6f+679kl1/Zs2V0IPa4y58he3wTT/M1xCBN/bITY2cA4ETozbtK4cGoi6jY/0j8NcxTLfiBgwhE3ap+9GzLtWEhHWCXmpsohbvAktXSh1tLh4xmgoQoePEBSPbnaOmsonyzscKiBMASDvjrFdNbtD0uY2v/wYXwtRGvV/Q/O3lLWEosE4NdnZmgId4bm7ru48WucSnxuEJAkKUjDLrN0uqY/tKfX4Zy9w8Y/o+hk3QzNBVa3ZUvzDhVAmamQflvw3lXMm/JG4U=",
+              csr: base64url.encode(
+                base64.decode(
+                  "MIICRzCCAS8CAQAwAjEAMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArut7tLrb1BEHXImMTWipet+3/J2isn7mBv278oP7YyOkmX/Vzxvk9nvSc/B1wh6kSo6nfaxYacNNSP3r+WQYaTeLm5TsDbUfCJYtvvTuYH0GVTM8Qm7QhMZKnyUy/D60WNcRM4pnBDSEMpKppi7HhfL37DZpQnsQfr9r8LQPWZ9t/mf+FsSeWyQOQcz+ob6cODfNQIvbzpaXXdNpKIHLPW+/e4af5/WlZ9wL5Sy7kOf4X6nErdl74s1vSji9goANSQkd5TbswtFPRNybikrrisz0HtsIq2uTGDY6t3iOEHTe5qe/ux4anjbSqKVuIQEQWQOKb4h+mHTc+EC5yknihQIDAQABoAAwDQYJKoZIhvcNAQELBQADggEBAE7TU20ui1MLtxLM0UZMytYAjC7vtXxB5Vl6bzHUzZkVFW6oTeizqDxjeBtZ1SqErpgdyvzMvFSxF6f+679kl1/Zs2V0IPa4y58he3wTT/M1xCBN/bITY2cA4ETozbtK4cGoi6jY/0j8NcxTLfiBgwhE3ap+9GzLtWEhHWCXmpsohbvAktXSh1tLh4xmgoQoePEBSPbnaOmsonyzscKiBMASDvjrFdNbtD0uY2v/wYXwtRGvV/Q/O3lLWEosE4NdnZmgId4bm7ru48WucSnxuEJAkKUjDLrN0uqY/tKfX4Zy9w8Y/o+hk3QzNBVa3ZUvzDhVAmamQflvw3lXMm/JG4U=",
+                ),
+              ),
             } as protocol.FinalizeParams,
             `${baseAddress}/finalize/${orderId}`,
             client.location!,
@@ -1174,6 +1178,35 @@ describe("Server", () => {
         expect(error.type).toBe(core.ErrorType.badCSR);
         assert.ok(error.subproblems);
         expect(error.subproblems.length).toBe(2);
+      });
+      // RFC 8555 section 6.1: values with trailing '=' MUST be rejected as improperly encoded.
+      it("Error: padded CSR", async () => {
+        const client = await createAccount({}, (resp) => {
+          expect(resp.status).toBe(201);
+        });
+        const resp = await controller.createOrder(
+          await createPostRequest({ identifiers: [{ type: "dns", value: "some.com" }] } as protocol.OrderCreateParams, `${baseAddress}/new-order`, client.location!, client.keys),
+        );
+        expect(resp.status).toBe(201);
+        const order = resp.json<protocol.Order>();
+        const orderId = getId(resp.headers.location);
+        await changeAuthzStatus(order.authorizations[0], "valid");
+
+        const keyAlg: EcKeyGenParams = { name: "ECDSA", namedCurve: "P-256" };
+        const keys = (await crypto.subtle.generateKey(keyAlg, false, ["sign", "verify"])) as CryptoKeyPair;
+        // Grow the CN until the DER length isn't a multiple of 3, so base64 needs padding.
+        let cn = "some.com";
+        let req = await x509.Pkcs10CertificateRequestGenerator.create({ name: `CN=${cn}`, keys, signingAlgorithm: { name: "ECDSA", hash: "SHA-256" } });
+        while (req.rawData.byteLength % 3 === 0) {
+          cn = `a${cn}`;
+          req = await x509.Pkcs10CertificateRequestGenerator.create({ name: `CN=${cn}`, keys, signingAlgorithm: { name: "ECDSA", hash: "SHA-256" } });
+        }
+        const padded = base64.encode(req.rawData).replace(/\+/g, "-").replace(/\//g, "_");
+        expect(padded.endsWith("=")).toBe(true);
+
+        const resp2 = await controller.finalizeOrder(await createPostRequest({ csr: padded } as protocol.FinalizeParams, `${baseAddress}/finalize/${orderId}`, client.location!, client.keys), orderId);
+        expect(resp2.status).toBe(403);
+        expect(resp2.json<protocol.Error>().type).toBe(core.ErrorType.badCSR);
       });
     });
 

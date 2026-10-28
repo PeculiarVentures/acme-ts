@@ -367,7 +367,12 @@ export class OrderService extends BaseService implements types.IOrderService {
   public async revokeCertificate(key: data.Key | JsonWebKey, params: protocol.RevokeCertificateParams) {
     if (typeof key === "number" || typeof key === "string") {
       // find order
-      const x509 = toArrayBuffer(base64url.decode(params.certificate, { allowPadding: true }));
+      let x509: ArrayBuffer;
+      try {
+        x509 = toArrayBuffer(base64url.decode(params.certificate));
+      } catch {
+        throw new core.MalformedError("Certificate is not base64url-encoded");
+      }
       const order = await this.getByCertificate(key, x509);
 
       // revoke
