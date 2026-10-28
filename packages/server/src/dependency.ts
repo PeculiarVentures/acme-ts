@@ -1,4 +1,3 @@
-import { Crypto } from "@peculiar/webcrypto";
 import { cryptoProvider } from "@peculiar/x509";
 import type { DependencyContainer, RegistrationOptions } from "tsyringe";
 import { Lifecycle } from "tsyringe";
@@ -22,7 +21,7 @@ function registerEmpty(container: DependencyContainer, token: string, provider: 
 
 export class DependencyInjection {
   public static register(container: DependencyContainer, options: Partial<services.IServerOptions> = {}) {
-    options.cryptoProvider ??= new Crypto();
+    options.cryptoProvider ??= globalThis.crypto;
     cryptoProvider.set(options.cryptoProvider);
 
     //#region baseAddress

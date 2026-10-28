@@ -31,6 +31,7 @@ describe("Server", () => {
       expireAuthorizationDays: 1,
       ordersPageSize: 10,
       formattedResponse: true,
+      cryptoProvider: crypto,
     });
     container.register(server.diEndpointService, MemoryEndpointService, { lifecycle: Lifecycle.Singleton });
     const logger = new core.ConsoleLogger();

@@ -44,13 +44,20 @@
     "@peculiar/acme-core": "^1.8.2",
     "@peculiar/acme-data": "^1.8.4",
     "@peculiar/acme-protocol": "^1.8.2",
-    "@peculiar/asn1-schema": "^2.0.44",
-    "@peculiar/asn1-x509": "^2.0.44",
+    "@peculiar/asn1-x509": "^3.0.0",
     "@peculiar/jose": "^1.8.2",
-    "@peculiar/webcrypto": "^1.4.3",
     "node-fetch": "^2.6.1",
-    "normalize-url": "^5",
-    "pvtsutils": "^1.2.1",
-    "tsyringe": "^4.2.0"
+    "normalize-url": "^8.1.1",
+    "pvtsutils": "^1.2.1"
+  },
+  "peerDependencies": {
+    "@peculiar/asn1-schema": "^3.0.0",
+    "@peculiar/x509": "^3.1.0",
+    "tsyringe": "^4.10.0"
+  },
+  "devDependencies": {
+    "@peculiar/asn1-schema": "^3.0.0",
+    "@peculiar/x509": "^3.1.0",
+    "tsyringe": "^4.10.0"
   }
 }

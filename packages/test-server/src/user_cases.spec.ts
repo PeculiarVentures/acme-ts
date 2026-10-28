@@ -3,7 +3,6 @@ import { ApiClient } from "@peculiar/acme-client";
 import { DependencyInjection as diData } from "@peculiar/acme-data-memory";
 import { AcmeExpress } from "@peculiar/acme-express";
 import { diEndpointService } from "@peculiar/acme-server";
-import { Crypto } from "@peculiar/webcrypto";
 import express from "express";
 import fetch from "node-fetch";
 import { container, Lifecycle } from "tsyringe";
@@ -12,7 +11,8 @@ import { MemoryEndpointService } from "./services";
 
 describe("ACME user cases", () => {
   let server: http.Server | undefined;
-  const crypto = new Crypto();
+  // Node.js WebCrypto: the server's default provider when none is passed.
+  const crypto = globalThis.crypto;
   const port = 4321;
   const url = `http://localhost:${port}/acme`;
   const alg = {
@@ -27,7 +27,6 @@ describe("ACME user cases", () => {
     AcmeExpress.register(app, {
       baseAddress: url,
       loggerLevel: "error",
-      cryptoProvider: crypto,
       debugMode: true,
     });
     diData.register(container);
